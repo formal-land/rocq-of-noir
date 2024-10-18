@@ -8,7 +8,7 @@ use std::{
 
 pub type Position = u32;
 
-#[derive(PartialOrd, Eq, Ord, Debug, Clone, Default)]
+#[derive(PartialOrd, Eq, Ord, Debug, Clone, Default, Serialize)]
 pub struct Spanned<T> {
     pub contents: T,
     span: Span,

@@ -2,6 +2,8 @@ use std::cell::Ref;
 
 use iter_extended::vecmap;
 
+use serde::Serialize;
+
 use crate::{
     hir_def::traits::NamedType,
     node_interner::{FuncId, NodeInterner, TraitId, TypeAliasId},
@@ -120,7 +122,7 @@ impl Generic for FuncId {
 
 /// TraitGenerics are different from regular generics in that they can
 /// also contain associated type arguments.
-#[derive(Default, PartialEq, Eq, Clone, Hash, Ord, PartialOrd)]
+#[derive(Default, PartialEq, Eq, Clone, Hash, Ord, PartialOrd, Serialize)]
 pub struct TraitGenerics {
     pub ordered: Vec<Type>,
     pub named: Vec<NamedType>,

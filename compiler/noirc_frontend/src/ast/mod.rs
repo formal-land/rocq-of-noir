@@ -41,7 +41,7 @@ use acvm::acir::AcirField;
 use iter_extended::vecmap;
 
 #[cfg_attr(test, derive(Arbitrary))]
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Ord, PartialOrd)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Ord, PartialOrd, Serialize)]
 pub enum IntegerBitSize {
     One,
     Eight,
@@ -450,7 +450,7 @@ impl UnresolvedTypeData {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
 pub enum Signedness {
     Unsigned,
     Signed,
@@ -562,7 +562,7 @@ impl UnresolvedTypeExpression {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 /// Represents whether the definition can be referenced outside its module/crate
 pub enum ItemVisibility {
     Private,

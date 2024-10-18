@@ -11,6 +11,7 @@ use crate::{
 };
 use fm::FileId;
 use noirc_errors::{Location, Span};
+use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TraitFunction {
@@ -30,7 +31,7 @@ pub struct TraitConstant {
     pub span: Span,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize)]
 pub struct NamedType {
     pub name: Ident,
     pub typ: Type,
@@ -104,7 +105,7 @@ pub struct TraitImpl {
     pub where_clause: Vec<TraitConstraint>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct TraitConstraint {
     pub typ: Type,
     pub trait_bound: ResolvedTraitBound,
@@ -117,7 +118,7 @@ impl TraitConstraint {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResolvedTraitBound {
     pub trait_id: TraitId,
     pub trait_generics: TraitGenerics,

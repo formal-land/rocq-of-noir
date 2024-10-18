@@ -22,6 +22,7 @@ use noirc_frontend::monomorphization::{
 };
 use noirc_frontend::node_interner::FuncId;
 use noirc_frontend::token::SecondaryAttribute;
+use serde_json::to_string_pretty;
 use std::path::Path;
 use tracing::info;
 
@@ -109,7 +110,7 @@ pub struct CompileOptions {
     pub disable_macros: bool,
 
     /// Outputs the monomorphized IR to stdout for debugging
-    #[arg(long, hide = true)]
+    #[arg(long, hide = false)]
     pub show_monomorphized: bool,
 
     /// Insert debug symbols to inspect variables
@@ -636,6 +637,13 @@ pub fn compile_no_check(
 
     if options.show_monomorphized {
         println!("{program}");
+
+        // Here we will also output to a file a JSON representation of the monomorphized program
+        // This is useful for debugging and testing
+        let monomorphized_program = to_string_pretty(&program).unwrap();
+        let monomorphized_program_path =
+            context.package_build_path.join("monomorphized_program.json");
+        std::fs::write(&monomorphized_program_path, monomorphized_program).unwrap();
     }
 
     // If user has specified that they want to see intermediate steps printed then we should

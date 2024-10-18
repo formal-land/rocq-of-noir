@@ -1,5 +1,6 @@
 use acvm::FieldElement;
 use noirc_errors::{Position, Span, Spanned};
+use serde::Serialize;
 use std::fmt::{self, Display};
 
 use crate::{
@@ -312,7 +313,7 @@ pub fn token_to_borrowed_token(token: &Token) -> BorrowedToken<'_> {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord, Serialize)]
 pub enum FmtStrFragment {
     String(String),
     Interpolation(String, Span),
