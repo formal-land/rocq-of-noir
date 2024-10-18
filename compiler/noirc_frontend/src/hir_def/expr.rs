@@ -1,6 +1,7 @@
 use acvm::FieldElement;
 use fm::FileId;
 use noirc_errors::Location;
+use serde::Serialize;
 
 use crate::ast::{BinaryOp, BinaryOpKind, Ident, UnaryOp};
 use crate::hir::type_check::generics::TraitGenerics;
@@ -45,7 +46,7 @@ pub enum HirExpression {
 }
 
 /// Corresponds to a variable in the source code
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirIdent {
     pub location: Location,
     pub id: DefinitionId,
@@ -61,7 +62,7 @@ impl HirIdent {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum ImplKind {
     /// This ident is not a trait method
     NotATraitMethod,
@@ -73,7 +74,7 @@ pub enum ImplKind {
     TraitMethod(TraitMethod),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TraitMethod {
     pub method_id: TraitMethodId,
     pub constraint: TraitConstraint,

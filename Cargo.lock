@@ -2851,6 +2851,9 @@ dependencies = [
 [[package]]
 name = "noirc_arena"
 version = "0.35.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "noirc_artifacts"
@@ -2883,6 +2886,7 @@ dependencies = [
  "noirc_frontend",
  "rust-embed",
  "serde",
+ "serde_json",
  "tracing",
 ]
 

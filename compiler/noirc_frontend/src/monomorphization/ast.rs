@@ -26,7 +26,7 @@ use super::HirType;
 ///   e.g. `let (a, b) = (1, 2)` have been split up: `let tmp = (1, 2); let a = tmp.0; let b = tmp.1;`.
 ///   This also affects function parameters: `fn foo((a, b): (i32, i32)` => `fn foo(a: i32, b: i32)`.
 /// - All structs are replaced with tuples
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub enum Expression {
     Ident(Ident),
     Literal(Literal),
@@ -50,7 +50,7 @@ pub enum Expression {
 
 /// A definition is either a local (variable), function, or is a built-in
 /// function that will be generated or referenced by the compiler later.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum Definition {
     Local(LocalId),
     Function(FuncId),
@@ -62,11 +62,11 @@ pub enum Definition {
 
 /// ID of a local definition, e.g. from a let binding or
 /// function parameter that should be compiled before it is referenced.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct LocalId(pub u32);
 
 /// A function ID corresponds directly to an index of `Program::functions`
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct FuncId(pub u32);
 
 impl Display for FuncId {
@@ -75,7 +75,7 @@ impl Display for FuncId {
     }
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Ident {
     pub location: Option<Location>,
     pub definition: Definition,
@@ -84,7 +84,7 @@ pub struct Ident {
     pub typ: Type,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct For {
     pub index_variable: LocalId,
     pub index_name: String,
@@ -98,7 +98,7 @@ pub struct For {
     pub end_range_location: Location,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub enum Literal {
     Array(ArrayLiteral),
     Slice(ArrayLiteral),
@@ -109,7 +109,7 @@ pub enum Literal {
     FmtStr(String, u64, Box<Expression>),
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Unary {
     pub operator: crate::ast::UnaryOp,
     pub rhs: Box<Expression>,
@@ -119,7 +119,7 @@ pub struct Unary {
 
 pub type BinaryOp = BinaryOpKind;
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Binary {
     pub lhs: Box<Expression>,
     pub operator: BinaryOp,
@@ -133,7 +133,7 @@ pub struct Lambda {
     pub env: Ident,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct If {
     pub condition: Box<Expression>,
     pub consequence: Box<Expression>,
@@ -141,20 +141,20 @@ pub struct If {
     pub typ: Type,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Cast {
     pub lhs: Box<Expression>,
     pub r#type: Type,
     pub location: Location,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct ArrayLiteral {
     pub contents: Vec<Expression>,
     pub typ: Type,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Call {
     pub func: Box<Expression>,
     pub arguments: Vec<Expression>,
@@ -162,7 +162,7 @@ pub struct Call {
     pub location: Location,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Index {
     pub collection: Box<Expression>,
     pub index: Box<Expression>,
@@ -182,7 +182,7 @@ pub struct Index {
 /// let field1 = tmp.0; // the struct has been translated to a tuple as well
 /// let field2 = tmp.1;
 /// ```
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Let {
     pub id: LocalId,
     pub mutable: bool,
@@ -190,7 +190,7 @@ pub struct Let {
     pub expression: Box<Expression>,
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Assign {
     pub lvalue: LValue,
     pub expression: Box<Expression>,
@@ -204,7 +204,7 @@ pub struct BinaryStatement {
 }
 
 /// Represents an Ast form that can be assigned to
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub enum LValue {
     Ident(Ident),
     Index { array: Box<LValue>, index: Box<Expression>, element_type: Type, location: Location },
@@ -265,7 +265,7 @@ impl std::fmt::Display for InlineType {
     }
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Function {
     pub id: FuncId,
     pub name: String,
@@ -284,7 +284,7 @@ pub struct Function {
 /// - Concrete lengths for each array and string
 /// - Several other variants removed (such as Type::Constant)
 /// - All structs replaced with tuples
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, Serialize)]
 pub enum Type {
     Field,
     Array(/*len:*/ u32, Box<Type>), // Array(4, Field) = [Field; 4]
@@ -313,7 +313,7 @@ impl Type {
     }
 }
 
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, Serialize)]
 pub struct Program {
     pub functions: Vec<Function>,
     pub function_signatures: Vec<FunctionSignature>,

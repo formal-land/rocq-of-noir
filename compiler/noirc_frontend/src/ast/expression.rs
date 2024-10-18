@@ -15,6 +15,7 @@ use crate::{Kind, Type};
 use acvm::{acir::AcirField, FieldElement};
 use iter_extended::vecmap;
 use noirc_errors::{Span, Spanned};
+use serde::Serialize;
 
 use super::{AsTraitPath, TypePath, UnaryRhsMemberAccess};
 
@@ -308,7 +309,7 @@ impl Expression {
 
 pub type BinaryOp = Spanned<BinaryOpKind>;
 
-#[derive(PartialEq, PartialOrd, Eq, Ord, Hash, Debug, Copy, Clone)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Hash, Debug, Copy, Clone, Serialize)]
 #[cfg_attr(test, derive(strum_macros::EnumIter))]
 pub enum BinaryOpKind {
     Add,
@@ -400,7 +401,7 @@ impl BinaryOpKind {
     }
 }
 
-#[derive(PartialEq, PartialOrd, Eq, Ord, Hash, Debug, Copy, Clone)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Hash, Debug, Copy, Clone, Serialize)]
 pub enum UnaryOp {
     Minus,
     Not,

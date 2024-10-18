@@ -12,6 +12,7 @@ use petgraph::algo::tarjan_scc;
 use petgraph::prelude::DiGraph;
 use petgraph::prelude::NodeIndex as PetGraphIndex;
 use rustc_hash::FxHashMap as HashMap;
+use serde::Serialize;
 
 use crate::ast::{
     ExpressionKind, Ident, LValue, Pattern, StatementKind, UnaryOp, UnresolvedTypeData,
@@ -411,7 +412,7 @@ impl FunctionModifiers {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize)]
 pub struct DefinitionId(usize);
 
 impl DefinitionId {
@@ -465,7 +466,7 @@ impl fmt::Display for FuncId {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, PartialOrd, Ord)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, PartialOrd, Ord, Serialize)]
 pub struct StructId(ModuleId);
 
 impl StructId {
@@ -494,7 +495,7 @@ impl StructId {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, PartialOrd, Ord)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, PartialOrd, Ord, Serialize)]
 pub struct TypeAliasId(pub usize);
 
 impl TypeAliasId {
@@ -503,7 +504,7 @@ impl TypeAliasId {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct TraitId(pub ModuleId);
 
 impl TraitId {
@@ -518,7 +519,7 @@ impl TraitId {
 #[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
 pub struct TraitImplId(pub usize);
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct TraitMethodId {
     pub trait_id: TraitId,
     pub method_index: usize, // index in Trait::methods
