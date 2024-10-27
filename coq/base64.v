@@ -4,7 +4,7 @@ Definition test_decode_multi_chunks₀ (α : list Value.t) : M.t :=
   match α with
   | [] =>
     let~ input := [[
-      Value.Array [
+      M.alloc (| Value.Array [
         Value.Integer 86;
         Value.Integer 71;
         Value.Integer 104;
@@ -819,18 +819,18 @@ Definition test_decode_multi_chunks₀ (α : list Value.t) : M.t :=
         Value.Integer 108;
         Value.Integer 76;
         Value.Integer 103
-      ] ]] in
+      ] |) ]] in
     let~ result := [[
-      M.call_closure (|
+      M.alloc (| M.call_closure (|
         M.get_function (| "base64_decode", 1 |),
         [
           input
         ]
-      |) ]] in
+      |) |) ]] in
     let~ expected := [[
-      Value.String "The quick brown fox jumps over the lazy dog, while 42 ravens perch atop a rusty mailbox. Zany quilters fabricate 9 cozy blankets, as 3 jovial wizards expertly mix 5 potent elixirs. Bright neon signs flash ""OPEN 24/7"" in the misty night air, illuminating 8 vintage cars parked along Main Street. A gentle breeze carries the aroma of fresh coffee and warm cinnamon rolls from Joe's Diner, enticing 6 sleepy truckers to stop for a late-night snack. Meanwhile, 11 mischievous kittens playfully chase a ball of yarn across Mrs. Johnson's porch, their antics observed by 2 wise old owls perched on a nearby oak tree." ]] in
+      M.alloc (| Value.String "The quick brown fox jumps over the lazy dog, while 42 ravens perch atop a rusty mailbox. Zany quilters fabricate 9 cozy blankets, as 3 jovial wizards expertly mix 5 potent elixirs. Bright neon signs flash ""OPEN 24/7"" in the misty night air, illuminating 8 vintage cars parked along Main Street. A gentle breeze carries the aroma of fresh coffee and warm cinnamon rolls from Joe's Diner, enticing 6 sleepy truckers to stop for a late-night snack. Meanwhile, 11 mischievous kittens playfully chase a ball of yarn across Mrs. Johnson's porch, their antics observed by 2 wise old owls perched on a nearby oak tree." |) ]] in
     [[
-      M.assert (|
+      M.alloc (| M.assert (|
         M.call_closure (|
           M.get_function (| "eq", 2 |),
           [
@@ -844,7 +844,7 @@ Definition test_decode_multi_chunks₀ (α : list Value.t) : M.t :=
           ]
         |),
         None
-      |)
+      |) |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -852,15 +852,16 @@ Definition test_decode_multi_chunks₀ (α : list Value.t) : M.t :=
 Definition base64_decode₁ (α : list Value.t) : M.t :=
   match α with
   | [input] =>
+    let~ input := M.read input in
     let~ decoded := [[
-      M.call_closure (|
+      M.alloc (| M.call_closure (|
         M.get_function (| "base64_decode_elements", 3 |),
         [
           input
         ]
-      |) ]] in
+      |) |) ]] in
     let~ result := [[
-      Value.Array [
+      M.alloc (| Value.Array [
         Value.Integer 0;
         Value.Integer 0;
         Value.Integer 0;
@@ -1471,13 +1472,13 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
         Value.Integer 0;
         Value.Integer 0;
         Value.Integer 0
-      ] ]] in
+      ] |) ]] in
     let~ BASE64_ELEMENTS_PER_CHUNK := [[
-      Value.Integer 40 ]] in
+      M.alloc (| Value.Integer 40 |) ]] in
     let~ BYTES_PER_CHUNK := [[
-      Value.Integer 30 ]] in
+      M.alloc (| Value.Integer 30 |) ]] in
     let~ num_chunks := [[
-      Binary.add (|
+      M.alloc (| Binary.add (|
         Binary.divide (|
           Value.Integer 814,
           BASE64_ELEMENTS_PER_CHUNK
@@ -1492,7 +1493,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
           |),
           Ty.Integer Ty.Signedness.Unsigned Ty.IntegerBitSize.ThirtyTwo
         |)
-      |) ]] in
+      |) |) ]] in
     do~ [[
       M.if_ (|
         Binary.greater (|
@@ -1508,23 +1509,23 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
             |),
             fun (i : Value.t) =>
             let~ slice := [[
-              Value.Integer 0 ]] in
+              M.alloc (| Value.Integer 0 |) ]] in
             do~ [[
               M.for_ (|
                 Value.Integer 0,
                 BASE64_ELEMENTS_PER_CHUNK,
                 fun (j : Value.t) =>
                 do~ [[
-                  M.assign (|
+                  M.alloc (| M.assign (|
                     slice,
                     Binary.multiply (|
                       slice,
                       Value.Integer 64
                     |)
-                  |)
+                  |) |)
                 ]] in
                 [[
-                  M.assign (|
+                  M.alloc (| M.assign (|
                     slice,
                     Binary.add (|
                       slice,
@@ -1542,24 +1543,24 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
                         Ty.Field
                       |)
                     |)
-                  |)
+                  |) |)
                 ]]
               |)
             ]] in
             let~ slice_bytes := [[
-              M.call_closure (|
+              M.alloc (| M.call_closure (|
                 M.get_function (| "to_be_bytes", 4 |),
                 [
                   slice
                 ]
-              |) ]] in
+              |) |) ]] in
             [[
               M.for_ (|
                 Value.Integer 0,
                 BYTES_PER_CHUNK,
                 fun (j : Value.t) =>
                 [[
-                  M.assign (|
+                  M.alloc (| M.assign (|
                     M.index (|
                       result,
                       Binary.add (|
@@ -1574,14 +1575,14 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
                       slice_bytes,
                       j
                     |)
-                  |)
+                  |) |)
                 ]]
               |)
             ]]
           |)
         ]] in
         let~ base64_elements_in_final_chunk := [[
-          Binary.subtract (|
+          M.alloc (| Binary.subtract (|
             Value.Integer 814,
             Binary.multiply (|
               Binary.subtract (|
@@ -1590,25 +1591,25 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
               |),
               BASE64_ELEMENTS_PER_CHUNK
             |)
-          |) ]] in
+          |) |) ]] in
         let~ slice := [[
-          Value.Integer 0 ]] in
+          M.alloc (| Value.Integer 0 |) ]] in
         do~ [[
           M.for_ (|
             Value.Integer 0,
             base64_elements_in_final_chunk,
             fun (j : Value.t) =>
             do~ [[
-              M.assign (|
+              M.alloc (| M.assign (|
                 slice,
                 Binary.multiply (|
                   slice,
                   Value.Integer 64
                 |)
-              |)
+              |) |)
             ]] in
             [[
-              M.assign (|
+              M.alloc (| M.assign (|
                 slice,
                 Binary.add (|
                   slice,
@@ -1629,7 +1630,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
                     Ty.Field
                   |)
                 |)
-              |)
+              |) |)
             ]]
           |)
         ]] in
@@ -1639,25 +1640,25 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
             BASE64_ELEMENTS_PER_CHUNK,
             fun (_ : Value.t) =>
             [[
-              M.assign (|
+              M.alloc (| M.assign (|
                 slice,
                 Binary.multiply (|
                   slice,
                   Value.Integer 64
                 |)
-              |)
+              |) |)
             ]]
           |)
         ]] in
         let~ slice_bytes := [[
-          M.call_closure (|
+          M.alloc (| M.call_closure (|
             M.get_function (| "to_be_bytes", 4 |),
             [
               slice
             ]
-          |) ]] in
+          |) |) ]] in
         let~ num_bytes_in_final_chunk := [[
-          Binary.subtract (|
+          M.alloc (| Binary.subtract (|
             Value.Integer 610,
             Binary.multiply (|
               Binary.subtract (|
@@ -1666,14 +1667,14 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
               |),
               BYTES_PER_CHUNK
             |)
-          |) ]] in
+          |) |) ]] in
         [[
           M.for_ (|
             Value.Integer 0,
             num_bytes_in_final_chunk,
             fun (i : Value.t) =>
             [[
-              M.assign (|
+              M.alloc (| M.assign (|
                 M.index (|
                   result,
                   Binary.add (|
@@ -1691,7 +1692,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
                   slice_bytes,
                   i
                 |)
-              |)
+              |) |)
             ]]
           |)
         ]],
@@ -1699,7 +1700,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
       |)
     ]] in
     [[
-      result
+      M.alloc (| result |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -1707,8 +1708,10 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
 Definition eq₂ (α : list Value.t) : M.t :=
   match α with
   | [self; other] =>
+    let~ self := M.read self in
+    let~ other := M.read other in
     let~ result := [[
-      Value.Bool true ]] in
+      M.alloc (| Value.Bool true |) ]] in
     do~ [[
       M.for_ (|
         Value.Integer 0,
@@ -1720,7 +1723,7 @@ Definition eq₂ (α : list Value.t) : M.t :=
         |),
         fun (i : Value.t) =>
         [[
-          M.assign (|
+          M.alloc (| M.assign (|
             result,
             Binary.and_ (|
               result,
@@ -1738,12 +1741,12 @@ Definition eq₂ (α : list Value.t) : M.t :=
                 ]
               |)
             |)
-          |)
+          |) |)
         ]]
       |)
     ]] in
     [[
-      result
+      M.alloc (| result |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -1751,13 +1754,14 @@ Definition eq₂ (α : list Value.t) : M.t :=
 Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
   match α with
   | [input] =>
+    let~ input := M.read input in
     let~ Base64Decoder := [[
-      M.call_closure (|
+      M.alloc (| M.call_closure (|
         M.get_function (| "new", 6 |),
         []
-      |) ]] in
+      |) |) ]] in
     let~ result := [[
-      Value.Array [
+      M.alloc (| Value.Array [
         Value.Integer 0;
         Value.Integer 0;
         Value.Integer 0;
@@ -2572,19 +2576,19 @@ Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
         Value.Integer 0;
         Value.Integer 0;
         Value.Integer 0
-      ] ]] in
+      ] |) ]] in
     do~ [[
       M.for_ (|
         Value.Integer 0,
         Value.Integer 814,
         fun (i : Value.t) =>
         let~ input_byte := [[
-          M.index (|
+          M.alloc (| M.index (|
             input,
             i
-          |) ]] in
+          |) |) ]] in
         do~ [[
-          M.assign (|
+          M.alloc (| M.assign (|
             M.index (|
               result,
               i
@@ -2599,10 +2603,10 @@ Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
                 |)
               ]
             |)
-          |)
+          |) |)
         ]] in
         [[
-          M.assert (|
+          M.alloc (| M.assert (|
             Binary.not_equal (|
               M.index (|
                 result,
@@ -2610,13 +2614,13 @@ Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
               |),
               Value.Integer 255
             |),
-            Some (Value.fmt_str "DecodeError: invalid symbol {input_byte}, offset {i}." 2(Value.Tuple [input_byte; i]))
-          |)
+            Some (Value.fmt_str "DecodeError: invalid symbol {input_byte}, offset {i}." 2(M.alloc (| Value.Tuple [input_byte; i] |)))
+          |) |)
         ]]
       |)
     ]] in
     [[
-      result
+      M.alloc (| result |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -2624,14 +2628,15 @@ Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
 Definition to_be_bytes₄ (α : list Value.t) : M.t :=
   match α with
   | [self] =>
+    let~ self := M.read self in
     let~ bytes := [[
-      M.call_closure (|
+      M.alloc (| M.call_closure (|
         M.get_function (| "to_be_radix", 8 |),
         [
           self;
           Value.Integer 256
         ]
-      |) ]] in
+      |) |) ]] in
     do~ [[
       M.if_ (|
         Unary.not (|
@@ -2641,7 +2646,7 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
           |)
         |),
         let~ p := [[
-          Value.Slice [
+          M.alloc (| Value.Slice [
             Value.Integer 48;
             Value.Integer 100;
             Value.Integer 78;
@@ -2674,9 +2679,9 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
             Value.Integer 0;
             Value.Integer 0;
             Value.Integer 1
-          ] ]] in
+          ] |) ]] in
         do~ [[
-          M.assert (|
+          M.alloc (| M.assert (|
             Binary.less_equal (|
               M.call_closure (|
                 Builtin.len,
@@ -2692,10 +2697,10 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
               |)
             |),
             None
-          |)
+          |) |)
         ]] in
         let~ ok := [[
-          Binary.not_equal (|
+          M.alloc (| Binary.not_equal (|
             M.call_closure (|
               Builtin.len,
               [
@@ -2708,7 +2713,7 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
                 p
               ]
             |)
-          |) ]] in
+          |) |) ]] in
         do~ [[
           M.for_ (|
             Value.Integer 0,
@@ -2732,7 +2737,7 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
                       |)
                     |),
                     do~ [[
-                      M.assert (|
+                      M.alloc (| M.assert (|
                         Binary.less (|
                           M.index (|
                             bytes,
@@ -2744,13 +2749,13 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
                           |)
                         |),
                         None
-                      |)
+                      |) |)
                     ]] in
                     [[
-                      M.assign (|
+                      M.alloc (| M.assign (|
                         ok,
                         Value.Bool true
-                      |)
+                      |) |)
                     ]],
                     None
                   |)
@@ -2761,16 +2766,16 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
           |)
         ]] in
         [[
-          M.assert (|
+          M.alloc (| M.assert (|
             ok,
             None
-          |)
+          |) |)
         ]],
         None
       |)
     ]] in
     [[
-      bytes
+      M.alloc (| bytes |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -2778,11 +2783,13 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
 Definition eq₅ (α : list Value.t) : M.t :=
   match α with
   | [self; other] =>
+    let~ self := M.read self in
+    let~ other := M.read other in
     [[
-      Binary.equal (|
+      M.alloc (| Binary.equal (|
         self,
         other
-      |)
+      |) |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -2792,7 +2799,7 @@ Definition new₆ (α : list Value.t) : M.t :=
   | [] =>
     [[
       let~ table := [[
-        Value.Array [
+        M.alloc (| Value.Array [
           Value.Integer 255;
           Value.Integer 255;
           Value.Integer 255;
@@ -3049,9 +3056,9 @@ Definition new₆ (α : list Value.t) : M.t :=
           Value.Integer 255;
           Value.Integer 255;
           Value.Integer 255
-        ] ]] in
+        ] |) ]] in
       [[
-        Value.Tuple [table]
+        M.alloc (| Value.Tuple [table] |)
       ]]
     ]]
   | _ => M.impossible "wrong number of arguments"
@@ -3060,14 +3067,16 @@ Definition new₆ (α : list Value.t) : M.t :=
 Definition get₇ (α : list Value.t) : M.t :=
   match α with
   | [self; idx] =>
+    let~ self := M.read self in
+    let~ idx := M.read idx in
     [[
-      M.index (|
+      M.alloc (| M.index (|
         M.extract_tuple_field (|
-          self,
+            M.alloc (| self |),
           0
         |),
         idx
-      |)
+      |) |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
@@ -3075,22 +3084,24 @@ Definition get₇ (α : list Value.t) : M.t :=
 Definition to_be_radix₈ (α : list Value.t) : M.t :=
   match α with
   | [self; radix] =>
+    let~ self := M.read self in
+    let~ radix := M.read radix in
     do~ [[
-      M.call_closure (|
+      M.alloc (| M.call_closure (|
         Builtin.assert_constant,
         [
           radix
         ]
-      |)
+      |) |)
     ]] in
     [[
-      M.call_closure (|
+      M.alloc (| M.call_closure (|
         Builtin.__to_be_radix,
         [
           self;
           radix
         ]
-      |)
+      |) |)
     ]]
   | _ => M.impossible "wrong number of arguments"
   end.
