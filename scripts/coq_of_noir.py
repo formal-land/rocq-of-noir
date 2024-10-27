@@ -176,7 +176,7 @@ def array_literal_to_coq(node) -> str:
         "[\n" + \
         indent(
             ";\n".join(
-                expression_to_coq(expression)
+                read(expression_to_coq(expression))
                 for expression in node["contents"]
             )
          ) + "\n" + \
@@ -255,10 +255,11 @@ pub struct Unary {
 }
 '''
 def unary_to_coq(node) -> str:
-    return \
-        "Unary." + camel_case_to_snake_case(node["operator"]) + " (|\n" + \
-        indent(expression_to_coq(node["rhs"])) + "\n" + \
+    return alloc(
+        "Unary." + camel_case_to_snake_case(node["operator"]) + " (|\n" +
+        indent(read(expression_to_coq(node["rhs"]))) + "\n" +
         "|)"
+    )
 
 
 '''
@@ -272,13 +273,14 @@ pub struct Binary {
 def binary_to_coq(node) -> str:
     operator = camel_case_to_snake_case(node["operator"])
     operator = operator.replace("and", "and_").replace("or", "or_")
-    return \
-        "Binary." + operator + " (|\n" + \
+    return alloc(
+        "Binary." + operator + " (|\n" +
         indent(
-            expression_to_coq(node["lhs"]) + ",\n" + \
-            expression_to_coq(node["rhs"])
+            read(expression_to_coq(node["lhs"])) + ",\n" +
+            read(expression_to_coq(node["rhs"]))
         ) + "\n" + \
         "|)"
+    )
 
 
 '''
@@ -290,13 +292,14 @@ pub struct Index {
 }
 '''
 def index_to_coq(node) -> str:
-    return \
-        "M.index (|\n" + \
+    return alloc(
+        "M.index (|\n" +
         indent(
-            expression_to_coq(node["collection"]) + ",\n" +
-            expression_to_coq(node["index"])
-        ) + "\n" + \
+            read(expression_to_coq(node["collection"])) + ",\n" +
+            read(expression_to_coq(node["index"]))
+        ) + "\n" +
         "|)"
+    )
 
 
 '''
@@ -307,13 +310,14 @@ pub struct Cast {
 }
 '''
 def cast_to_coq(node) -> str:
-    return \
-        "M.cast (|\n" + \
+    return alloc(
+        "M.cast (|\n" +
         indent(
-            expression_to_coq(node["lhs"]) + ",\n" +
+            read(expression_to_coq(node["lhs"])) + ",\n" +
             type_to_coq(False, node["type"])
-        ) + "\n" + \
+        ) + "\n" +
         "|)"
+    )
 
 
 '''
@@ -334,8 +338,8 @@ def for_to_coq(node) -> str:
     return \
         "M.for_ (|\n" + \
         indent(
-            expression_to_coq(node["start_range"]) + ",\n" +
-            expression_to_coq(node["end_range"]) + ",\n" +
+            read(expression_to_coq(node["start_range"])) + ",\n" +
+            read(expression_to_coq(node["end_range"])) + ",\n" +
             "fun (" + node["index_name"] + " : Value.t) =>\n" +
             expression_to_coq(node["block"])
         ) + "\n" + \
@@ -354,10 +358,10 @@ def if_to_coq(node) -> str:
     return \
         "M.if_ (|\n" + \
         indent(
-            expression_to_coq(node["condition"]) + ",\n" +
+            read(expression_to_coq(node["condition"])) + ",\n" +
             expression_to_coq(node["consequence"]) + ",\n" +
             (
-                "(Some " + expression_to_coq(node["alternative"]) + ")"
+                "(Some (" + expression_to_coq(node["alternative"]) + "))"
                 if node["alternative"] is not None
                 else "None"
             )
@@ -374,16 +378,16 @@ pub struct Call {
 }
 '''
 def call_to_coq(node) -> str:
-    return \
-        "M.call_closure (|\n" + \
+    return alloc(
+        "M.call_closure (|\n" +
         indent(
-            expression_to_coq(node["func"]) + ",\n" +
+            read(expression_to_coq(node["func"])) + ",\n" +
             (
                 (
                     "[\n" +
                     indent(
                         ";\n".join(
-                            expression_to_coq(expression)
+                            read(expression_to_coq(expression))
                             for expression in node["arguments"]
                         )
                     ) + "\n" +
@@ -391,8 +395,9 @@ def call_to_coq(node) -> str:
                 ) if len(node["arguments"]) != 0
                 else "[]"
              )
-        ) + "\n" + \
+        ) + "\n" +
         "|)"
+    )
 
 
 '''
@@ -423,36 +428,33 @@ def lvalue_to_coq(node) -> str:
 
     if node_type == "Ident":
         node = node["Ident"]
-        return ident_to_coq(node)
+        return alloc(ident_to_coq(node))
 
     if node_type == "Index":
         node = node["Index"]
-        return \
-            "M.index (|\n" + \
+        return alloc(
+            "M.index (|\n" +
             indent(
-                lvalue_to_coq(node["array"]) + ",\n" +
-                expression_to_coq(node["index"])
-            ) + "\n" + \
+                read(lvalue_to_coq(node["array"])) + ",\n" +
+                read(expression_to_coq(node["index"]))
+            ) + "\n" +
             "|)"
+        )
 
     if node_type == "MemberAccess":
         node = node["MemberAccess"]
-        return \
-            "M.member_access (|\n" + \
+        return alloc(
+            "M.member_access (|\n" +
             indent(
-                lvalue_to_coq(node["object"]) + ",\n" +
+                read(lvalue_to_coq(node["object"])) + ",\n" +
                 str(node["field_index"])
-            ) + "\n" + \
+            ) + "\n" +
             "|)"
+        )
 
     if node_type == "Dereference":
         node = node["Dereference"]
-        return \
-            "M.dereference (|\n" + \
-            indent(
-                lvalue_to_coq(node["reference"])
-            ) + "\n" + \
-            "|)"
+        return read(lvalue_to_coq(node["reference"]))
 
     raise Exception(f"Unknown node type: {node_type}")
 
@@ -464,13 +466,14 @@ pub struct Assign {
 }
 '''
 def assign_to_coq(node) -> str:
-    return \
-        "M.assign (|\n" + \
+    return alloc(
+        "M.assign (|\n" +
         indent(
-            lvalue_to_coq(node["lvalue"]) + ",\n" + \
-            expression_to_coq(node["expression"])
+            read(lvalue_to_coq(node["lvalue"])) + ",\n" +
+            read(expression_to_coq(node["expression"]))
         ) + "\n" + \
         "|)"
+    )
 
 
 def expression_inside_block_to_coq(node, is_last: bool) -> str:
@@ -490,6 +493,29 @@ def expression_inside_block_to_coq(node, is_last: bool) -> str:
         "do~ [[\n" + \
         indent(expression_to_coq(node)) + "\n" + \
         "]] in"
+
+
+def alloc(expression: str) -> str:
+    return "M.alloc (| " + expression + " |)"
+
+
+def read(expression: str) -> str:
+    # If the expression is an alloc
+    alloc_beginning = "M.alloc (| "
+    alloc_end = " |)"
+    if expression.startswith(alloc_beginning) and expression.endswith(alloc_end):
+        return expression[len(alloc_beginning):-len(alloc_end)]
+    return "M.read (| " + expression + " |)"
+
+
+def write(expression: str, value: str) -> str:
+    return \
+        "M.write (|\n" + \
+        indent(
+            expression + ",\n" +
+            value
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -519,11 +545,11 @@ def expression_to_coq(node) -> str:
 
     if node_type == "Ident":
         node = node["Ident"]
-        return ident_to_coq(node)
+        return alloc(ident_to_coq(node))
 
     if node_type == "Literal":
         node = node["Literal"]
-        return literal_to_coq(node)
+        return alloc(literal_to_coq(node))
 
     if node_type == "Block":
         node = node["Block"]
@@ -559,20 +585,22 @@ def expression_to_coq(node) -> str:
 
     if node_type == "Tuple":
         node = node["Tuple"]
-        return \
-            "Value.Tuple [" + \
-            "; ".join(expression_to_coq(expression) for expression in node) + \
+        return alloc(
+            "Value.Tuple [" +
+            "; ".join(read(expression_to_coq(expression)) for expression in node) +
             "]"
+        )
 
     if node_type == "ExtractTupleField":
         node = node["ExtractTupleField"]
-        return \
+        return alloc(
             "M.extract_tuple_field (|\n" + \
             indent(
-                expression_to_coq(node[0]) + ",\n" + \
+                indent(expression_to_coq(node[0])) + ",\n" + \
                 str(node[1])
             ) + "\n" + \
             "|)"
+        )
 
     if node_type == "Call":
         node = node["Call"]
@@ -584,17 +612,18 @@ def expression_to_coq(node) -> str:
 
     if node_type == "Constrain":
         node = node["Constrain"]
-        return \
+        return alloc(
             "M.assert (|\n" + \
             indent(
-                expression_to_coq(node[0]) + ",\n" + \
+                read(expression_to_coq(node[0])) + ",\n" + \
                 (
-                    "Some (" + expression_to_coq(node[2][0]) + ")"
+                    "Some (" + read(expression_to_coq(node[2][0])) + ")"
                     if node[2] is not None
                     else "None"
                 )
             ) + "\n" + \
             "|)"
+        )
 
     if node_type == "Assign":
         node = node["Assign"]
@@ -613,6 +642,7 @@ def expression_to_coq(node) -> str:
 
     raise Exception(f"Unknown node type: {node_type}")
 
+
 def function_to_coq(node) -> str:
     parameters = parameters_to_coq(node["parameters"])
     return \
@@ -621,11 +651,16 @@ def function_to_coq(node) -> str:
         indent(
             "match α with\n" +
             "| [" + "; ".join(parameters) + "] =>\n" +
-            indent(expression_to_coq(node["body"])) + "\n" +
+            indent(
+                "".join(
+                    "let~ " + parameter + " := M.read " + parameter + " in\n"
+                    for parameter in parameters
+                ) +
+                expression_to_coq(node["body"])
+            ) + "\n" +
             "| _ => M.impossible \"wrong number of arguments\"\n" +
             "end."
         )
-
 
 
 def program_to_coq(node) -> str:

@@ -207,6 +207,7 @@ Module M.
 
     Notation "[[ e ]]" :=
       (ltac:(M.monadic e))
+      (* (M.pure e) *)
       (only parsing).
   End Notations.
   Import Notations.
@@ -221,6 +222,12 @@ Module M.
 
   Definition impossible (message : string) : M.t :=
     LowM.Impossible message.
+
+  Parameter alloc : Value.t -> M.t.
+
+  Parameter read : Value.t -> M.t.
+
+  Parameter write : Value.t -> Value.t -> M.t.
 
   Definition get_function (path : string) (id : Z) : M.t :=
     call_primitive (Primitive.GetFunction path id).
