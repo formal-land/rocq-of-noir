@@ -6,12 +6,115 @@ def indent(text: str) -> str:
     return "\n".join("  " + line for line in text.split("\n"))
 
 
+def paren(with_paren: bool, text: str) -> str:
+    return f"({text})" if with_paren else text
+
+
+def integer_to_subscript(integer: int) -> str:
+    return "".join("₀₁₂₃₄₅₆₇₈₉"[int(digit)] for digit in str(integer))
+
+
 def name_id_to_coq(name: str, id: int) -> str:
-    return f"{name}ᵢ{id}"
+    return f"{name}{integer_to_subscript(id)}"
 
 
 def parameters_to_coq(parameters: list) -> list[str]:
     return [parameter[2] for parameter in parameters]
+
+
+'''
+pub enum Type {
+    Field,
+    Array(/*len:*/ u32, Box<Type>), // Array(4, Field) = [Field; 4]
+    Integer(Signedness, /*bits:*/ IntegerBitSize), // u32 = Integer(unsigned, ThirtyTwo)
+    Bool,
+    String(/*len:*/ u32), // String(4) = str[4]
+    FmtString(/*len:*/ u32, Box<Type>),
+    Unit,
+    Tuple(Vec<Type>),
+    Slice(Box<Type>),
+    MutableReference(Box<Type>),
+    Function(
+        /*args:*/ Vec<Type>,
+        /*ret:*/ Box<Type>,
+        /*env:*/ Box<Type>,
+        /*unconstrained:*/ bool,
+    ),
+}
+'''
+def type_to_coq(with_paren: bool, node) -> str:
+    if node == "Field":
+        return "Ty.Field"
+
+    node_type: str = list(node.keys())[0]
+
+    if node_type == "Array":
+        node = node["Array"]
+        return paren(
+            with_paren,
+            f"Ty.Array {node[0]} {type_to_coq(True, node[1])}",
+        )
+
+    if node_type == "Integer":
+        node = node["Integer"]
+        return paren(
+            with_paren,
+            f"Ty.Integer Ty.Signedness.{node[0]} {node[1]}",
+        )
+
+    if node_type == "Bool":
+        return "Ty.Bool"
+
+    if node_type == "String":
+        node = node["String"]
+        return paren(
+            with_paren,
+            f"Ty.String {node}",
+        )
+
+    if node_type == "FmtString":
+        node = node["FmtString"]
+        return paren(
+            with_paren,
+            f"Ty.FmtString {node[0]} {type_to_coq(True, node[1])}"
+        )
+
+    if node_type == "Unit":
+        return "Ty.Unit"
+
+    if node_type == "Tuple":
+        node = node["Tuple"]
+        return paren(
+            with_paren,
+            f"Ty.Tuple [{'; '.join(type_to_coq(False, t) for t in node)}]",
+        )
+
+    if node_type == "Slice":
+        node = node["Slice"]
+        return paren(
+            with_paren,
+            f"Ty.Slice {type_to_coq(True, node)}",
+        )
+
+    if node_type == "MutableReference":
+        node = node["MutableReference"]
+        return paren(
+            with_paren,
+            f"Ty.MutableReference {type_to_coq(True, node)}",
+        )
+
+    if node_type == "Function":
+        node = node["Function"]
+        return paren(
+            with_paren,
+            "Ty.Function [" +
+            '; '.join(type_to_coq(False, t) for t in node[0]) +
+            "] " + type_to_coq(False, node[1]) + " " +
+            type_to_coq(False, node[2]) + " " +
+            ("true" if node[3] else "false"),
+        )
+
+    raise Exception(f"Unknown node type: {node_type}")
 
 
 '''
@@ -23,34 +126,7 @@ pub enum Definition {
     // used as a foreign/externally defined unconstrained function
     Oracle(String),
 }
-'''
-def definition_to_coq(node) -> str:
-    node_type: str = list(node.keys())[0]
 
-    if node_type == "Local":
-        node = node["Local"]
-        return f"Local {node}"
-
-    if node_type == "Function":
-        node = node["Function"]
-        return f"Function {node}"
-
-    if node_type == "Builtin":
-        node = node["Builtin"]
-        return f"Builtin {node}"
-
-    if node_type == "LowLevel":
-        node = node["LowLevel"]
-        return f"LowLevel {node}"
-
-    if node_type == "Oracle":
-        node = node["Oracle"]
-        return f"Oracle {node}"
-
-    raise Exception(f"Unknown node type: {node_type}")
-
-
-'''
 pub struct Ident {
     pub location: Option<Location>,
     pub definition: Definition,
@@ -60,7 +136,33 @@ pub struct Ident {
 }
 '''
 def ident_to_coq(node) -> str:
-    return node["name"] + "/" + definition_to_coq(node["definition"])
+    definition_node = node["definition"]
+    definition_node_type: str = list(definition_node.keys())[0]
+
+    if definition_node_type == "Local":
+        definition_node = definition_node["Local"]
+        return node["name"]
+
+    if definition_node_type == "Function":
+        definition_node = definition_node["Function"]
+        return \
+            "M.get_function (| \"" + \
+            node["name"] + "\", " + str(definition_node) + \
+            " |)"
+
+    if definition_node_type == "Builtin":
+        definition_node = definition_node["Builtin"]
+        return "Builtin." + node["name"]
+
+    if definition_node_type == "LowLevel":
+        definition_node = definition_node["LowLevel"]
+        return "LowLevel." + node["name"]
+
+    if definition_node_type == "Oracle":
+        definition_node = definition_node["Oracle"]
+        return "Oracle." + node["name"]
+
+    raise Exception(f"Unknown node type: {definition_node_type}")
 
 
 '''
@@ -71,16 +173,26 @@ pub struct ArrayLiteral {
 '''
 def array_literal_to_coq(node) -> str:
     return \
-        "[" + \
-        ", ".join(expression_to_coq(expression) for expression in node["contents"]) + \
+        "[\n" + \
+        indent(
+            ";\n".join(
+                expression_to_coq(expression)
+                for expression in node["contents"]
+            )
+         ) + "\n" + \
         "]"
+
+
+def escape_string(string: str) -> str:
+    return string.replace("\"", "\"\"")
 
 
 '''
 pub enum Literal {
     Array(ArrayLiteral),
     Slice(ArrayLiteral),
-    Integer(FieldElement, /*sign*/ bool, Type, Location), // false for positive integer and true for negative
+    // false for positive integer and true for negative
+    Integer(FieldElement, /*sign*/ bool, Type, Location),
     Bool(bool),
     Unit,
     Str(String),
@@ -92,38 +204,46 @@ def literal_to_coq(node) -> str:
 
     if node_type == "Array":
         node = node["Array"]
-        return array_literal_to_coq(node)
+        return "Value.Array " + array_literal_to_coq(node)
 
     if node_type == "Slice":
         node = node["Slice"]
-        return array_literal_to_coq(node)
+        return "Value.Slice " + array_literal_to_coq(node)
 
     if node_type == "Integer":
         node = node["Integer"]
         return \
+            "Value.Integer " + \
             ("-" if node[1] else "") + \
-            node[0]
+            str(int(node[0], 16))
 
     if node_type == "Bool":
         node = node["Bool"]
-        return "true" if node else "false"
+        return "Value.Bool " + "true" if node else "false"
 
     if node_type == "Unit":
-        return "tt"
+        return "Value.Tt"
 
     if node_type == "Str":
         node = node["Str"]
-        return "\"" + node + "\""
+        return "Value.String \"" + escape_string(node) + "\""
 
     if node_type == "FmtStr":
         node = node["FmtStr"]
         return \
-            "FmtStr (" + \
-            node[0] + ", " + \
-            str(node[1]) + ", " + \
-            expression_to_coq(node[2]) + ")"
+            "Value.fmt_str " + \
+            node[0] + " " + \
+            str(node[1]) + " " + \
+            expression_to_coq(node[2])
 
     raise Exception(f"Unknown node type: {node_type}")
+
+
+def camel_case_to_snake_case(string: str) -> str:
+    return "".join(
+        "_" + char.lower() if char.isupper() else char
+        for char in string
+    ).lstrip("_")
 
 
 '''
@@ -136,9 +256,9 @@ pub struct Unary {
 '''
 def unary_to_coq(node) -> str:
     return \
-        "Unary " + \
-        node["operator"] + " " + \
-        expression_to_coq(node["rhs"])
+        "Unary." + camel_case_to_snake_case(node["operator"]) + " (|\n" + \
+        indent(expression_to_coq(node["rhs"])) + "\n" + \
+        "|)"
 
 
 '''
@@ -151,10 +271,12 @@ pub struct Binary {
 '''
 def binary_to_coq(node) -> str:
     return \
-        "Binary " + \
-        expression_to_coq(node["lhs"]) + " " + \
-        node["operator"] + " " + \
-        expression_to_coq(node["rhs"])
+        "Binary." + camel_case_to_snake_case(node["operator"]) + " (|\n" + \
+        indent(
+            expression_to_coq(node["lhs"]) + ",\n" + \
+            expression_to_coq(node["rhs"])
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -167,9 +289,12 @@ pub struct Index {
 '''
 def index_to_coq(node) -> str:
     return \
-        "Index " + \
-        expression_to_coq(node["collection"]) + " " + \
-        expression_to_coq(node["index"])
+        "M.index (|\n" + \
+        indent(
+            expression_to_coq(node["collection"]) + ",\n" +
+            expression_to_coq(node["index"])
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -181,9 +306,12 @@ pub struct Cast {
 '''
 def cast_to_coq(node) -> str:
     return \
-        "Cast " + \
-        expression_to_coq(node["lhs"]) + " " + \
-        json.dumps(node["type"])
+        "M.cast (|\n" + \
+        indent(
+            expression_to_coq(node["lhs"]) + ",\n" +
+            type_to_coq(False, node["type"])
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -202,11 +330,14 @@ pub struct For {
 '''
 def for_to_coq(node) -> str:
     return \
-        "For " + \
-        node["index_name"] + " " + \
-        expression_to_coq(node["start_range"]) + " " + \
-        expression_to_coq(node["end_range"]) + "\n" + \
-        indent(expression_to_coq(node["block"]))
+        "M.for_ (|\n" + \
+        indent(
+            expression_to_coq(node["start_range"]) + ",\n" +
+            expression_to_coq(node["end_range"]) + ",\n" +
+            "fun (" + node["index_name"] + " : Value.t) =>\n" +
+            expression_to_coq(node["block"])
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -219,14 +350,17 @@ pub struct If {
 '''
 def if_to_coq(node) -> str:
     return \
-        "If " + \
-        expression_to_coq(node["condition"]) + " " + \
-        expression_to_coq(node["consequence"]) + " " + \
-        (
-            "(Some " + expression_to_coq(node["alternative"]) + ")"
-            if node["alternative"] is not None
-            else "None"
-        )
+        "M.if_ (|\n" + \
+        indent(
+            expression_to_coq(node["condition"]) + ",\n" +
+            expression_to_coq(node["consequence"]) + ",\n" +
+            (
+                "(Some " + expression_to_coq(node["alternative"]) + ")"
+                if node["alternative"] is not None
+                else "None"
+            )
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -239,11 +373,24 @@ pub struct Call {
 '''
 def call_to_coq(node) -> str:
     return \
-        "Call " + \
-        expression_to_coq(node["func"]) + " " + \
-        "[" + \
-        ", ".join(expression_to_coq(expression) for expression in node["arguments"]) + \
-        "]"
+        "M.call_closure (|\n" + \
+        indent(
+            expression_to_coq(node["func"]) + ",\n" +
+            (
+                (
+                    "[\n" +
+                    indent(
+                        ";\n".join(
+                            expression_to_coq(expression)
+                            for expression in node["arguments"]
+                        )
+                    ) + "\n" +
+                    "]"
+                ) if len(node["arguments"]) != 0
+                else "[]"
+             )
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -256,9 +403,9 @@ pub struct Let {
 '''
 def let_to_coq(node) -> str:
     return \
-        "Let " + \
+        "let " + \
         node["name"] + " :=\n" + \
-        indent(expression_to_coq(node["expression"]))
+        indent(expression_to_coq(node["expression"])) + " in"
 
 
 '''
@@ -307,9 +454,12 @@ pub struct Assign {
 '''
 def assign_to_coq(node) -> str:
     return \
-        "Assign " + \
-        lvalue_to_coq(node["lvalue"]) + " " + \
-        expression_to_coq(node["expression"])
+        "M.assign (|\n" + \
+        indent(
+            lvalue_to_coq(node["lvalue"]) + ",\n" + \
+            expression_to_coq(node["expression"])
+        ) + "\n" + \
+        "|)"
 
 
 '''
@@ -348,10 +498,11 @@ def expression_to_coq(node) -> str:
     if node_type == "Block":
         node = node["Block"]
         return \
-            "do\n" + \
+            "[[\n" + \
             indent(
                 "\n".join(expression_to_coq(expression) for expression in node)
-            )
+            ) + "\n" + \
+            "]]"
 
     if node_type == "Unary":
         node = node["Unary"]
@@ -402,13 +553,16 @@ def expression_to_coq(node) -> str:
     if node_type == "Constrain":
         node = node["Constrain"]
         return \
-            "Constrain " + \
-            expression_to_coq(node[0]) + " " + \
-            (
-                "(Some " + expression_to_coq(node[2][0]) + ")"
-                if node[2] is not None
-                else "None"
-            )
+            "M.assert (|\n" + \
+            indent(
+                expression_to_coq(node[0]) + ",\n" + \
+                (
+                    "Some " + expression_to_coq(node[2][0])
+                    if node[2] is not None
+                    else "None"
+                )
+            ) + "\n" + \
+            "|)"
 
     if node_type == "Assign":
         node = node["Assign"]
