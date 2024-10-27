@@ -59,7 +59,7 @@ def type_to_coq(with_paren: bool, node) -> str:
         node = node["Integer"]
         return paren(
             with_paren,
-            f"Ty.Integer Ty.Signedness.{node[0]} {node[1]}",
+            f"Ty.Integer Ty.Signedness.{node[0]} Ty.IntegerBitSize.{node[1]}",
         )
 
     if node_type == "Bool":
@@ -232,9 +232,9 @@ def literal_to_coq(node) -> str:
         node = node["FmtStr"]
         return \
             "Value.fmt_str " + \
-            node[0] + " " + \
-            str(node[1]) + " " + \
-            expression_to_coq(node[2])
+            "\"" + escape_string(node[0]) + "\" " + \
+            str(node[1]) + \
+            paren(True, expression_to_coq(node[2]))
 
     raise Exception(f"Unknown node type: {node_type}")
 
@@ -270,8 +270,10 @@ pub struct Binary {
 }
 '''
 def binary_to_coq(node) -> str:
+    operator = camel_case_to_snake_case(node["operator"])
+    operator = operator.replace("and", "and_").replace("or", "or_")
     return \
-        "Binary." + camel_case_to_snake_case(node["operator"]) + " (|\n" + \
+        "Binary." + operator + " (|\n" + \
         indent(
             expression_to_coq(node["lhs"]) + ",\n" + \
             expression_to_coq(node["rhs"])
@@ -403,9 +405,9 @@ pub struct Let {
 '''
 def let_to_coq(node) -> str:
     return \
-        "let " + \
-        node["name"] + " :=\n" + \
-        indent(expression_to_coq(node["expression"])) + " in"
+        "let~ " + \
+        node["name"] + " := [[\n" + \
+        indent(expression_to_coq(node["expression"])) + " ]] in"
 
 
 '''
@@ -426,22 +428,31 @@ def lvalue_to_coq(node) -> str:
     if node_type == "Index":
         node = node["Index"]
         return \
-            "Index " + \
-            lvalue_to_coq(node["array"]) + " " + \
-            expression_to_coq(node["index"])
+            "M.index (|\n" + \
+            indent(
+                lvalue_to_coq(node["array"]) + ",\n" +
+                expression_to_coq(node["index"])
+            ) + "\n" + \
+            "|)"
 
     if node_type == "MemberAccess":
         node = node["MemberAccess"]
         return \
-            "MemberAccess " + \
-            lvalue_to_coq(node["object"]) + " " + \
-            node["field_index"]
+            "M.member_access (|\n" + \
+            indent(
+                lvalue_to_coq(node["object"]) + ",\n" +
+                str(node["field_index"])
+            ) + "\n" + \
+            "|)"
 
     if node_type == "Dereference":
         node = node["Dereference"]
         return \
-            "Dereference " + \
-            lvalue_to_coq(node["reference"])
+            "M.dereference (|\n" + \
+            indent(
+                lvalue_to_coq(node["reference"])
+            ) + "\n" + \
+            "|)"
 
     raise Exception(f"Unknown node type: {node_type}")
 
@@ -460,6 +471,25 @@ def assign_to_coq(node) -> str:
             expression_to_coq(node["expression"])
         ) + "\n" + \
         "|)"
+
+
+def expression_inside_block_to_coq(node, is_last: bool) -> str:
+    node_type: str = list(node.keys())[0]
+
+    if node_type == "Let":
+        node = node["Let"]
+        return let_to_coq(node)
+
+    if is_last:
+        return \
+            "[[\n" + \
+            indent(expression_to_coq(node)) + "\n" + \
+            "]]"
+
+    return \
+        "do~ [[\n" + \
+        indent(expression_to_coq(node)) + "\n" + \
+        "]] in"
 
 
 '''
@@ -498,11 +528,10 @@ def expression_to_coq(node) -> str:
     if node_type == "Block":
         node = node["Block"]
         return \
-            "[[\n" + \
-            indent(
-                "\n".join(expression_to_coq(expression) for expression in node)
-            ) + "\n" + \
-            "]]"
+            "\n".join(
+                expression_inside_block_to_coq(expression, index == len(node) - 1)
+                for index, expression in enumerate(node)
+            )
 
     if node_type == "Unary":
         node = node["Unary"]
@@ -531,16 +560,19 @@ def expression_to_coq(node) -> str:
     if node_type == "Tuple":
         node = node["Tuple"]
         return \
-            "Tuple [" + \
-            ", ".join(expression_to_coq(expression) for expression in node) + \
+            "Value.Tuple [" + \
+            "; ".join(expression_to_coq(expression) for expression in node) + \
             "]"
 
     if node_type == "ExtractTupleField":
         node = node["ExtractTupleField"]
         return \
-            "ExtractTupleField " + \
-            expression_to_coq(node[0]) + " " + \
-            str(node[1])
+            "M.extract_tuple_field (|\n" + \
+            indent(
+                expression_to_coq(node[0]) + ",\n" + \
+                str(node[1])
+            ) + "\n" + \
+            "|)"
 
     if node_type == "Call":
         node = node["Call"]
@@ -557,7 +589,7 @@ def expression_to_coq(node) -> str:
             indent(
                 expression_to_coq(node[0]) + ",\n" + \
                 (
-                    "Some " + expression_to_coq(node[2][0])
+                    "Some (" + expression_to_coq(node[2][0]) + ")"
                     if node[2] is not None
                     else "None"
                 )
@@ -570,9 +602,8 @@ def expression_to_coq(node) -> str:
 
     if node_type == "Semi":
         node = node["Semi"]
-        return \
-            "Semi " + \
-            expression_to_coq(node)
+        # We have no additional printing for this case!
+        return expression_to_coq(node)
 
     if node_type == "Break":
         return "Break"
@@ -586,10 +617,10 @@ def function_to_coq(node) -> str:
     parameters = parameters_to_coq(node["parameters"])
     return \
         f"Definition {name_id_to_coq(node['name'], node['id'])} (α : list Value.t) " + \
-        ": M.t Value.t :=\n" + \
+        ": M.t :=\n" + \
         indent(
             "match α with\n" +
-            "| [" + ", ".join(parameters) + "] =>\n" +
+            "| [" + "; ".join(parameters) + "] =>\n" +
             indent(expression_to_coq(node["body"])) + "\n" +
             "| _ => M.impossible \"wrong number of arguments\"\n" +
             "end."
