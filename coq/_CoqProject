@@ -1,0 +1,2 @@
+-R . CoqOfNoir
+-arg -impredicative-set
