@@ -12,7 +12,8 @@ use crate::{
     token::{Attributes, FunctionAttribute},
 };
 use crate::{hir_def::function::FunctionSignature, token::FmtStrFragment};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
+use serde::ser::SerializeStruct;
 
 use super::HirType;
 
@@ -279,7 +280,7 @@ impl std::fmt::Display for InlineType {
     }
 }
 
-#[derive(Debug, Clone, Hash, Serialize)]
+#[derive(Debug, Clone, Hash)]
 pub struct Function {
     pub id: FuncId,
     pub name: String,
@@ -291,6 +292,27 @@ pub struct Function {
     pub unconstrained: bool,
     pub inline_type: InlineType,
     pub func_sig: FunctionSignature,
+}
+
+impl Serialize for Function {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Start a struct serialization with the number of fields
+        let mut state = serializer.serialize_struct("Function", 5)?;
+
+        // Serialize each actual field
+        state.serialize_field("id", &self.id)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("parameters", &self.parameters)?;
+        state.serialize_field("body", &self.body)?;
+
+        // Add a custom field for the corresponding source code
+        state.serialize_field("source_code", &self.to_string())?;
+
+        state.end()
+    }
 }
 
 /// Compared to hir_def::types::Type, this monomorphized Type has:

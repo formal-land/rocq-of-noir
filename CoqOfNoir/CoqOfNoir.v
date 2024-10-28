@@ -56,6 +56,30 @@ Module Ty.
   | Integer (signedness : Signedness.t) (bit_size : IntegerBitSize.t).
 End Ty.
 
+Module Pointer.
+  Module Index.
+    Inductive t : Set :=
+    | Field (index : Z)
+    | Index (index : Z).
+  End Index.
+
+  Module Path.
+    Definition t : Set :=
+      list Index.t.
+  End Path.
+
+  Module Mutable.
+    Inductive t : Set :=
+    | Make {Address : Set} (address : Address) (path : Path.t).
+  End Mutable.
+
+  Inductive t (Value : Set) : Set :=
+  | Immediate (value : Value)
+  | Mutable (mutable : Mutable.t).
+  Arguments Immediate {_}.
+  Arguments Mutable {_}.
+End Pointer.
+
 Module Value.
   Inductive t : Set :=
   | Tt
@@ -63,6 +87,7 @@ Module Value.
   | Integer (integer : Z)
   | String (s : string)
   | FmtStr : string -> Z -> t -> t
+  | Pointer (pointer : Pointer.t t)
   | Array (values : list t)
   | Slice (values : list t)
   | Tuple (values : list t)
@@ -73,6 +98,9 @@ End Value.
 
 Module Primitive.
   Inductive t : Set :=
+  | StateAlloc (value : Value.t)
+  | StateRead (mutable : Pointer.Mutable.t)
+  | StateWrite (mutable : Pointer.Mutable.t) (value : Value.t)
   | GetFunction (path : string) (id : Z).
 End Primitive.
 
@@ -223,11 +251,42 @@ Module M.
   Definition impossible (message : string) : M.t :=
     LowM.Impossible message.
 
-  Parameter alloc : Value.t -> M.t.
+  Definition alloc (value : Value.t) : Value.t :=
+    Value.Pointer (Pointer.Immediate value).
+  Arguments alloc /.
 
-  Parameter read : Value.t -> M.t.
+  Definition alloc_mutable (value : Value.t) : M.t :=
+    call_primitive (Primitive.StateAlloc value).
+  Arguments alloc_mutable /.
 
-  Parameter write : Value.t -> Value.t -> M.t.
+  Definition read (r : Value.t) : M.t :=
+    match r with
+    | Value.Pointer pointer =>
+      match pointer with
+      | Pointer.Immediate value => pure value
+      | Pointer.Mutable mutable => call_primitive (Primitive.StateRead mutable)
+      end
+    | _ => impossible "read: expected a pointer"
+    end.
+  Arguments read /.
+
+  Definition write (r update : Value.t) : M.t :=
+    match r with
+    | Value.Pointer (Pointer.Mutable mutable) =>
+      call_primitive (Primitive.StateWrite mutable update)
+    | _ => impossible "write: expected a mutable pointer"
+    end.
+  Arguments write /.
+
+  Definition copy (r : Value.t) : M.t :=
+    let* v := read r in
+    pure (alloc v).
+  Arguments copy /.
+
+  Definition copy_mutable (r : Value.t) : M.t :=
+    let* v := read r in
+    alloc_mutable v.
+  Arguments copy /.
 
   Definition get_function (path : string) (id : Z) : M.t :=
     call_primitive (Primitive.GetFunction path id).

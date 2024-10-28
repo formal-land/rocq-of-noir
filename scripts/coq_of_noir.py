@@ -409,10 +409,13 @@ pub struct Let {
 }
 '''
 def let_to_coq(node) -> str:
+    copy_function = "copy_mutable" if node["mutable"] else "copy"
+
     return \
         "let~ " + \
-        node["name"] + " := [[\n" + \
-        indent(expression_to_coq(node["expression"])) + " ]] in"
+        node["name"] + " := [[ M." + copy_function + " (|\n" + \
+        indent(expression_to_coq(node["expression"])) + "\n" + \
+        "|) ]] in"
 
 
 '''
@@ -496,7 +499,7 @@ def expression_inside_block_to_coq(node, is_last: bool) -> str:
 
 
 def alloc(expression: str) -> str:
-    return "M.alloc (| " + expression + " |)"
+    return "M.alloc (" + expression + ")"
 
 
 def read(expression: str) -> str:
@@ -643,9 +646,26 @@ def expression_to_coq(node) -> str:
     raise Exception(f"Unknown node type: {node_type}")
 
 
+'''
+pub struct Function {
+    pub id: FuncId,
+    pub name: String,
+
+    pub parameters: Parameters,
+    pub body: Expression,
+
+    pub return_type: Type,
+    pub unconstrained: bool,
+    pub inline_type: InlineType,
+    pub func_sig: FunctionSignature,
+}
+'''
 def function_to_coq(node) -> str:
     parameters = parameters_to_coq(node["parameters"])
     return \
+        "(*\n" + \
+        indent(node['source_code'].replace("(*", "( *").strip()) + "\n" + \
+        "*)\n" + \
         f"Definition {name_id_to_coq(node['name'], node['id'])} (α : list Value.t) " + \
         ": M.t :=\n" + \
         indent(
