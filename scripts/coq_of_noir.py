@@ -222,7 +222,7 @@ def literal_to_coq(node) -> str:
         return "Value.Bool " + "true" if node else "false"
 
     if node_type == "Unit":
-        return "Value.Tt"
+        return "Value.Tuple []"
 
     if node_type == "Str":
         node = node["Str"]
@@ -548,7 +548,7 @@ def expression_to_coq(node) -> str:
 
     if node_type == "Ident":
         node = node["Ident"]
-        return alloc(ident_to_coq(node))
+        return ident_to_coq(node)
 
     if node_type == "Literal":
         node = node["Literal"]
@@ -673,10 +673,12 @@ def function_to_coq(node) -> str:
             "| [" + "; ".join(parameters) + "] =>\n" +
             indent(
                 "".join(
-                    "let~ " + parameter + " := M.read " + parameter + " in\n"
+                    "let " + parameter + " := M.alloc " + parameter + " in\n"
                     for parameter in parameters
                 ) +
-                expression_to_coq(node["body"])
+                "let* result :=\n" +
+                indent(expression_to_coq(node["body"])) + " in\n" +
+                "M.read result"
             ) + "\n" +
             "| _ => M.impossible \"wrong number of arguments\"\n" +
             "end."
@@ -694,7 +696,7 @@ def main():
         noir = json.load(f)
 
     # Print the Coq code
-    print("Require Import CoqOfNoir.")
+    print("Require Import CoqOfNoir.CoqOfNoir.")
     print()
     print(program_to_coq(noir))
 

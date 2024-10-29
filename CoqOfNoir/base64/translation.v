@@ -1,4 +1,4 @@
-Require Import CoqOfNoir.
+Require Import CoqOfNoir.CoqOfNoir.
 
 (*
   fn test_encode_utf8$f0() -> () {
@@ -11,97 +11,99 @@ Require Import CoqOfNoir.
 Definition test_encode_utf8₀ (α : list Value.t) : M.t :=
   match α with
   | [] =>
-    let~ input := [[ M.copy (|
-      M.alloc (Value.Array [
-        M.read (| M.alloc (Value.Integer 227) |);
-        M.read (| M.alloc (Value.Integer 129) |);
-        M.read (| M.alloc (Value.Integer 147) |);
-        M.read (| M.alloc (Value.Integer 227) |);
-        M.read (| M.alloc (Value.Integer 130) |);
-        M.read (| M.alloc (Value.Integer 147) |);
-        M.read (| M.alloc (Value.Integer 227) |);
-        M.read (| M.alloc (Value.Integer 129) |);
-        M.read (| M.alloc (Value.Integer 171) |);
-        M.read (| M.alloc (Value.Integer 227) |);
-        M.read (| M.alloc (Value.Integer 129) |);
-        M.read (| M.alloc (Value.Integer 161) |);
-        M.read (| M.alloc (Value.Integer 227) |);
-        M.read (| M.alloc (Value.Integer 129) |);
-        M.read (| M.alloc (Value.Integer 175) |);
-        M.read (| M.alloc (Value.Integer 227) |);
-        M.read (| M.alloc (Value.Integer 128) |);
-        M.read (| M.alloc (Value.Integer 129) |);
-        M.read (| M.alloc (Value.Integer 228) |);
-        M.read (| M.alloc (Value.Integer 184) |);
-        M.read (| M.alloc (Value.Integer 150) |);
-        M.read (| M.alloc (Value.Integer 231) |);
-        M.read (| M.alloc (Value.Integer 149) |);
-        M.read (| M.alloc (Value.Integer 140) |);
-        M.read (| M.alloc (Value.Integer 239) |);
-        M.read (| M.alloc (Value.Integer 188) |);
-        M.read (| M.alloc (Value.Integer 129) |)
-      ])
-    |) ]] in
-    let~ expected := [[ M.copy (|
-      M.alloc (Value.Array [
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 71) |);
-        M.read (| M.alloc (Value.Integer 84) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 75) |);
-        M.read (| M.alloc (Value.Integer 84) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 71) |);
-        M.read (| M.alloc (Value.Integer 114) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 71) |);
-        M.read (| M.alloc (Value.Integer 104) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 71) |);
-        M.read (| M.alloc (Value.Integer 118) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 52) |);
-        M.read (| M.alloc (Value.Integer 67) |);
-        M.read (| M.alloc (Value.Integer 66) |);
-        M.read (| M.alloc (Value.Integer 53) |);
-        M.read (| M.alloc (Value.Integer 76) |);
-        M.read (| M.alloc (Value.Integer 105) |);
-        M.read (| M.alloc (Value.Integer 87) |);
-        M.read (| M.alloc (Value.Integer 53) |);
-        M.read (| M.alloc (Value.Integer 53) |);
-        M.read (| M.alloc (Value.Integer 87) |);
-        M.read (| M.alloc (Value.Integer 77) |);
-        M.read (| M.alloc (Value.Integer 55) |);
-        M.read (| M.alloc (Value.Integer 55) |);
-        M.read (| M.alloc (Value.Integer 121) |);
-        M.read (| M.alloc (Value.Integer 66) |)
-      ])
-    |) ]] in
-    let~ result := [[ M.copy (|
-      M.alloc (M.call_closure (|
-        M.read (| M.alloc (M.get_function (| "base64_encode", 1 |)) |),
-        [
-          M.read (| M.alloc (input) |)
-        ]
-      |))
-    |) ]] in
-    [[
-      M.alloc (M.assert (|
-        M.read (| M.alloc (M.call_closure (|
-          M.read (| M.alloc (M.get_function (| "eq", 2 |)) |),
+    let* result :=
+      let~ input := [[ M.copy (|
+        M.alloc (Value.Array [
+          M.read (| M.alloc (Value.Integer 227) |);
+          M.read (| M.alloc (Value.Integer 129) |);
+          M.read (| M.alloc (Value.Integer 147) |);
+          M.read (| M.alloc (Value.Integer 227) |);
+          M.read (| M.alloc (Value.Integer 130) |);
+          M.read (| M.alloc (Value.Integer 147) |);
+          M.read (| M.alloc (Value.Integer 227) |);
+          M.read (| M.alloc (Value.Integer 129) |);
+          M.read (| M.alloc (Value.Integer 171) |);
+          M.read (| M.alloc (Value.Integer 227) |);
+          M.read (| M.alloc (Value.Integer 129) |);
+          M.read (| M.alloc (Value.Integer 161) |);
+          M.read (| M.alloc (Value.Integer 227) |);
+          M.read (| M.alloc (Value.Integer 129) |);
+          M.read (| M.alloc (Value.Integer 175) |);
+          M.read (| M.alloc (Value.Integer 227) |);
+          M.read (| M.alloc (Value.Integer 128) |);
+          M.read (| M.alloc (Value.Integer 129) |);
+          M.read (| M.alloc (Value.Integer 228) |);
+          M.read (| M.alloc (Value.Integer 184) |);
+          M.read (| M.alloc (Value.Integer 150) |);
+          M.read (| M.alloc (Value.Integer 231) |);
+          M.read (| M.alloc (Value.Integer 149) |);
+          M.read (| M.alloc (Value.Integer 140) |);
+          M.read (| M.alloc (Value.Integer 239) |);
+          M.read (| M.alloc (Value.Integer 188) |);
+          M.read (| M.alloc (Value.Integer 129) |)
+        ])
+      |) ]] in
+      let~ expected := [[ M.copy (|
+        M.alloc (Value.Array [
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 71) |);
+          M.read (| M.alloc (Value.Integer 84) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 75) |);
+          M.read (| M.alloc (Value.Integer 84) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 71) |);
+          M.read (| M.alloc (Value.Integer 114) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 71) |);
+          M.read (| M.alloc (Value.Integer 104) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 71) |);
+          M.read (| M.alloc (Value.Integer 118) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 52) |);
+          M.read (| M.alloc (Value.Integer 67) |);
+          M.read (| M.alloc (Value.Integer 66) |);
+          M.read (| M.alloc (Value.Integer 53) |);
+          M.read (| M.alloc (Value.Integer 76) |);
+          M.read (| M.alloc (Value.Integer 105) |);
+          M.read (| M.alloc (Value.Integer 87) |);
+          M.read (| M.alloc (Value.Integer 53) |);
+          M.read (| M.alloc (Value.Integer 53) |);
+          M.read (| M.alloc (Value.Integer 87) |);
+          M.read (| M.alloc (Value.Integer 77) |);
+          M.read (| M.alloc (Value.Integer 55) |);
+          M.read (| M.alloc (Value.Integer 55) |);
+          M.read (| M.alloc (Value.Integer 121) |);
+          M.read (| M.alloc (Value.Integer 66) |)
+        ])
+      |) ]] in
+      let~ result := [[ M.copy (|
+        M.alloc (M.call_closure (|
+          M.read (| M.get_function (| "base64_encode", 1 |) |),
           [
-            M.read (| M.alloc (result) |);
-            M.read (| M.alloc (expected) |)
+            M.read (| input |)
           ]
-        |)) |),
-        None
-      |))
-    ]]
+        |))
+      |) ]] in
+      [[
+        M.alloc (M.assert (|
+          M.read (| M.alloc (M.call_closure (|
+            M.read (| M.get_function (| "eq", 2 |) |),
+            [
+              M.read (| result |);
+              M.read (| expected |)
+            ]
+          |)) |),
+          None
+        |))
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -145,298 +147,300 @@ Definition test_encode_utf8₀ (α : list Value.t) : M.t :=
 Definition base64_encode₁ (α : list Value.t) : M.t :=
   match α with
   | [input] =>
-    let~ input := M.read input in
-    let~ result := [[ M.copy_mutable (|
-      M.alloc (Value.Array [
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |)
-      ])
-    |) ]] in
-    let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
-      M.alloc (Value.Integer 40)
-    |) ]] in
-    let~ BYTES_PER_CHUNK := [[ M.copy (|
-      M.alloc (Value.Integer 30)
-    |) ]] in
-    let~ num_chunks := [[ M.copy (|
-      M.alloc (Binary.add (|
-        M.read (| M.alloc (Binary.divide (|
-          M.read (| M.alloc (Value.Integer 27) |),
-          M.read (| M.alloc (BYTES_PER_CHUNK) |)
-        |)) |),
-        M.read (| M.alloc (M.cast (|
-          M.read (| M.alloc (Binary.not_equal (|
-            M.read (| M.alloc (Binary.modulo (|
-              M.read (| M.alloc (Value.Integer 27) |),
-              M.read (| M.alloc (BYTES_PER_CHUNK) |)
+    let input := M.alloc input in
+    let* result :=
+      let~ result := [[ M.copy_mutable (|
+        M.alloc (Value.Array [
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |)
+        ])
+      |) ]] in
+      let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
+        M.alloc (Value.Integer 40)
+      |) ]] in
+      let~ BYTES_PER_CHUNK := [[ M.copy (|
+        M.alloc (Value.Integer 30)
+      |) ]] in
+      let~ num_chunks := [[ M.copy (|
+        M.alloc (Binary.add (|
+          M.read (| M.alloc (Binary.divide (|
+            M.read (| M.alloc (Value.Integer 27) |),
+            M.read (| BYTES_PER_CHUNK |)
+          |)) |),
+          M.read (| M.alloc (M.cast (|
+            M.read (| M.alloc (Binary.not_equal (|
+              M.read (| M.alloc (Binary.modulo (|
+                M.read (| M.alloc (Value.Integer 27) |),
+                M.read (| BYTES_PER_CHUNK |)
+              |)) |),
+              M.read (| M.alloc (Value.Integer 0) |)
             |)) |),
+            Ty.Integer Ty.Signedness.Unsigned Ty.IntegerBitSize.ThirtyTwo
+          |)) |)
+        |))
+      |) ]] in
+      do~ [[
+        M.if_ (|
+          M.read (| M.alloc (Binary.greater (|
+            M.read (| num_chunks |),
             M.read (| M.alloc (Value.Integer 0) |)
           |)) |),
-          Ty.Integer Ty.Signedness.Unsigned Ty.IntegerBitSize.ThirtyTwo
-        |)) |)
-      |))
-    |) ]] in
-    do~ [[
-      M.if_ (|
-        M.read (| M.alloc (Binary.greater (|
-          M.read (| M.alloc (num_chunks) |),
-          M.read (| M.alloc (Value.Integer 0) |)
-        |)) |),
-        do~ [[
-          M.for_ (|
-            M.read (| M.alloc (Value.Integer 0) |),
-            M.read (| M.alloc (Binary.subtract (|
-              M.read (| M.alloc (num_chunks) |),
-              M.read (| M.alloc (Value.Integer 1) |)
-            |)) |),
-            fun (i : Value.t) =>
-            let~ slice := [[ M.copy_mutable (|
-              M.alloc (Value.Integer 0)
-            |) ]] in
-            do~ [[
-              M.for_ (|
-                M.read (| M.alloc (Value.Integer 0) |),
-                M.read (| M.alloc (BYTES_PER_CHUNK) |),
-                fun (j : Value.t) =>
-                do~ [[
-                  M.alloc (M.assign (|
-                    M.read (| M.alloc (slice) |),
-                    M.read (| M.alloc (Binary.multiply (|
-                      M.read (| M.alloc (slice) |),
-                      M.read (| M.alloc (Value.Integer 256) |)
-                    |)) |)
-                  |))
-                ]] in
-                [[
-                  M.alloc (M.assign (|
-                    M.read (| M.alloc (slice) |),
-                    M.read (| M.alloc (Binary.add (|
-                      M.read (| M.alloc (slice) |),
-                      M.read (| M.alloc (M.cast (|
-                        M.read (| M.alloc (M.index (|
-                          M.read (| M.alloc (input) |),
-                          M.read (| M.alloc (Binary.add (|
-                            M.read (| M.alloc (Binary.multiply (|
-                              M.read (| M.alloc (i) |),
-                              M.read (| M.alloc (BYTES_PER_CHUNK) |)
-                            |)) |),
-                            M.read (| M.alloc (j) |)
-                          |)) |)
-                        |)) |),
-                        Ty.Field
-                      |)) |)
-                    |)) |)
-                  |))
-                ]]
-              |)
-            ]] in
-            let~ slice_base64_chunks := [[ M.copy (|
-              M.alloc (M.call_closure (|
-                M.read (| M.alloc (M.get_function (| "to_be_radix", 3 |)) |),
-                [
-                  M.read (| M.alloc (slice) |);
-                  M.read (| M.alloc (Value.Integer 64) |)
-                ]
-              |))
-            |) ]] in
-            [[
-              M.for_ (|
-                M.read (| M.alloc (Value.Integer 0) |),
-                M.read (| M.alloc (BASE64_ELEMENTS_PER_CHUNK) |),
-                fun (j : Value.t) =>
-                [[
-                  M.alloc (M.assign (|
-                    M.read (| M.alloc (M.index (|
-                      M.read (| M.alloc (result) |),
-                      M.read (| M.alloc (Binary.add (|
-                        M.read (| M.alloc (Binary.multiply (|
-                          M.read (| M.alloc (i) |),
-                          M.read (| M.alloc (BASE64_ELEMENTS_PER_CHUNK) |)
-                        |)) |),
-                        M.read (| M.alloc (j) |)
-                      |)) |)
-                    |)) |),
-                    M.read (| M.alloc (M.index (|
-                      M.read (| M.alloc (slice_base64_chunks) |),
-                      M.read (| M.alloc (j) |)
-                    |)) |)
-                  |))
-                ]]
-              |)
-            ]]
-          |)
-        ]] in
-        let~ bytes_in_final_chunk := [[ M.copy (|
-          M.alloc (Binary.subtract (|
-            M.read (| M.alloc (Value.Integer 27) |),
-            M.read (| M.alloc (Binary.multiply (|
+          do~ [[
+            M.for_ (|
+              M.read (| M.alloc (Value.Integer 0) |),
               M.read (| M.alloc (Binary.subtract (|
-                M.read (| M.alloc (num_chunks) |),
+                M.read (| num_chunks |),
                 M.read (| M.alloc (Value.Integer 1) |)
               |)) |),
-              M.read (| M.alloc (BYTES_PER_CHUNK) |)
-            |)) |)
-          |))
-        |) ]] in
-        let~ slice := [[ M.copy_mutable (|
-          M.alloc (Value.Integer 0)
-        |) ]] in
-        do~ [[
-          M.for_ (|
-            M.read (| M.alloc (Value.Integer 0) |),
-            M.read (| M.alloc (bytes_in_final_chunk) |),
-            fun (j : Value.t) =>
-            do~ [[
-              M.alloc (M.assign (|
-                M.read (| M.alloc (slice) |),
-                M.read (| M.alloc (Binary.multiply (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Value.Integer 256) |)
-                |)) |)
-              |))
-            ]] in
-            [[
-              M.alloc (M.assign (|
-                M.read (| M.alloc (slice) |),
-                M.read (| M.alloc (Binary.add (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (M.cast (|
-                    M.read (| M.alloc (M.index (|
-                      M.read (| M.alloc (input) |),
+              fun (i : Value.t) =>
+              let~ slice := [[ M.copy_mutable (|
+                M.alloc (Value.Integer 0)
+              |) ]] in
+              do~ [[
+                M.for_ (|
+                  M.read (| M.alloc (Value.Integer 0) |),
+                  M.read (| BYTES_PER_CHUNK |),
+                  fun (j : Value.t) =>
+                  do~ [[
+                    M.alloc (M.assign (|
+                      M.read (| M.alloc (slice) |),
+                      M.read (| M.alloc (Binary.multiply (|
+                        M.read (| slice |),
+                        M.read (| M.alloc (Value.Integer 256) |)
+                      |)) |)
+                    |))
+                  ]] in
+                  [[
+                    M.alloc (M.assign (|
+                      M.read (| M.alloc (slice) |),
                       M.read (| M.alloc (Binary.add (|
-                        M.read (| M.alloc (Binary.multiply (|
-                          M.read (| M.alloc (Binary.subtract (|
-                            M.read (| M.alloc (num_chunks) |),
-                            M.read (| M.alloc (Value.Integer 1) |)
+                        M.read (| slice |),
+                        M.read (| M.alloc (M.cast (|
+                          M.read (| M.alloc (M.index (|
+                            M.read (| input |),
+                            M.read (| M.alloc (Binary.add (|
+                              M.read (| M.alloc (Binary.multiply (|
+                                M.read (| i |),
+                                M.read (| BYTES_PER_CHUNK |)
+                              |)) |),
+                              M.read (| j |)
+                            |)) |)
                           |)) |),
-                          M.read (| M.alloc (BYTES_PER_CHUNK) |)
-                        |)) |),
-                        M.read (| M.alloc (j) |)
+                          Ty.Field
+                        |)) |)
                       |)) |)
-                    |)) |),
-                    Ty.Field
-                  |)) |)
-                |)) |)
-              |))
-            ]]
-          |)
-        ]] in
-        do~ [[
-          M.for_ (|
-            M.read (| M.alloc (bytes_in_final_chunk) |),
-            M.read (| M.alloc (BYTES_PER_CHUNK) |),
-            fun (_ : Value.t) =>
-            [[
-              M.alloc (M.assign (|
-                M.read (| M.alloc (slice) |),
-                M.read (| M.alloc (Binary.multiply (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Value.Integer 256) |)
-                |)) |)
-              |))
-            ]]
-          |)
-        ]] in
-        let~ slice_base64_chunks := [[ M.copy (|
-          M.alloc (M.call_closure (|
-            M.read (| M.alloc (M.get_function (| "to_be_radix", 3 |)) |),
-            [
-              M.read (| M.alloc (slice) |);
-              M.read (| M.alloc (Value.Integer 64) |)
-            ]
-          |))
-        |) ]] in
-        let~ num_elements_in_final_chunk := [[ M.copy (|
-          M.alloc (Binary.subtract (|
-            M.read (| M.alloc (Value.Integer 36) |),
-            M.read (| M.alloc (Binary.multiply (|
-              M.read (| M.alloc (Binary.subtract (|
-                M.read (| M.alloc (num_chunks) |),
-                M.read (| M.alloc (Value.Integer 1) |)
-              |)) |),
-              M.read (| M.alloc (BASE64_ELEMENTS_PER_CHUNK) |)
-            |)) |)
-          |))
-        |) ]] in
-        do~ [[
-          M.for_ (|
-            M.read (| M.alloc (Value.Integer 0) |),
-            M.read (| M.alloc (num_elements_in_final_chunk) |),
-            fun (i : Value.t) =>
-            [[
-              M.alloc (M.assign (|
-                M.read (| M.alloc (M.index (|
-                  M.read (| M.alloc (result) |),
-                  M.read (| M.alloc (Binary.add (|
-                    M.read (| M.alloc (Binary.multiply (|
-                      M.read (| M.alloc (Binary.subtract (|
-                        M.read (| M.alloc (num_chunks) |),
-                        M.read (| M.alloc (Value.Integer 1) |)
+                    |))
+                  ]]
+                |)
+              ]] in
+              let~ slice_base64_chunks := [[ M.copy (|
+                M.alloc (M.call_closure (|
+                  M.read (| M.get_function (| "to_be_radix", 3 |) |),
+                  [
+                    M.read (| slice |);
+                    M.read (| M.alloc (Value.Integer 64) |)
+                  ]
+                |))
+              |) ]] in
+              [[
+                M.for_ (|
+                  M.read (| M.alloc (Value.Integer 0) |),
+                  M.read (| BASE64_ELEMENTS_PER_CHUNK |),
+                  fun (j : Value.t) =>
+                  [[
+                    M.alloc (M.assign (|
+                      M.read (| M.alloc (M.index (|
+                        M.read (| M.alloc (result) |),
+                        M.read (| M.alloc (Binary.add (|
+                          M.read (| M.alloc (Binary.multiply (|
+                            M.read (| i |),
+                            M.read (| BASE64_ELEMENTS_PER_CHUNK |)
+                          |)) |),
+                          M.read (| j |)
+                        |)) |)
                       |)) |),
-                      M.read (| M.alloc (BASE64_ELEMENTS_PER_CHUNK) |)
-                    |)) |),
-                    M.read (| M.alloc (i) |)
-                  |)) |)
+                      M.read (| M.alloc (M.index (|
+                        M.read (| slice_base64_chunks |),
+                        M.read (| j |)
+                      |)) |)
+                    |))
+                  ]]
+                |)
+              ]]
+            |)
+          ]] in
+          let~ bytes_in_final_chunk := [[ M.copy (|
+            M.alloc (Binary.subtract (|
+              M.read (| M.alloc (Value.Integer 27) |),
+              M.read (| M.alloc (Binary.multiply (|
+                M.read (| M.alloc (Binary.subtract (|
+                  M.read (| num_chunks |),
+                  M.read (| M.alloc (Value.Integer 1) |)
                 |)) |),
-                M.read (| M.alloc (M.index (|
-                  M.read (| M.alloc (slice_base64_chunks) |),
-                  M.read (| M.alloc (i) |)
-                |)) |)
-              |))
-            ]]
-          |)
-        ]] in
-        [[
-          M.alloc (M.assign (|
-            M.read (| M.alloc (result) |),
-            M.read (| M.alloc (M.call_closure (|
-              M.read (| M.alloc (M.get_function (| "base64_encode_elements", 4 |)) |),
+                M.read (| BYTES_PER_CHUNK |)
+              |)) |)
+            |))
+          |) ]] in
+          let~ slice := [[ M.copy_mutable (|
+            M.alloc (Value.Integer 0)
+          |) ]] in
+          do~ [[
+            M.for_ (|
+              M.read (| M.alloc (Value.Integer 0) |),
+              M.read (| bytes_in_final_chunk |),
+              fun (j : Value.t) =>
+              do~ [[
+                M.alloc (M.assign (|
+                  M.read (| M.alloc (slice) |),
+                  M.read (| M.alloc (Binary.multiply (|
+                    M.read (| slice |),
+                    M.read (| M.alloc (Value.Integer 256) |)
+                  |)) |)
+                |))
+              ]] in
+              [[
+                M.alloc (M.assign (|
+                  M.read (| M.alloc (slice) |),
+                  M.read (| M.alloc (Binary.add (|
+                    M.read (| slice |),
+                    M.read (| M.alloc (M.cast (|
+                      M.read (| M.alloc (M.index (|
+                        M.read (| input |),
+                        M.read (| M.alloc (Binary.add (|
+                          M.read (| M.alloc (Binary.multiply (|
+                            M.read (| M.alloc (Binary.subtract (|
+                              M.read (| num_chunks |),
+                              M.read (| M.alloc (Value.Integer 1) |)
+                            |)) |),
+                            M.read (| BYTES_PER_CHUNK |)
+                          |)) |),
+                          M.read (| j |)
+                        |)) |)
+                      |)) |),
+                      Ty.Field
+                    |)) |)
+                  |)) |)
+                |))
+              ]]
+            |)
+          ]] in
+          do~ [[
+            M.for_ (|
+              M.read (| bytes_in_final_chunk |),
+              M.read (| BYTES_PER_CHUNK |),
+              fun (_ : Value.t) =>
+              [[
+                M.alloc (M.assign (|
+                  M.read (| M.alloc (slice) |),
+                  M.read (| M.alloc (Binary.multiply (|
+                    M.read (| slice |),
+                    M.read (| M.alloc (Value.Integer 256) |)
+                  |)) |)
+                |))
+              ]]
+            |)
+          ]] in
+          let~ slice_base64_chunks := [[ M.copy (|
+            M.alloc (M.call_closure (|
+              M.read (| M.get_function (| "to_be_radix", 3 |) |),
               [
-                M.read (| M.alloc (result) |)
+                M.read (| slice |);
+                M.read (| M.alloc (Value.Integer 64) |)
               ]
-            |)) |)
-          |))
-        ]],
-        None
-      |)
-    ]] in
-    [[
-      M.alloc (result)
-    ]]
+            |))
+          |) ]] in
+          let~ num_elements_in_final_chunk := [[ M.copy (|
+            M.alloc (Binary.subtract (|
+              M.read (| M.alloc (Value.Integer 36) |),
+              M.read (| M.alloc (Binary.multiply (|
+                M.read (| M.alloc (Binary.subtract (|
+                  M.read (| num_chunks |),
+                  M.read (| M.alloc (Value.Integer 1) |)
+                |)) |),
+                M.read (| BASE64_ELEMENTS_PER_CHUNK |)
+              |)) |)
+            |))
+          |) ]] in
+          do~ [[
+            M.for_ (|
+              M.read (| M.alloc (Value.Integer 0) |),
+              M.read (| num_elements_in_final_chunk |),
+              fun (i : Value.t) =>
+              [[
+                M.alloc (M.assign (|
+                  M.read (| M.alloc (M.index (|
+                    M.read (| M.alloc (result) |),
+                    M.read (| M.alloc (Binary.add (|
+                      M.read (| M.alloc (Binary.multiply (|
+                        M.read (| M.alloc (Binary.subtract (|
+                          M.read (| num_chunks |),
+                          M.read (| M.alloc (Value.Integer 1) |)
+                        |)) |),
+                        M.read (| BASE64_ELEMENTS_PER_CHUNK |)
+                      |)) |),
+                      M.read (| i |)
+                    |)) |)
+                  |)) |),
+                  M.read (| M.alloc (M.index (|
+                    M.read (| slice_base64_chunks |),
+                    M.read (| i |)
+                  |)) |)
+                |))
+              ]]
+            |)
+          ]] in
+          [[
+            M.alloc (M.assign (|
+              M.read (| M.alloc (result) |),
+              M.read (| M.alloc (M.call_closure (|
+                M.read (| M.get_function (| "base64_encode_elements", 4 |) |),
+                [
+                  M.read (| result |)
+                ]
+              |)) |)
+            |))
+          ]],
+          None
+        |)
+      ]] in
+      [[
+        result
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -452,47 +456,49 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
 Definition eq₂ (α : list Value.t) : M.t :=
   match α with
   | [self; other] =>
-    let~ self := M.read self in
-    let~ other := M.read other in
-    let~ result := [[ M.copy_mutable (|
-      M.alloc (Value.Bool true)
-    |) ]] in
-    do~ [[
-      M.for_ (|
-        M.read (| M.alloc (Value.Integer 0) |),
-        M.read (| M.alloc (M.call_closure (|
-          M.read (| M.alloc (Builtin.len) |),
-          [
-            M.read (| M.alloc (self) |)
-          ]
-        |)) |),
-        fun (i : Value.t) =>
-        [[
-          M.alloc (M.assign (|
-            M.read (| M.alloc (result) |),
-            M.read (| M.alloc (Binary.and_ (|
+    let self := M.alloc self in
+    let other := M.alloc other in
+    let* result :=
+      let~ result := [[ M.copy_mutable (|
+        M.alloc (Value.Bool true)
+      |) ]] in
+      do~ [[
+        M.for_ (|
+          M.read (| M.alloc (Value.Integer 0) |),
+          M.read (| M.alloc (M.call_closure (|
+            M.read (| Builtin.len |),
+            [
+              M.read (| self |)
+            ]
+          |)) |),
+          fun (i : Value.t) =>
+          [[
+            M.alloc (M.assign (|
               M.read (| M.alloc (result) |),
-              M.read (| M.alloc (M.call_closure (|
-                M.read (| M.alloc (M.get_function (| "eq", 5 |)) |),
-                [
-                  M.read (| M.alloc (M.index (|
-                    M.read (| M.alloc (self) |),
-                    M.read (| M.alloc (i) |)
-                  |)) |);
-                  M.read (| M.alloc (M.index (|
-                    M.read (| M.alloc (other) |),
-                    M.read (| M.alloc (i) |)
-                  |)) |)
-                ]
+              M.read (| M.alloc (Binary.and_ (|
+                M.read (| result |),
+                M.read (| M.alloc (M.call_closure (|
+                  M.read (| M.get_function (| "eq", 5 |) |),
+                  [
+                    M.read (| M.alloc (M.index (|
+                      M.read (| self |),
+                      M.read (| i |)
+                    |)) |);
+                    M.read (| M.alloc (M.index (|
+                      M.read (| other |),
+                      M.read (| i |)
+                    |)) |)
+                  ]
+                |)) |)
               |)) |)
-            |)) |)
-          |))
-        ]]
-      |)
-    ]] in
-    [[
-      M.alloc (result)
-    ]]
+            |))
+          ]]
+        |)
+      ]] in
+      [[
+        result
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -505,25 +511,27 @@ Definition eq₂ (α : list Value.t) : M.t :=
 Definition to_be_radix₃ (α : list Value.t) : M.t :=
   match α with
   | [self; radix] =>
-    let~ self := M.read self in
-    let~ radix := M.read radix in
-    do~ [[
-      M.alloc (M.call_closure (|
-        M.read (| M.alloc (Builtin.assert_constant) |),
-        [
-          M.read (| M.alloc (radix) |)
-        ]
-      |))
-    ]] in
-    [[
-      M.alloc (M.call_closure (|
-        M.read (| M.alloc (Builtin.__to_be_radix) |),
-        [
-          M.read (| M.alloc (self) |);
-          M.read (| M.alloc (radix) |)
-        ]
-      |))
-    ]]
+    let self := M.alloc self in
+    let radix := M.alloc radix in
+    let* result :=
+      do~ [[
+        M.alloc (M.call_closure (|
+          M.read (| Builtin.assert_constant |),
+          [
+            M.read (| radix |)
+          ]
+        |))
+      ]] in
+      [[
+        M.alloc (M.call_closure (|
+          M.read (| Builtin.__to_be_radix |),
+          [
+            M.read (| self |);
+            M.read (| radix |)
+          ]
+        |))
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -540,84 +548,86 @@ Definition to_be_radix₃ (α : list Value.t) : M.t :=
 Definition base64_encode_elements₄ (α : list Value.t) : M.t :=
   match α with
   | [input] =>
-    let~ input := M.read input in
-    let~ Base64Encoder := [[ M.copy_mutable (|
-      M.alloc (M.call_closure (|
-        M.read (| M.alloc (M.get_function (| "new", 6 |)) |),
-        []
-      |))
-    |) ]] in
-    let~ result := [[ M.copy_mutable (|
-      M.alloc (Value.Array [
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |);
-        M.read (| M.alloc (Value.Integer 0) |)
-      ])
-    |) ]] in
-    do~ [[
-      M.for_ (|
-        M.read (| M.alloc (Value.Integer 0) |),
-        M.read (| M.alloc (Value.Integer 36) |),
-        fun (i : Value.t) =>
-        [[
-          M.alloc (M.assign (|
-            M.read (| M.alloc (M.index (|
-              M.read (| M.alloc (result) |),
-              M.read (| M.alloc (i) |)
-            |)) |),
-            M.read (| M.alloc (M.call_closure (|
-              M.read (| M.alloc (M.get_function (| "get", 7 |)) |),
-              [
-                M.read (| M.alloc (Base64Encoder) |);
-                M.read (| M.alloc (M.cast (|
-                  M.read (| M.alloc (M.index (|
-                    M.read (| M.alloc (input) |),
-                    M.read (| M.alloc (i) |)
-                  |)) |),
-                  Ty.Field
-                |)) |)
-              ]
-            |)) |)
-          |))
-        ]]
-      |)
-    ]] in
-    [[
-      M.alloc (result)
-    ]]
+    let input := M.alloc input in
+    let* result :=
+      let~ Base64Encoder := [[ M.copy_mutable (|
+        M.alloc (M.call_closure (|
+          M.read (| M.get_function (| "new", 6 |) |),
+          []
+        |))
+      |) ]] in
+      let~ result := [[ M.copy_mutable (|
+        M.alloc (Value.Array [
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |);
+          M.read (| M.alloc (Value.Integer 0) |)
+        ])
+      |) ]] in
+      do~ [[
+        M.for_ (|
+          M.read (| M.alloc (Value.Integer 0) |),
+          M.read (| M.alloc (Value.Integer 36) |),
+          fun (i : Value.t) =>
+          [[
+            M.alloc (M.assign (|
+              M.read (| M.alloc (M.index (|
+                M.read (| M.alloc (result) |),
+                M.read (| i |)
+              |)) |),
+              M.read (| M.alloc (M.call_closure (|
+                M.read (| M.get_function (| "get", 7 |) |),
+                [
+                  M.read (| Base64Encoder |);
+                  M.read (| M.alloc (M.cast (|
+                    M.read (| M.alloc (M.index (|
+                      M.read (| input |),
+                      M.read (| i |)
+                    |)) |),
+                    Ty.Field
+                  |)) |)
+                ]
+              |)) |)
+            |))
+          ]]
+        |)
+      ]] in
+      [[
+        result
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -629,14 +639,16 @@ Definition base64_encode_elements₄ (α : list Value.t) : M.t :=
 Definition eq₅ (α : list Value.t) : M.t :=
   match α with
   | [self; other] =>
-    let~ self := M.read self in
-    let~ other := M.read other in
-    [[
-      M.alloc (Binary.equal (|
-        M.read (| M.alloc (self) |),
-        M.read (| M.alloc (other) |)
-      |))
-    ]]
+    let self := M.alloc self in
+    let other := M.alloc other in
+    let* result :=
+      [[
+        M.alloc (Binary.equal (|
+          M.read (| self |),
+          M.read (| other |)
+        |))
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -651,79 +663,81 @@ Definition eq₅ (α : list Value.t) : M.t :=
 Definition new₆ (α : list Value.t) : M.t :=
   match α with
   | [] =>
-    [[
-      let~ table := [[ M.copy (|
-        M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer 65) |);
-          M.read (| M.alloc (Value.Integer 66) |);
-          M.read (| M.alloc (Value.Integer 67) |);
-          M.read (| M.alloc (Value.Integer 68) |);
-          M.read (| M.alloc (Value.Integer 69) |);
-          M.read (| M.alloc (Value.Integer 70) |);
-          M.read (| M.alloc (Value.Integer 71) |);
-          M.read (| M.alloc (Value.Integer 72) |);
-          M.read (| M.alloc (Value.Integer 73) |);
-          M.read (| M.alloc (Value.Integer 74) |);
-          M.read (| M.alloc (Value.Integer 75) |);
-          M.read (| M.alloc (Value.Integer 76) |);
-          M.read (| M.alloc (Value.Integer 77) |);
-          M.read (| M.alloc (Value.Integer 78) |);
-          M.read (| M.alloc (Value.Integer 79) |);
-          M.read (| M.alloc (Value.Integer 80) |);
-          M.read (| M.alloc (Value.Integer 81) |);
-          M.read (| M.alloc (Value.Integer 82) |);
-          M.read (| M.alloc (Value.Integer 83) |);
-          M.read (| M.alloc (Value.Integer 84) |);
-          M.read (| M.alloc (Value.Integer 85) |);
-          M.read (| M.alloc (Value.Integer 86) |);
-          M.read (| M.alloc (Value.Integer 87) |);
-          M.read (| M.alloc (Value.Integer 88) |);
-          M.read (| M.alloc (Value.Integer 89) |);
-          M.read (| M.alloc (Value.Integer 90) |);
-          M.read (| M.alloc (Value.Integer 97) |);
-          M.read (| M.alloc (Value.Integer 98) |);
-          M.read (| M.alloc (Value.Integer 99) |);
-          M.read (| M.alloc (Value.Integer 100) |);
-          M.read (| M.alloc (Value.Integer 101) |);
-          M.read (| M.alloc (Value.Integer 102) |);
-          M.read (| M.alloc (Value.Integer 103) |);
-          M.read (| M.alloc (Value.Integer 104) |);
-          M.read (| M.alloc (Value.Integer 105) |);
-          M.read (| M.alloc (Value.Integer 106) |);
-          M.read (| M.alloc (Value.Integer 107) |);
-          M.read (| M.alloc (Value.Integer 108) |);
-          M.read (| M.alloc (Value.Integer 109) |);
-          M.read (| M.alloc (Value.Integer 110) |);
-          M.read (| M.alloc (Value.Integer 111) |);
-          M.read (| M.alloc (Value.Integer 112) |);
-          M.read (| M.alloc (Value.Integer 113) |);
-          M.read (| M.alloc (Value.Integer 114) |);
-          M.read (| M.alloc (Value.Integer 115) |);
-          M.read (| M.alloc (Value.Integer 116) |);
-          M.read (| M.alloc (Value.Integer 117) |);
-          M.read (| M.alloc (Value.Integer 118) |);
-          M.read (| M.alloc (Value.Integer 119) |);
-          M.read (| M.alloc (Value.Integer 120) |);
-          M.read (| M.alloc (Value.Integer 121) |);
-          M.read (| M.alloc (Value.Integer 122) |);
-          M.read (| M.alloc (Value.Integer 48) |);
-          M.read (| M.alloc (Value.Integer 49) |);
-          M.read (| M.alloc (Value.Integer 50) |);
-          M.read (| M.alloc (Value.Integer 51) |);
-          M.read (| M.alloc (Value.Integer 52) |);
-          M.read (| M.alloc (Value.Integer 53) |);
-          M.read (| M.alloc (Value.Integer 54) |);
-          M.read (| M.alloc (Value.Integer 55) |);
-          M.read (| M.alloc (Value.Integer 56) |);
-          M.read (| M.alloc (Value.Integer 57) |);
-          M.read (| M.alloc (Value.Integer 43) |);
-          M.read (| M.alloc (Value.Integer 47) |)
-        ])
-      |) ]] in
+    let* result :=
       [[
-        M.alloc (Value.Tuple [M.read (| M.alloc (table) |)])
-      ]]
-    ]]
+        let~ table := [[ M.copy (|
+          M.alloc (Value.Array [
+            M.read (| M.alloc (Value.Integer 65) |);
+            M.read (| M.alloc (Value.Integer 66) |);
+            M.read (| M.alloc (Value.Integer 67) |);
+            M.read (| M.alloc (Value.Integer 68) |);
+            M.read (| M.alloc (Value.Integer 69) |);
+            M.read (| M.alloc (Value.Integer 70) |);
+            M.read (| M.alloc (Value.Integer 71) |);
+            M.read (| M.alloc (Value.Integer 72) |);
+            M.read (| M.alloc (Value.Integer 73) |);
+            M.read (| M.alloc (Value.Integer 74) |);
+            M.read (| M.alloc (Value.Integer 75) |);
+            M.read (| M.alloc (Value.Integer 76) |);
+            M.read (| M.alloc (Value.Integer 77) |);
+            M.read (| M.alloc (Value.Integer 78) |);
+            M.read (| M.alloc (Value.Integer 79) |);
+            M.read (| M.alloc (Value.Integer 80) |);
+            M.read (| M.alloc (Value.Integer 81) |);
+            M.read (| M.alloc (Value.Integer 82) |);
+            M.read (| M.alloc (Value.Integer 83) |);
+            M.read (| M.alloc (Value.Integer 84) |);
+            M.read (| M.alloc (Value.Integer 85) |);
+            M.read (| M.alloc (Value.Integer 86) |);
+            M.read (| M.alloc (Value.Integer 87) |);
+            M.read (| M.alloc (Value.Integer 88) |);
+            M.read (| M.alloc (Value.Integer 89) |);
+            M.read (| M.alloc (Value.Integer 90) |);
+            M.read (| M.alloc (Value.Integer 97) |);
+            M.read (| M.alloc (Value.Integer 98) |);
+            M.read (| M.alloc (Value.Integer 99) |);
+            M.read (| M.alloc (Value.Integer 100) |);
+            M.read (| M.alloc (Value.Integer 101) |);
+            M.read (| M.alloc (Value.Integer 102) |);
+            M.read (| M.alloc (Value.Integer 103) |);
+            M.read (| M.alloc (Value.Integer 104) |);
+            M.read (| M.alloc (Value.Integer 105) |);
+            M.read (| M.alloc (Value.Integer 106) |);
+            M.read (| M.alloc (Value.Integer 107) |);
+            M.read (| M.alloc (Value.Integer 108) |);
+            M.read (| M.alloc (Value.Integer 109) |);
+            M.read (| M.alloc (Value.Integer 110) |);
+            M.read (| M.alloc (Value.Integer 111) |);
+            M.read (| M.alloc (Value.Integer 112) |);
+            M.read (| M.alloc (Value.Integer 113) |);
+            M.read (| M.alloc (Value.Integer 114) |);
+            M.read (| M.alloc (Value.Integer 115) |);
+            M.read (| M.alloc (Value.Integer 116) |);
+            M.read (| M.alloc (Value.Integer 117) |);
+            M.read (| M.alloc (Value.Integer 118) |);
+            M.read (| M.alloc (Value.Integer 119) |);
+            M.read (| M.alloc (Value.Integer 120) |);
+            M.read (| M.alloc (Value.Integer 121) |);
+            M.read (| M.alloc (Value.Integer 122) |);
+            M.read (| M.alloc (Value.Integer 48) |);
+            M.read (| M.alloc (Value.Integer 49) |);
+            M.read (| M.alloc (Value.Integer 50) |);
+            M.read (| M.alloc (Value.Integer 51) |);
+            M.read (| M.alloc (Value.Integer 52) |);
+            M.read (| M.alloc (Value.Integer 53) |);
+            M.read (| M.alloc (Value.Integer 54) |);
+            M.read (| M.alloc (Value.Integer 55) |);
+            M.read (| M.alloc (Value.Integer 56) |);
+            M.read (| M.alloc (Value.Integer 57) |);
+            M.read (| M.alloc (Value.Integer 43) |);
+            M.read (| M.alloc (Value.Integer 47) |)
+          ])
+        |) ]] in
+        [[
+          M.alloc (Value.Tuple [M.read (| table |)])
+        ]]
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
@@ -735,16 +749,18 @@ Definition new₆ (α : list Value.t) : M.t :=
 Definition get₇ (α : list Value.t) : M.t :=
   match α with
   | [self; idx] =>
-    let~ self := M.read self in
-    let~ idx := M.read idx in
-    [[
-      M.alloc (M.index (|
-        M.read (| M.alloc (M.extract_tuple_field (|
-            M.alloc (self),
-          0
-        |)) |),
-        M.read (| M.alloc (idx) |)
-      |))
-    ]]
+    let self := M.alloc self in
+    let idx := M.alloc idx in
+    let* result :=
+      [[
+        M.alloc (M.index (|
+          M.read (| M.alloc (M.extract_tuple_field (|
+              self,
+            0
+          |)) |),
+          M.read (| idx |)
+        |))
+      ]] in
+    M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
