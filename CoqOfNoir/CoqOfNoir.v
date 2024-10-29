@@ -2,7 +2,7 @@ Require Export Coq.Strings.Ascii.
 Require Coq.Strings.HexString.
 Require Export Coq.Strings.String.
 Require Export Coq.ZArith.ZArith.
-From Ltac2 Require Ltac2.
+Require coqutil.Datatypes.List.
 Require Export RecordUpdate.
 
 Require Export Lia.
@@ -82,7 +82,6 @@ End Pointer.
 
 Module Value.
   Inductive t : Set :=
-  | Tt
   | Bool (b : bool)
   | Integer (integer : Z)
   | String (s : string)
@@ -94,14 +93,79 @@ Module Value.
   | Closure : {'(Value, M) : (Set * Set) @ list Value -> M} -> t.
 
   Parameter fmt_str : string -> Z -> t -> t.
+
+  (** Read the value at an index in a value. Useful to read sub-pointers. *)
+  Definition read_index (value : t) (index : Pointer.Index.t) : option Value.t :=
+    match index with
+    | Pointer.Index.Field i =>
+      match value with
+      | Tuple values => List.nth_error values (Z.to_nat i)
+      | _ => None
+      end
+    | Pointer.Index.Index i =>
+      match value with
+      | Array values => List.nth_error values (Z.to_nat i)
+      | _ => None
+      end
+    end.
+
+  Fixpoint read_path (value : t) (path : Pointer.Path.t) : option Value.t :=
+    match path with
+    | [] => Some value
+    | index :: sub_path =>
+      let sub_value := read_index value index in
+      match sub_value with
+      | Some sub_value => read_path sub_value sub_path
+      | None => None
+      end
+    end.
+
+  Definition write_index (value : t) (index : Pointer.Index.t) (update : Value.t) :
+      option Value.t :=
+    match index with
+    | Pointer.Index.Field i =>
+      match value with
+      | Tuple values =>
+        match List.listUpdate_error values (Z.to_nat i) update with
+        | Some new_values => Some (Tuple values)
+        | None => None
+        end
+      | _ => None
+      end
+    | Pointer.Index.Index i =>
+      match value with
+      | Array values =>
+        match List.listUpdate_error values (Z.to_nat i) update with
+        | Some new_values => Some (Array values)
+        | None => None
+        end
+      | _ => None
+      end
+    end.
+
+  Fixpoint write_path (value : t) (path : Pointer.Path.t) (update : Value.t) : option Value.t :=
+    match path with
+    | [] => Some update
+    | index :: sub_path =>
+      let sub_value := read_index value index in
+      match sub_value with
+      | Some sub_value =>
+        match write_path sub_value sub_path update with
+        | Some new_sub_value => write_index value index new_sub_value
+        | None => None
+        end
+      | None => None
+      end
+    end.
 End Value.
 
 Module Primitive.
   Inductive t : Set :=
   | StateAlloc (value : Value.t)
-  | StateRead (mutable : Pointer.Mutable.t)
-  | StateWrite (mutable : Pointer.Mutable.t) (value : Value.t)
-  | GetFunction (path : string) (id : Z).
+  | StateRead {Address : Set} (address : Address)
+  | StateWrite {Address : Set} (address : Address) (value : Value.t)
+  | GetFunction (path : string) (id : Z)
+  | IsEqual (value1 value2 : Value.t).
 End Primitive.
 
 Module LowM.
@@ -264,7 +328,12 @@ Module M.
     | Value.Pointer pointer =>
       match pointer with
       | Pointer.Immediate value => pure value
-      | Pointer.Mutable mutable => call_primitive (Primitive.StateRead mutable)
+      | Pointer.Mutable (Pointer.Mutable.Make address path) =>
+        let* value := call_primitive (Primitive.StateRead address) in
+        match Value.read_path value path with
+        | Some sub_value => pure sub_value
+        | None => impossible "read: invalid sub-pointer"
+        end
       end
     | _ => impossible "read: expected a pointer"
     end.
@@ -272,8 +341,12 @@ Module M.
 
   Definition write (r update : Value.t) : M.t :=
     match r with
-    | Value.Pointer (Pointer.Mutable mutable) =>
-      call_primitive (Primitive.StateWrite mutable update)
+    | Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make address path)) =>
+      let* value := call_primitive (Primitive.StateRead address) in
+      match Value.write_path value path update with
+      | Some new_value => call_primitive (Primitive.StateWrite address new_value)
+      | None => impossible "write: invalid sub_pointer"
+      end
     | _ => impossible "write: expected a mutable pointer"
     end.
   Arguments write /.
@@ -295,7 +368,7 @@ Module M.
     match condition with
     | Value.Bool b =>
       if b then
-        pure Value.Tt
+        pure (Value.Tuple [])
       else
         LowM.Pure (Result.Panic message)
     | _ => LowM.Impossible "assert: expected a boolean"
@@ -315,7 +388,7 @@ Module M.
     | Value.Bool false =>
       match else_ with
       | Some else_ => else_
-      | None => pure Value.Tt
+      | None => pure (Value.Tuple [])
       end
     | _ => LowM.Impossible "if: expected a boolean"
     end.
@@ -386,7 +459,8 @@ Module Binary.
 
   Parameter divide : Value.t -> Value.t -> M.t.
 
-  Parameter equal : Value.t -> Value.t -> M.t.
+  Definition equal (value1 value2 : Value.t) : M.t :=
+    M.call_primitive (Primitive.IsEqual value1 value2).
 
   Parameter not_equal : Value.t -> Value.t -> M.t.
 
@@ -410,3 +484,121 @@ Module Binary.
 
   Parameter modulo : Value.t -> Value.t -> M.t.
 End Binary.
+
+Module State.
+  Class Trait (State Address : Set) : Type := {
+    read (a : Address) : State -> option Value.t;
+    alloc_write (a : Address) : State -> Value.t -> option State;
+  }.
+ 
+  Module Valid.
+    (** A valid state should behave as map from address to optional values
+        of the type given by the address. A value is [None] while not
+        allocated, and [Some] once allocated. It is impossible to free
+        allocated values. *)
+    Record t `(Trait) : Prop := {
+      (* [alloc_write] can only fail on new cells *)
+      not_allocated (a : Address) (s : State) (v : Value.t) :
+        match alloc_write a s v with
+        | Some _ => True
+        | None => read a s = None
+        end;
+      same (a : Address) (s : State) (v : Value.t) :
+        match alloc_write a s v with
+        | Some s => read a s = Some v
+        | None => True
+        end;
+      different (a1 a2 : Address) (s : State) (v2 : Value.t) :
+        a1 <> a2 ->
+        match alloc_write a2 s v2 with
+        | Some s' => read a1 s' = read a1 s
+        | None => True
+        end;
+        }.
+  End Valid.
+End State.
+
+Module Run.
+  Reserved Notation "{{ state_in | e ⇓ output | state_out }}".
+
+  Inductive t {State Address : Set} `{State.Trait State Address}
+      (output : Result.t) (state_out : State) :
+      State -> M.t -> Prop :=
+  | Pure :
+    (* This should be the only case where the input and output states are the same. *)
+    {{ state_out | LowM.Pure output ⇓ output | state_out }}
+  | CallPrimitiveStateAlloc
+      (value : Value.t)
+      (address : Address)
+      (k : Value.t -> M.t)
+      (state_in state_in' : State) :
+    let pointer := Pointer.Mutable (Pointer.Mutable.Make address []) in
+    State.alloc_write address state_in value = Some state_in' ->
+    {{ state_in' | k (Value.Pointer pointer) ⇓ output | state_out }} ->
+    {{ state_in | LowM.CallPrimitive (Primitive.StateAlloc value) k ⇓ output | state_out }}
+  | CallPrimitiveStateRead
+      (address : Address)
+      (value : Value.t)
+      (k : Value.t -> M.t)
+      (state_in : State) :
+    State.read address state_in = Some value ->
+    {{ state_in | k value ⇓ output | state_out }} ->
+    {{ state_in | LowM.CallPrimitive (Primitive.StateRead address) k ⇓ output | state_out }}
+  | CallPrimitiveStateWrite
+      (value : Value.t)
+      (address : Address)
+      (k : Value.t -> M.t)
+      (state_in state_in' : State) :
+    State.alloc_write address state_in value = Some state_in' ->
+    {{ state_in' | k (Value.Tuple []) ⇓ output | state_out }} ->
+    {{ state_in | LowM.CallPrimitive (Primitive.StateWrite address value) k ⇓ output | state_out }}
+  | CallPrimitiveIsEqualTrue
+      (value1 value2 : Value.t)
+      (k : Value.t -> M.t)
+      (state_in : State) :
+    (* The hypothesis of equality is explicit as this should be more convenient for the proofs *)
+    value1 = value2 ->
+    {{ state_in | k (Value.Bool true) ⇓ output | state_out }} ->
+    {{ state_in | LowM.CallPrimitive (Primitive.IsEqual value1 value2) k ⇓ output | state_out }}
+  | CallPrimitiveIsEqualFalse
+      (value1 value2 : Value.t)
+      (k : Value.t -> M.t)
+      (state_in : State) :
+    value1 <> value2 ->
+    {{ state_in | k (Value.Bool false) ⇓ output | state_out }} ->
+    {{ state_in | LowM.CallPrimitive (Primitive.IsEqual value1 value2) k ⇓ output | state_out }}
+  (*| CallPrimitiveGetFunction
+      (name : string) (generic_consts : list Value.t) (generic_tys : list Ty.t)
+      (function : PolymorphicFunction.t)
+      (k : Value.t -> M.t)
+      (state_in : State) :
+    let closure := Value.Closure (existS (_, _) (function generic_consts generic_tys)) in
+    M.IsFunction name function ->
+    {{ state_in | k closure ⇓ output | state_out }} ->
+    {{ state_in |
+      LowM.CallPrimitive (Primitive.GetFunction name generic_tys) k ⇓ output
+    | state_out }}
+  | CallClosure
+      (output_inter : Value.t + Exception.t)
+      (f : list Value.t -> M.t) (args : list Value.t)
+      (k : Value.t + Exception.t -> M.t)
+      (state_in state_inter : State) :
+    let closure := Value.Closure (existS (_, _) f) in
+    {{ state_in | f args ⇓ output_inter | state_inter }} ->
+    (* We do not de-allocate what was already there on the state. *)
+    (* IsWritePreserved.t state state' -> *)
+    {{ state_inter | k output_inter ⇓ output | state_out }} ->
+    {{ state_in | LowM.CallClosure closure args k ⇓ output | state_out }}
+  *)
+  | Let
+      (e : M.t)
+      (k : Result.t -> M.t)
+      (output_inter : Result.t)
+      (state_in state_inter : State) :
+    {{ state_in | e ⇓ output_inter | state_inter }} ->
+    {{ state_inter | k output_inter ⇓ output | state_out }} ->
+    {{ state_in | LowM.Let e k ⇓ output | state_out }}
+
+  where "{{ state_in | e ⇓ output | state_out }}" :=
+    (t output state_out state_in e).
+End Run.
