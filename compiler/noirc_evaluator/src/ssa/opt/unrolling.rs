@@ -170,9 +170,9 @@ fn find_all_loops(function: &Function) -> Loops {
     loops.sort_by_key(|loop_| loop_.blocks.len());
 
     Loops {
-        failed_to_unroll: HashSet::new(),
+        failed_to_unroll: HashSet::default(),
         yet_to_unroll: loops,
-        modified_blocks: HashSet::new(),
+        modified_blocks: HashSet::default(),
         cfg,
     }
 }
@@ -216,7 +216,7 @@ fn find_blocks_in_loop(
     back_edge_start: BasicBlockId,
     cfg: &ControlFlowGraph,
 ) -> Loop {
-    let mut blocks = HashSet::new();
+    let mut blocks = HashSet::default();
     blocks.insert(header);
 
     let mut insert = |block, stack: &mut Vec<BasicBlockId>| {

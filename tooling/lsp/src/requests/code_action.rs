@@ -155,7 +155,7 @@ impl<'a> CodeActionFinder<'a> {
     }
 
     fn new_quick_fix_multiple_edits(&self, title: String, text_edits: Vec<TextEdit>) -> CodeAction {
-        let mut changes = HashMap::new();
+        let mut changes = HashMap::default();
         changes.insert(self.uri.clone(), text_edits);
 
         let workspace_edit = WorkspaceEdit {

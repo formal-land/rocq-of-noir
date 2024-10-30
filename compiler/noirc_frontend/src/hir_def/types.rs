@@ -2047,7 +2047,7 @@ impl Type {
                 let instantiated = typ.force_substitute(&replacements);
                 (instantiated, replacements)
             }
-            other => (other.clone(), HashMap::new()),
+            other => (other.clone(), HashMap::default()),
         }
     }
 
@@ -2080,7 +2080,7 @@ impl Type {
                 let instantiated = typ.substitute(&replacements);
                 (instantiated, replacements)
             }
-            other => (other.clone(), HashMap::new()),
+            other => (other.clone(), HashMap::default()),
         }
     }
 

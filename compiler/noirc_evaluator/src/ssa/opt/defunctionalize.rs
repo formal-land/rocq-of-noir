@@ -4,7 +4,7 @@
 //! with a non-literal target can be replaced with a call to an apply function.
 //! The apply function is a dispatch function that takes the function id as a parameter
 //! and dispatches to the correct target.
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::{collections::{hash_map::DefaultHasher, BTreeMap, BTreeSet, HashSet}, hash::BuildHasherDefault};
 
 use acvm::FieldElement;
 use iter_extended::vecmap;
@@ -76,7 +76,7 @@ impl DefunctionalizationContext {
 
     /// Defunctionalize a single function
     fn defunctionalize(&mut self, func: &mut Function) {
-        let mut call_target_values = HashSet::new();
+        let mut call_target_values = HashSet::<_, BuildHasherDefault<DefaultHasher>>::default();
 
         for block_id in func.reachable_blocks() {
             let block = &func.dfg[block_id];

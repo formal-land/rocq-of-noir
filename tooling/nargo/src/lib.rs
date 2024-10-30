@@ -53,7 +53,7 @@ pub fn insert_all_files_for_workspace_into_file_manager(
     insert_all_files_for_workspace_into_file_manager_with_overrides(
         workspace,
         file_manager,
-        &HashMap::new(),
+        &HashMap::default(),
     );
 }
 
@@ -62,7 +62,7 @@ pub fn insert_all_files_for_workspace_into_file_manager_with_overrides(
     file_manager: &mut FileManager,
     overrides: &HashMap<&std::path::Path, &str>,
 ) {
-    let mut processed_entry_paths = HashSet::new();
+    let mut processed_entry_paths = HashSet::default();
     for package in workspace.clone().into_iter() {
         insert_all_files_for_package_into_file_manager(
             package,

@@ -108,7 +108,7 @@ impl Context {
             .filter(|id| function.dfg.get_numeric_constant(**id).is_none())
             .map(|value_id| function.dfg.resolve(*value_id));
 
-        let mut connected_sets_indices: HashSet<usize> = HashSet::new();
+        let mut connected_sets_indices: HashSet<usize> = HashSet::default();
 
         // Go through each parameter and each set and check if the set contains the parameter
         // If it's the case, then that set doesn't present an issue
@@ -165,7 +165,7 @@ impl Context {
         let instructions = function.dfg[block].instructions();
 
         for instruction in instructions.iter() {
-            let mut instruction_arguments_and_results = HashSet::new();
+            let mut instruction_arguments_and_results = HashSet::default();
 
             // Insert non-constant instruction arguments
             function.dfg[*instruction].for_each_value(|value_id| {
@@ -270,9 +270,9 @@ impl Context {
     /// If two small sets have a common ValueId, we merge them into one
     fn merge_sets(current: &[HashSet<ValueId>]) -> Vec<HashSet<ValueId>> {
         let mut new_set_id: usize = 0;
-        let mut updated_sets: HashMap<usize, HashSet<ValueId>> = HashMap::new();
-        let mut value_dictionary: HashMap<ValueId, usize> = HashMap::new();
-        let mut parsed_value_set: HashSet<ValueId> = HashSet::new();
+        let mut updated_sets: HashMap<usize, HashSet<ValueId>> = HashMap::default();
+        let mut value_dictionary: HashMap<ValueId, usize> = HashMap::default();
+        let mut parsed_value_set: HashSet<ValueId> = HashSet::default();
 
         for set in current.iter() {
             // Check if the set has any of the ValueIds we've encountered at previous iterations

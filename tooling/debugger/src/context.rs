@@ -281,7 +281,7 @@ impl<'a, B: BlackBoxFunctionSolver<FieldElement>> DebugContext<'a, B> {
             backend: blackbox_solver,
             foreign_call_executor,
             debug_artifact,
-            breakpoints: HashSet::new(),
+            breakpoints: HashSet::default(),
             source_to_locations: source_to_opcodes,
             circuits,
             unconstrained_functions,

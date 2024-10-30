@@ -58,7 +58,7 @@ fn interpret_helper(src: &str) -> Result<Value, InterpreterError> {
     let mut interpreter = elaborator.setup_interpreter();
 
     let no_location = Location::dummy();
-    interpreter.call_function(main, Vec::new(), HashMap::new(), no_location)
+    interpreter.call_function(main, Vec::new(), HashMap::default(), no_location)
 }
 
 fn interpret(src: &str) -> Value {

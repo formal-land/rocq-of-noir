@@ -45,7 +45,7 @@ pub(crate) fn on_rename_request(
         )
         .map(|locations| {
             let rs = locations.iter().fold(
-                HashMap::new(),
+                HashMap::default(),
                 |mut acc: HashMap<Url, Vec<TextEdit>>, location| {
                     let edit =
                         TextEdit { range: location.range, new_text: params.new_name.clone() };

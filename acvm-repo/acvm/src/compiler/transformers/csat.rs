@@ -31,7 +31,7 @@ impl CSatTransformer {
     pub(crate) fn new(width: usize) -> CSatTransformer {
         assert!(width >= MIN_EXPRESSION_WIDTH, "width has to be at least {MIN_EXPRESSION_WIDTH}");
 
-        CSatTransformer { width, solvable_witness: HashSet::new() }
+        CSatTransformer { width, solvable_witness: HashSet::default() }
     }
 
     /// Check if the equation 'expression=0' can be solved, and if yes, add the solved witness to set of solvable witness

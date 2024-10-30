@@ -1,160 +1,67 @@
 Require Import CoqOfNoir.CoqOfNoir.
 
 (*
-  fn test_base64_decode_with_padding$f0() -> () {
-      let input$0 = [71, 120, 77, 108, 103, 119, 76, 105, 121, 2⁴×7, 110, 86, 114, 69, 50, 67, 2⁴×3, 83, 102, 52, 121, 122, 104, 99, 87, 84, 107, 65, 104, 83, 90, 53, 43, 87, 69, 82, 104, 75, 104, 88, 116, 108, 85, 61];
-      let result$1 = base64_decode$f1(input$l0);
-      let expected$2 = [27, 19, 37, 131, 2, 226, 202, 153, 213, 172, 77, 130, 209, 39, 248, 203, 56, 92, 89, 57, 0, 133, 38, 121, 249, 97, 17, 132, 168, 87, 182, 85];
-      constrain eq$f2(result$l1, expected$l2)
+  fn test_decode_invalid$f0() -> () {
+      let input$0 = [255];
+      let _$1 = base64_decode$f1(input$l0)
   }
 *)
-Definition test_base64_decode_with_padding₀ (α : list Value.t) : M.t :=
+Definition test_decode_invalid₀ (α : list Value.t) : M.t :=
   match α with
   | [] =>
     let* result :=
       let~ input := [[ M.copy (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 71) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 120) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 77) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 108) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 103) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 119) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 76) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 105) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 121) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 112) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 110) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 86) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 114) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 69) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 50) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 67) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 48) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 83) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 102) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 52) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 121) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 122) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 104) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 99) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 87) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 84) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 107) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 65) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 104) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 83) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 90) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 53) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 43) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 87) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 69) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 82) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 104) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 75) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 104) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 88) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 116) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 108) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 85) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 61) |)
+          M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |)
         ])
       |) ]] in
-      let~ result := [[ M.copy (|
+      let~ _ := [[ M.copy (|
         M.alloc (M.call_closure (|
           M.read (| M.get_function (| "base64_decode", 1 |) |),
           [
             M.read (| input |)
           ]
         |))
-      |) ]] in
-      let~ expected := [[ M.copy (|
-        M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 27) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 19) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 37) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 131) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 2) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 226) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 202) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 153) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 213) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 172) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 77) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 130) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 209) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 39) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 248) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 203) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 56) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 92) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 89) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 57) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 133) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 38) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 121) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 249) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 97) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 17) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 132) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 168) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 87) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 182) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 85) |)
-        ])
-      |) ]] in
-      [[
-        M.alloc (M.assert (|
-          M.read (| M.alloc (M.call_closure (|
-            M.read (| M.get_function (| "eq", 2 |) |),
-            [
-              M.read (| result |);
-              M.read (| expected |)
-            ]
-          |)) |),
-          None
-        |))
-      ]] in
+      |) ]] in in
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
 
 (*
-  fn base64_decode$f1(input$l3: [u8; 44]) -> [u8; 32] {
-      let decoded$4 = base64_decode_elements$f3(input$l3);
-      let result$5 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      let BASE64_ELEMENTS_PER_CHUNK$6 = 40;
-      let BYTES_PER_CHUNK$7 = 30;
-      let num_chunks$8 = ((44 / BASE64_ELEMENTS_PER_CHUNK$l6) + (((44 % BASE64_ELEMENTS_PER_CHUNK$l6) != 0) as u32));
-      if (num_chunks$l8 > 0) {
-          for i$9 in 0 .. (num_chunks$l8 - 1) {
-              let slice$10 = 0;
-              for j$11 in 0 .. BASE64_ELEMENTS_PER_CHUNK$l6 {
-                  slice$l10 = (slice$l10 * 2⁶);
-                  slice$l10 = (slice$l10 + (decoded$l4[((i$l9 * BASE64_ELEMENTS_PER_CHUNK$l6) + j$l11)] as Field))
+  fn base64_decode$f1(input$l2: [u8; 1]) -> [u8; 0] {
+      let decoded$3 = base64_decode_elements$f2(input$l2);
+      let result$4 = [];
+      let BASE64_ELEMENTS_PER_CHUNK$5 = 40;
+      let BYTES_PER_CHUNK$6 = 30;
+      let num_chunks$7 = ((1 / BASE64_ELEMENTS_PER_CHUNK$l5) + (((1 % BASE64_ELEMENTS_PER_CHUNK$l5) != 0) as u32));
+      if (num_chunks$l7 > 0) {
+          for i$8 in 0 .. (num_chunks$l7 - 1) {
+              let slice$9 = 0;
+              for j$10 in 0 .. BASE64_ELEMENTS_PER_CHUNK$l5 {
+                  slice$l9 = (slice$l9 * 2⁶);
+                  slice$l9 = (slice$l9 + (decoded$l3[((i$l8 * BASE64_ELEMENTS_PER_CHUNK$l5) + j$l10)] as Field))
               };
-              let slice_bytes$12 = to_be_bytes$f4(slice$l10);
-              for j$13 in 0 .. BYTES_PER_CHUNK$l7 {
-                  result$l5[((i$l9 * BYTES_PER_CHUNK$l7) + j$l13)] = slice_bytes$l12[j$l13]
+              let slice_bytes$11 = to_be_bytes$f3(slice$l9);
+              for j$12 in 0 .. BYTES_PER_CHUNK$l6 {
+                  result$l4[((i$l8 * BYTES_PER_CHUNK$l6) + j$l12)] = slice_bytes$l11[j$l12]
               }
           };
-          let base64_elements_in_final_chunk$14 = (44 - ((num_chunks$l8 - 1) * BASE64_ELEMENTS_PER_CHUNK$l6));
-          let slice$15 = 0;
-          for j$16 in 0 .. base64_elements_in_final_chunk$l14 {
-              slice$l15 = (slice$l15 * 2⁶);
-              slice$l15 = (slice$l15 + (decoded$l4[(((num_chunks$l8 - 1) * BASE64_ELEMENTS_PER_CHUNK$l6) + j$l16)] as Field))
+          let base64_elements_in_final_chunk$13 = (1 - ((num_chunks$l7 - 1) * BASE64_ELEMENTS_PER_CHUNK$l5));
+          let slice$14 = 0;
+          for j$15 in 0 .. base64_elements_in_final_chunk$l13 {
+              slice$l14 = (slice$l14 * 2⁶);
+              slice$l14 = (slice$l14 + (decoded$l3[(((num_chunks$l7 - 1) * BASE64_ELEMENTS_PER_CHUNK$l5) + j$l15)] as Field))
           };
-          for _$17 in base64_elements_in_final_chunk$l14 .. BASE64_ELEMENTS_PER_CHUNK$l6 {
-              slice$l15 = (slice$l15 * 2⁶)
+          for _$16 in base64_elements_in_final_chunk$l13 .. BASE64_ELEMENTS_PER_CHUNK$l5 {
+              slice$l14 = (slice$l14 * 2⁶)
           };
-          let slice_bytes$18 = to_be_bytes$f4(slice$l15);
-          let num_bytes_in_final_chunk$19 = (2⁵ - ((num_chunks$l8 - 1) * BYTES_PER_CHUNK$l7));
-          for i$20 in 0 .. num_bytes_in_final_chunk$l19 {
-              result$l5[(((num_chunks$l8 - 1) * BYTES_PER_CHUNK$l7) + i$l20)] = slice_bytes$l18[i$l20]
+          let slice_bytes$17 = to_be_bytes$f3(slice$l14);
+          let num_bytes_in_final_chunk$18 = (0 - ((num_chunks$l7 - 1) * BYTES_PER_CHUNK$l6));
+          for i$19 in 0 .. num_bytes_in_final_chunk$l18 {
+              result$l4[(((num_chunks$l7 - 1) * BYTES_PER_CHUNK$l6) + i$l19)] = slice_bytes$l17[i$l19]
           }
       };
-      result$l5
+      result$l4
   }
 *)
 Definition base64_decode₁ (α : list Value.t) : M.t :=
@@ -164,7 +71,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
     let* result :=
       let~ decoded := [[ M.copy (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "base64_decode_elements", 3 |) |),
+          M.read (| M.get_function (| "base64_decode_elements", 2 |) |),
           [
             M.read (| input |)
           ]
@@ -172,38 +79,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |)
+          
         ])
       |) ]] in
       let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
@@ -215,13 +91,13 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
       let~ num_chunks := [[ M.copy (|
         M.alloc (Binary.add (|
           M.read (| M.alloc (Binary.divide (|
-            M.read (| M.alloc (Value.Integer IntegerKind.U32 44) |),
+            M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |),
             M.read (| BASE64_ELEMENTS_PER_CHUNK |)
           |)) |),
           M.read (| M.alloc (M.cast (|
             M.read (| M.alloc (Binary.not_equal (|
               M.read (| M.alloc (Binary.modulo (|
-                M.read (| M.alloc (Value.Integer IntegerKind.U32 44) |),
+                M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |),
                 M.read (| BASE64_ELEMENTS_PER_CHUNK |)
               |)) |),
               M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |)
@@ -286,7 +162,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
               ]] in
               let~ slice_bytes := [[ M.copy (|
                 M.alloc (M.call_closure (|
-                  M.read (| M.get_function (| "to_be_bytes", 4 |) |),
+                  M.read (| M.get_function (| "to_be_bytes", 3 |) |),
                   [
                     M.read (| slice |)
                   ]
@@ -321,7 +197,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
           ]] in
           let~ base64_elements_in_final_chunk := [[ M.copy (|
             M.alloc (Binary.subtract (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 44) |),
+              M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |),
               M.read (| M.alloc (Binary.multiply (|
                 M.read (| M.alloc (Binary.subtract (|
                   M.read (| num_chunks |),
@@ -392,7 +268,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
           ]] in
           let~ slice_bytes := [[ M.copy (|
             M.alloc (M.call_closure (|
-              M.read (| M.get_function (| "to_be_bytes", 4 |) |),
+              M.read (| M.get_function (| "to_be_bytes", 3 |) |),
               [
                 M.read (| slice |)
               ]
@@ -400,7 +276,7 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
           |) ]] in
           let~ num_bytes_in_final_chunk := [[ M.copy (|
             M.alloc (Binary.subtract (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 32) |),
+              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
               M.read (| M.alloc (Binary.multiply (|
                 M.read (| M.alloc (Binary.subtract (|
                   M.read (| num_chunks |),
@@ -449,138 +325,37 @@ Definition base64_decode₁ (α : list Value.t) : M.t :=
   end.
 
 (*
-  fn eq$f2(self$l21: [u8; 32], other$l22: [u8; 32]) -> bool {
-      let result$23 = true;
-      for i$24 in 0 .. len$array_len(self$l21) {
-          result$l23 = (result$l23 & eq$f5(self$l21[i$l24], other$l22[i$l24]))
+  fn base64_decode_elements$f2(input$l20: [u8; 1]) -> [u8; 1] {
+      let Base64Decoder$21 = new$f4();
+      let result$22 = [0];
+      for i$23 in 0 .. 1 {
+          let input_byte$24 = input$l20[i$l23];
+          result$l22[i$l23] = get$f5(Base64Decoder$l21, (input_byte$l24 as Field));
+          constrain (result$l22[i$l23] != 255)
       };
-      result$l23
+      result$l22
   }
 *)
-Definition eq₂ (α : list Value.t) : M.t :=
-  match α with
-  | [self; other] =>
-    let self := M.alloc self in
-    let other := M.alloc other in
-    let* result :=
-      let~ result := [[ M.copy_mutable (|
-        M.alloc (Value.Bool true)
-      |) ]] in
-      do~ [[
-        M.for_ (|
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-          M.read (| M.alloc (M.call_closure (|
-            M.read (| Builtin.len |),
-            [
-              M.read (| self |)
-            ]
-          |)) |),
-          fun (i : Value.t) =>
-          [[
-            M.alloc (M.assign (|
-              M.read (| M.alloc (result) |),
-              M.read (| M.alloc (Binary.and_ (|
-                M.read (| result |),
-                M.read (| M.alloc (M.call_closure (|
-                  M.read (| M.get_function (| "eq", 5 |) |),
-                  [
-                    M.read (| M.alloc (M.index (|
-                      M.read (| self |),
-                      M.read (| i |)
-                    |)) |);
-                    M.read (| M.alloc (M.index (|
-                      M.read (| other |),
-                      M.read (| i |)
-                    |)) |)
-                  ]
-                |)) |)
-              |)) |)
-            |))
-          ]]
-        |)
-      ]] in
-      [[
-        result
-      ]] in
-    M.read result
-  | _ => M.impossible "wrong number of arguments"
-  end.
-
-(*
-  fn base64_decode_elements$f3(input$l25: [u8; 44]) -> [u8; 44] {
-      let Base64Decoder$26 = new$f6();
-      let result$27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      for i$28 in 0 .. 44 {
-          let input_byte$29 = input$l25[i$l28];
-          result$l27[i$l28] = get$f7(Base64Decoder$l26, (input_byte$l29 as Field));
-          constrain (result$l27[i$l28] != 255)
-      };
-      result$l27
-  }
-*)
-Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
+Definition base64_decode_elements₂ (α : list Value.t) : M.t :=
   match α with
   | [input] =>
     let input := M.alloc input in
     let* result :=
       let~ Base64Decoder := [[ M.copy_mutable (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "new", 6 |) |),
+          M.read (| M.get_function (| "new", 4 |) |),
           []
         |))
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
           M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |)
         ])
       |) ]] in
       do~ [[
         M.for_ (|
           M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 44) |),
+          M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |),
           fun (i : Value.t) =>
           let~ input_byte := [[ M.copy (|
             M.alloc (M.index (|
@@ -595,7 +370,7 @@ Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
                 M.read (| i |)
               |)) |),
               M.read (| M.alloc (M.call_closure (|
-                M.read (| M.get_function (| "get", 7 |) |),
+                M.read (| M.get_function (| "get", 5 |) |),
                 [
                   M.read (| Base64Decoder |);
                   M.read (| M.alloc (M.cast (|
@@ -628,33 +403,33 @@ Definition base64_decode_elements₃ (α : list Value.t) : M.t :=
   end.
 
 (*
-  fn to_be_bytes$f4(self$l30: Field) -> [u8; 30] {
-      let bytes$31 = to_be_radix$f8(self$l30, 2⁸);
+  fn to_be_bytes$f3(self$l25: Field) -> [u8; 30] {
+      let bytes$26 = to_be_radix$f6(self$l25, 2⁸);
       if (!is_unconstrained$is_unconstrained()) {
-          let p$32 = &[2⁴×3, 100, 78, 114, 225, 49, 2⁴×10, 41, 184, 2⁴×5, 69, 182, 129, 129, 88, 93, 40, 51, 232, 72, 121, 185, 2⁴×7, 145, 67, 225, 245, 147, 2⁴×15, 0, 0, 1];
-          constrain (len$array_len(bytes$l31) <= len$array_len(p$l32));
-          let ok$33 = (len$array_len(bytes$l31) != len$array_len(p$l32));
-          for i$34 in 0 .. 30 {
-              if (!ok$l33) {
-                  if (bytes$l31[i$l34] != p$l32[i$l34]) {
-                      constrain (bytes$l31[i$l34] < p$l32[i$l34]);
-                      ok$l33 = true
+          let p$27 = &[2⁴×3, 100, 78, 114, 225, 49, 2⁴×10, 41, 184, 2⁴×5, 69, 182, 129, 129, 88, 93, 40, 51, 232, 72, 121, 185, 2⁴×7, 145, 67, 225, 245, 147, 2⁴×15, 0, 0, 1];
+          constrain (len$array_len(bytes$l26) <= len$array_len(p$l27));
+          let ok$28 = (len$array_len(bytes$l26) != len$array_len(p$l27));
+          for i$29 in 0 .. 30 {
+              if (!ok$l28) {
+                  if (bytes$l26[i$l29] != p$l27[i$l29]) {
+                      constrain (bytes$l26[i$l29] < p$l27[i$l29]);
+                      ok$l28 = true
                   }
               }
           };
-          constrain ok$l33
+          constrain ok$l28
       };
-      bytes$l31
+      bytes$l26
   }
 *)
-Definition to_be_bytes₄ (α : list Value.t) : M.t :=
+Definition to_be_bytes₃ (α : list Value.t) : M.t :=
   match α with
   | [self] =>
     let self := M.alloc self in
     let* result :=
       let~ bytes := [[ M.copy (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "to_be_radix", 8 |) |),
+          M.read (| M.get_function (| "to_be_radix", 6 |) |),
           [
             M.read (| self |);
             M.read (| M.alloc (Value.Integer IntegerKind.U32 256) |)
@@ -808,35 +583,14 @@ Definition to_be_bytes₄ (α : list Value.t) : M.t :=
   end.
 
 (*
-  fn eq$f5(self$l35: u8, other$l36: u8) -> bool {
-      (self$l35 == other$l36)
-  }
-*)
-Definition eq₅ (α : list Value.t) : M.t :=
-  match α with
-  | [self; other] =>
-    let self := M.alloc self in
-    let other := M.alloc other in
-    let* result :=
-      [[
-        M.alloc (Binary.equal (|
-          M.read (| self |),
-          M.read (| other |)
-        |))
-      ]] in
-    M.read result
-  | _ => M.impossible "wrong number of arguments"
-  end.
-
-(*
-  fn new$f6() -> ([u8; 256]) {
+  fn new$f4() -> ([u8; 256]) {
       {
-          let table$37 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 62, 255, 255, 255, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 255, 255, 255, 255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 2⁴, 17, 18, 19, 20, 21, 22, 23, 24, 25, 255, 255, 255, 255, 255, 255, 26, 27, 28, 29, 30, 31, 2⁵, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 2⁴×3, 49, 50, 51, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
-          (table$l37)
+          let table$30 = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 62, 255, 255, 255, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 255, 255, 255, 255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 2⁴, 17, 18, 19, 20, 21, 22, 23, 24, 25, 255, 255, 255, 255, 255, 255, 26, 27, 28, 29, 30, 31, 2⁵, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 2⁴×3, 49, 50, 51, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
+          (table$l30)
       }
   }
 *)
-Definition new₆ (α : list Value.t) : M.t :=
+Definition new₄ (α : list Value.t) : M.t :=
   match α with
   | [] =>
     let* result :=
@@ -1110,11 +864,11 @@ Definition new₆ (α : list Value.t) : M.t :=
   end.
 
 (*
-  fn get$f7(self$l38: ([u8; 256]), idx$l39: Field) -> u8 {
-      self$l38.0[idx$l39]
+  fn get$f5(self$l31: ([u8; 256]), idx$l32: Field) -> u8 {
+      self$l31.0[idx$l32]
   }
 *)
-Definition get₇ (α : list Value.t) : M.t :=
+Definition get₅ (α : list Value.t) : M.t :=
   match α with
   | [self; idx] =>
     let self := M.alloc self in
@@ -1134,12 +888,12 @@ Definition get₇ (α : list Value.t) : M.t :=
   end.
 
 (*
-  fn to_be_radix$f8(self$l40: Field, radix$l41: u32) -> [u8; 30] {
-      assert_constant$assert_constant(radix$l41);;
-      __to_be_radix$to_be_radix(self$l40, radix$l41)
+  fn to_be_radix$f6(self$l33: Field, radix$l34: u32) -> [u8; 30] {
+      assert_constant$assert_constant(radix$l34);;
+      __to_be_radix$to_be_radix(self$l33, radix$l34)
   }
 *)
-Definition to_be_radix₈ (α : list Value.t) : M.t :=
+Definition to_be_radix₆ (α : list Value.t) : M.t :=
   match α with
   | [self; radix] =>
     let self := M.alloc self in

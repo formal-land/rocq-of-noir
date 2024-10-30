@@ -27,7 +27,7 @@ pub(super) fn build_dictionary_from_program<F: AcirField>(program: &Program<F>) 
         program.unconstrained_functions.iter().map(build_dictionary_from_unconstrained_function);
     let dictionaries = constrained_dictionaries.chain(unconstrained_dictionaries);
 
-    let mut constants: HashSet<F> = HashSet::new();
+    let mut constants: HashSet<F> = HashSet::default();
     for dictionary in dictionaries {
         constants.extend(dictionary);
     }
@@ -35,7 +35,7 @@ pub(super) fn build_dictionary_from_program<F: AcirField>(program: &Program<F>) 
 }
 
 fn build_dictionary_from_circuit<F: AcirField>(circuit: &Circuit<F>) -> HashSet<F> {
-    let mut constants: HashSet<F> = HashSet::new();
+    let mut constants: HashSet<F> = HashSet::default();
 
     fn insert_expr<F: AcirField>(dictionary: &mut HashSet<F>, expr: &Expression<F>) {
         let quad_coefficients = expr.mul_terms.iter().map(|(k, _, _)| *k);
@@ -111,7 +111,7 @@ fn build_dictionary_from_circuit<F: AcirField>(circuit: &Circuit<F>) -> HashSet<
 fn build_dictionary_from_unconstrained_function<F: AcirField>(
     function: &BrilligBytecode<F>,
 ) -> HashSet<F> {
-    let mut constants: HashSet<F> = HashSet::new();
+    let mut constants: HashSet<F> = HashSet::default();
 
     for opcode in &function.bytecode {
         match opcode {

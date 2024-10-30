@@ -36,7 +36,7 @@ impl PostOrder {
     // to when the traversal exits it.
     fn compute_post_order(func: &Function) -> Vec<BasicBlockId> {
         let mut stack = vec![(Visit::First, func.entry_block())];
-        let mut visited: HashSet<BasicBlockId> = HashSet::new();
+        let mut visited: HashSet<BasicBlockId> = HashSet::default();
         let mut post_order: Vec<BasicBlockId> = Vec::new();
 
         while let Some((visit, block_id)) = stack.pop() {

@@ -79,7 +79,7 @@ fn on_profile_run_request_inner(
             )
             .map_err(|err| ResponseError::new(ErrorCode::REQUEST_FAILED, err))?;
 
-            let mut opcodes_counts: HashMap<Location, OpCodesCount> = HashMap::new();
+            let mut opcodes_counts: HashMap<Location, OpCodesCount> = HashMap::default();
             let mut file_map: BTreeMap<FileId, DebugFile> = BTreeMap::new();
             for compiled_program in compiled_programs {
                 let compiled_program =

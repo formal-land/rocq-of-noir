@@ -226,7 +226,7 @@ fn prepare_compiler_context(
     };
 
     // Add the dependency graph
-    let mut crate_names: HashMap<CrateName, CrateIDWrapper> = HashMap::new();
+    let mut crate_names: HashMap<CrateName, CrateIDWrapper> = HashMap::default();
     //
     // Process the direct dependencies of the root
     for lib_name in dependency_graph.root_dependencies {
