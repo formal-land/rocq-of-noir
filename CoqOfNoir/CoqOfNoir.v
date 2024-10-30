@@ -35,27 +35,6 @@ Notation "{ x @ P }" := (sigS (fun x => P)) : type_scope.
 Notation "{ x : A @ P }" := (sigS (A := A) (fun x => P)) : type_scope.
 Notation "{ ' pat : A @ P }" := (sigS (A := A) (fun pat => P)) : type_scope.
 
-Module Ty.
-  Module Signedness.
-    Inductive t : Set :=
-    | Signed
-    | Unsigned.
-  End Signedness.
-
-  Module IntegerBitSize.
-    Inductive t : Set :=
-    | One
-    | Eight
-    | Sixteen
-    | ThirtyTwo
-    | SixtyFour.
-  End IntegerBitSize.
-
-  Inductive t : Set :=
-  | Field
-  | Integer (signedness : Signedness.t) (bit_size : IntegerBitSize.t).
-End Ty.
-
 Module Pointer.
   Module Index.
     Inductive t : Set :=
@@ -80,10 +59,25 @@ Module Pointer.
   Arguments Mutable {_}.
 End Pointer.
 
+Module IntegerKind.
+  Inductive t : Set :=
+  | Field
+  | U1
+  | U8
+  | U16
+  | U32
+  | U64
+  | I1
+  | I8
+  | I16
+  | I32
+  | I64.
+End IntegerKind.
+
 Module Value.
   Inductive t : Set :=
   | Bool (b : bool)
-  | Integer (integer : Z)
+  | Integer (kind : IntegerKind.t) (integer : Z)
   | String (s : string)
   | FmtStr : string -> Z -> t -> t
   | Pointer (pointer : Pointer.t t)
@@ -160,24 +154,25 @@ Module Value.
 End Value.
 
 Module Primitive.
-  Inductive t : Set :=
-  | StateAlloc (value : Value.t)
-  | StateRead {Address : Set} (address : Address)
-  | StateWrite {Address : Set} (address : Address) (value : Value.t)
-  | GetFunction (path : string) (id : Z)
-  | IsEqual (value1 value2 : Value.t).
+  Inductive t : Set -> Set :=
+  | StateAlloc (value : Value.t) : t Value.t
+  | StateRead {Address : Set} (address : Address) : t Value.t
+  | StateWrite {Address : Set} (address : Address) (value : Value.t) : t unit
+  | GetFunction (path : string) (id : Z) : t Value.t
+  | GetFieldPrime : t Z
+  | IsEqual (value1 value2 : Value.t) : t bool.
 End Primitive.
 
 Module LowM.
   Inductive t (A : Set) : Set :=
   | Pure (value : A)
-  | CallPrimitive (primitive : Primitive.t) (k : Value.t -> t A)
+  | CallPrimitive {B : Set} (primitive : Primitive.t B) (k : B -> t A)
   | CallClosure (closure : Value.t) (args : list Value.t) (k : A -> t A)
   | Let (e : t A) (k : A -> t A)
   | Loop (body : t A) (k : A -> t A)
   | Impossible (message : string).
   Arguments Pure {_}.
-  Arguments CallPrimitive {_}.
+  Arguments CallPrimitive {_ _}.
   Arguments CallClosure {_}.
   Arguments Let {_}.
   Arguments Loop {_}.
@@ -299,15 +294,11 @@ Module M.
 
     Notation "[[ e ]]" :=
       (ltac:(M.monadic e))
+      (* Use the version below for debugging and show errors that are made obscure by the tactic *)
       (* (M.pure e) *)
       (only parsing).
   End Notations.
   Import Notations.
-
-  Definition call_primitive (primitive : Primitive.t) : M.t :=
-    LowM.CallPrimitive primitive pure.
-  (* Make it transparent *)
-  Arguments call_primitive /.
 
   Definition call_closure (closure : Value.t) (args : list Value.t) : M.t :=
     LowM.CallClosure closure args LowM.Pure.
@@ -315,12 +306,15 @@ Module M.
   Definition impossible (message : string) : M.t :=
     LowM.Impossible message.
 
+  Definition panic {A : Set} (payload : A) : M.t :=
+    LowM.Pure (Result.Panic payload).
+
   Definition alloc (value : Value.t) : Value.t :=
     Value.Pointer (Pointer.Immediate value).
   Arguments alloc /.
 
   Definition alloc_mutable (value : Value.t) : M.t :=
-    call_primitive (Primitive.StateAlloc value).
+    LowM.CallPrimitive (Primitive.StateAlloc value) (fun _ => pure (Value.Tuple [])).
   Arguments alloc_mutable /.
 
   Definition read (r : Value.t) : M.t :=
@@ -329,11 +323,11 @@ Module M.
       match pointer with
       | Pointer.Immediate value => pure value
       | Pointer.Mutable (Pointer.Mutable.Make address path) =>
-        let* value := call_primitive (Primitive.StateRead address) in
+        LowM.CallPrimitive (Primitive.StateRead address) (fun value =>
         match Value.read_path value path with
         | Some sub_value => pure sub_value
-        | None => impossible "read: invalid sub-pointer"
-        end
+        | None => panic ("read: invalid sub-pointer", r)
+        end)
       end
     | _ => impossible "read: expected a pointer"
     end.
@@ -342,11 +336,13 @@ Module M.
   Definition write (r update : Value.t) : M.t :=
     match r with
     | Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make address path)) =>
-      let* value := call_primitive (Primitive.StateRead address) in
+      LowM.CallPrimitive (Primitive.StateRead address) (fun value =>
       match Value.write_path value path update with
-      | Some new_value => call_primitive (Primitive.StateWrite address new_value)
-      | None => impossible "write: invalid sub_pointer"
-      end
+      | Some new_value =>
+        LowM.CallPrimitive (Primitive.StateWrite address new_value) (fun _ =>
+        pure (Value.Tuple []))
+      | None => panic ("write: invalid sub_pointer", r, update)
+      end)
     | _ => impossible "write: expected a mutable pointer"
     end.
   Arguments write /.
@@ -362,7 +358,7 @@ Module M.
   Arguments copy /.
 
   Definition get_function (path : string) (id : Z) : M.t :=
-    call_primitive (Primitive.GetFunction path id).
+    LowM.CallPrimitive (Primitive.GetFunction path id) pure.
 
   Definition assert (condition : Value.t) (message : option Value.t) : M.t :=
     match condition with
@@ -370,11 +366,76 @@ Module M.
       if b then
         pure (Value.Tuple [])
       else
-        LowM.Pure (Result.Panic message)
+        panic message
     | _ => LowM.Impossible "assert: expected a boolean"
     end.
 
-  Parameter cast : Value.t -> Ty.t -> M.t.
+  (** We only consider cast between integer values. We consider that the cast succeed if we are
+      in the bounds of the target type. For casts to fields we need to retrieve the current
+      field prime, which could change depending on the backend. *)
+  Definition cast (value : Value.t) (integer_kind : IntegerKind.t) : M.t :=
+    match value with
+    | Value.Integer _ i =>
+      match integer_kind with
+      | IntegerKind.Field =>
+        LowM.CallPrimitive Primitive.GetFieldPrime (fun p =>
+        if (0 <=? i) && (i <? p) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind))
+      | IntegerKind.U1 =>
+        if (0 <=? i) && (i <? 2) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.U8 =>
+        if (0 <=? i) && (i <? 2^8) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.U16 =>
+        if (0 <=? i) && (i <? 2^16) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.U32 =>
+        if (0 <=? i) && (i <? 2^32) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.U64 =>
+        if (0 <=? i) && (i <? 2^64) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.I1 =>
+        if (-(2^0) <=? i) && (i <? 2^0) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.I8 =>
+        if (-(2^7) <=? i) && (i <? 2^7) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.I16 =>
+        if (-(2^15) <=? i) && (i <? 2^15) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.I32 =>
+        if (-(2^31) <=? i) && (i <? 2^31) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      | IntegerKind.I64 =>
+        if (-(2^63) <=? i) && (i <? 2^63) then
+          pure (Value.Integer integer_kind i)
+        else
+          panic ("cast: out of bounds", value, integer_kind)
+      end
+    | _ => impossible "cast: expected an integer"
+    end.
 
   Parameter index : Value.t -> Value.t -> M.t.
 
@@ -393,7 +454,24 @@ Module M.
     | _ => LowM.Impossible "if: expected a boolean"
     end.
 
-  Parameter for_ : Value.t -> Value.t -> (Value.t -> M.t) -> M.t.
+  Fixpoint for_nat (end_ : Z) (fuel : nat) (body : Z -> M.t) {struct fuel} : M.t :=
+    match fuel with
+    | O => pure (Value.Tuple [])
+    | S fuel' =>
+      let* _ := body (end_ - Z.of_nat fuel) in
+      for_nat end_ fuel' body
+    end.
+
+  Definition for_Z (start end_ : Z) (body : Z -> M.t) : M.t :=
+    for_nat end_ (Z.to_nat (end_ - start)) body.
+
+  Definition for_ (start end_ : Value.t) (body : Value.t -> M.t) : M.t :=
+    match start, end_ with
+    | Value.Integer integer_kind start, Value.Integer _ end_ =>
+      (* We assume that the integer kind of the [end_] is the same and checked by the compiler. *)
+      for_Z start end_ (fun i => body (Value.Integer integer_kind i))
+    | _, _ => impossible "for: expected integer values"
+    end.
 End M.
 
 Export M.Notations.
@@ -460,7 +538,7 @@ Module Binary.
   Parameter divide : Value.t -> Value.t -> M.t.
 
   Definition equal (value1 value2 : Value.t) : M.t :=
-    M.call_primitive (Primitive.IsEqual value1 value2).
+    LowM.CallPrimitive (Primitive.IsEqual value1 value2) (fun b => M.pure (Value.Bool b)).
 
   Parameter not_equal : Value.t -> Value.t -> M.t.
 
@@ -484,121 +562,3 @@ Module Binary.
 
   Parameter modulo : Value.t -> Value.t -> M.t.
 End Binary.
-
-Module State.
-  Class Trait (State Address : Set) : Type := {
-    read (a : Address) : State -> option Value.t;
-    alloc_write (a : Address) : State -> Value.t -> option State;
-  }.
- 
-  Module Valid.
-    (** A valid state should behave as map from address to optional values
-        of the type given by the address. A value is [None] while not
-        allocated, and [Some] once allocated. It is impossible to free
-        allocated values. *)
-    Record t `(Trait) : Prop := {
-      (* [alloc_write] can only fail on new cells *)
-      not_allocated (a : Address) (s : State) (v : Value.t) :
-        match alloc_write a s v with
-        | Some _ => True
-        | None => read a s = None
-        end;
-      same (a : Address) (s : State) (v : Value.t) :
-        match alloc_write a s v with
-        | Some s => read a s = Some v
-        | None => True
-        end;
-      different (a1 a2 : Address) (s : State) (v2 : Value.t) :
-        a1 <> a2 ->
-        match alloc_write a2 s v2 with
-        | Some s' => read a1 s' = read a1 s
-        | None => True
-        end;
-        }.
-  End Valid.
-End State.
-
-Module Run.
-  Reserved Notation "{{ state_in | e ⇓ output | state_out }}".
-
-  Inductive t {State Address : Set} `{State.Trait State Address}
-      (output : Result.t) (state_out : State) :
-      State -> M.t -> Prop :=
-  | Pure :
-    (* This should be the only case where the input and output states are the same. *)
-    {{ state_out | LowM.Pure output ⇓ output | state_out }}
-  | CallPrimitiveStateAlloc
-      (value : Value.t)
-      (address : Address)
-      (k : Value.t -> M.t)
-      (state_in state_in' : State) :
-    let pointer := Pointer.Mutable (Pointer.Mutable.Make address []) in
-    State.alloc_write address state_in value = Some state_in' ->
-    {{ state_in' | k (Value.Pointer pointer) ⇓ output | state_out }} ->
-    {{ state_in | LowM.CallPrimitive (Primitive.StateAlloc value) k ⇓ output | state_out }}
-  | CallPrimitiveStateRead
-      (address : Address)
-      (value : Value.t)
-      (k : Value.t -> M.t)
-      (state_in : State) :
-    State.read address state_in = Some value ->
-    {{ state_in | k value ⇓ output | state_out }} ->
-    {{ state_in | LowM.CallPrimitive (Primitive.StateRead address) k ⇓ output | state_out }}
-  | CallPrimitiveStateWrite
-      (value : Value.t)
-      (address : Address)
-      (k : Value.t -> M.t)
-      (state_in state_in' : State) :
-    State.alloc_write address state_in value = Some state_in' ->
-    {{ state_in' | k (Value.Tuple []) ⇓ output | state_out }} ->
-    {{ state_in | LowM.CallPrimitive (Primitive.StateWrite address value) k ⇓ output | state_out }}
-  | CallPrimitiveIsEqualTrue
-      (value1 value2 : Value.t)
-      (k : Value.t -> M.t)
-      (state_in : State) :
-    (* The hypothesis of equality is explicit as this should be more convenient for the proofs *)
-    value1 = value2 ->
-    {{ state_in | k (Value.Bool true) ⇓ output | state_out }} ->
-    {{ state_in | LowM.CallPrimitive (Primitive.IsEqual value1 value2) k ⇓ output | state_out }}
-  | CallPrimitiveIsEqualFalse
-      (value1 value2 : Value.t)
-      (k : Value.t -> M.t)
-      (state_in : State) :
-    value1 <> value2 ->
-    {{ state_in | k (Value.Bool false) ⇓ output | state_out }} ->
-    {{ state_in | LowM.CallPrimitive (Primitive.IsEqual value1 value2) k ⇓ output | state_out }}
-  (*| CallPrimitiveGetFunction
-      (name : string) (generic_consts : list Value.t) (generic_tys : list Ty.t)
-      (function : PolymorphicFunction.t)
-      (k : Value.t -> M.t)
-      (state_in : State) :
-    let closure := Value.Closure (existS (_, _) (function generic_consts generic_tys)) in
-    M.IsFunction name function ->
-    {{ state_in | k closure ⇓ output | state_out }} ->
-    {{ state_in |
-      LowM.CallPrimitive (Primitive.GetFunction name generic_tys) k ⇓ output
-    | state_out }}
-  | CallClosure
-      (output_inter : Value.t + Exception.t)
-      (f : list Value.t -> M.t) (args : list Value.t)
-      (k : Value.t + Exception.t -> M.t)
-      (state_in state_inter : State) :
-    let closure := Value.Closure (existS (_, _) f) in
-    {{ state_in | f args ⇓ output_inter | state_inter }} ->
-    (* We do not de-allocate what was already there on the state. *)
-    (* IsWritePreserved.t state state' -> *)
-    {{ state_inter | k output_inter ⇓ output | state_out }} ->
-    {{ state_in | LowM.CallClosure closure args k ⇓ output | state_out }}
-  *)
-  | Let
-      (e : M.t)
-      (k : Result.t -> M.t)
-      (output_inter : Result.t)
-      (state_in state_inter : State) :
-    {{ state_in | e ⇓ output_inter | state_inter }} ->
-    {{ state_inter | k output_inter ⇓ output | state_out }} ->
-    {{ state_in | LowM.Let e k ⇓ output | state_out }}
-
-  where "{{ state_in | e ⇓ output | state_out }}" :=
-    (t output state_out state_in e).
-End Run.
