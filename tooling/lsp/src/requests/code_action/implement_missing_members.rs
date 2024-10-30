@@ -1,4 +1,7 @@
-use std::{collections::{hash_map::DefaultHasher, HashMap}, hash::BuildHasherDefault};
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
+    hash::BuildHasherDefault,
+};
 
 use lsp_types::TextEdit;
 use noirc_errors::{Location, Span};

@@ -4,7 +4,10 @@
 //! with a non-literal target can be replaced with a call to an apply function.
 //! The apply function is a dispatch function that takes the function id as a parameter
 //! and dispatches to the correct target.
-use std::{collections::{hash_map::DefaultHasher, BTreeMap, BTreeSet, HashSet}, hash::BuildHasherDefault};
+use std::{
+    collections::{hash_map::DefaultHasher, BTreeMap, BTreeSet, HashSet},
+    hash::BuildHasherDefault,
+};
 
 use acvm::FieldElement;
 use iter_extended::vecmap;

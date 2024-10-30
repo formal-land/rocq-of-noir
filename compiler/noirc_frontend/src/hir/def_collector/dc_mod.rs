@@ -1247,7 +1247,8 @@ fn check_duplicate_field_names(
     file: FileId,
     definition_errors: &mut Vec<(CompilationError, FileId)>,
 ) {
-    let mut seen_field_names = std::collections::HashSet::<_, BuildHasherDefault<DefaultHasher>>::default();
+    let mut seen_field_names =
+        std::collections::HashSet::<_, BuildHasherDefault<DefaultHasher>>::default();
     for field in &struct_definition.fields {
         let field_name = &field.item.name;
 

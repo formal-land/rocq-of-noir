@@ -2,7 +2,10 @@
 //! The purpose of this pass is to inline the instructions of each function call
 //! within the function caller. If all function calls are known, there will only
 //! be a single function remaining when the pass finishes.
-use std::{collections::{hash_map::DefaultHasher, BTreeSet, HashSet, VecDeque}, hash::BuildHasherDefault};
+use std::{
+    collections::{hash_map::DefaultHasher, BTreeSet, HashSet, VecDeque},
+    hash::BuildHasherDefault,
+};
 
 use acvm::acir::AcirField;
 use iter_extended::{btree_map, vecmap};

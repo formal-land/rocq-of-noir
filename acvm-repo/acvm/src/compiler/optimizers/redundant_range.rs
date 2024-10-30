@@ -6,7 +6,10 @@ use acir::{
     native_types::Witness,
     AcirField,
 };
-use std::{collections::{hash_map::DefaultHasher, BTreeMap, HashSet}, hash::BuildHasherDefault};
+use std::{
+    collections::{hash_map::DefaultHasher, BTreeMap, HashSet},
+    hash::BuildHasherDefault,
+};
 
 /// `RangeOptimizer` will remove redundant range constraints.
 ///

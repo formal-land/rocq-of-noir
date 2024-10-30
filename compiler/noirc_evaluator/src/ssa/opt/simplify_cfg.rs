@@ -9,7 +9,10 @@
 //!    only 1 successor then (2) also will be applied.
 //!
 //! Currently, 1 and 4 are unimplemented.
-use std::{collections::{hash_map::DefaultHasher, HashSet}, hash::BuildHasherDefault};
+use std::{
+    collections::{hash_map::DefaultHasher, HashSet},
+    hash::BuildHasherDefault,
+};
 
 use acvm::acir::AcirField;
 
