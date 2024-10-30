@@ -1,8 +1,9 @@
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap},
+    collections::HashMap,
     hash::BuildHasherDefault,
 };
 
+use fxhash::FxHasher;
 use lsp_types::TextEdit;
 use noirc_errors::{Location, Span};
 use noirc_frontend::{
@@ -35,7 +36,7 @@ impl<'a> CodeActionFinder<'a> {
         let mut method_ids = trait_.method_ids.clone();
 
         // Also get all associated types
-        let mut associated_types = HashMap::<_, _, BuildHasherDefault<DefaultHasher>>::default();
+        let mut associated_types = HashMap::<_, _, BuildHasherDefault<FxHasher>>::default();
         for associated_type in &trait_.associated_types {
             associated_types.insert(associated_type.name.as_ref(), associated_type);
         }

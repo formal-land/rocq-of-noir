@@ -278,6 +278,8 @@ pub struct Function {
     pub unconstrained: bool,
     pub inline_type: InlineType,
     pub func_sig: FunctionSignature,
+
+    pub location: Location,
 }
 
 impl Serialize for Function {
@@ -286,13 +288,14 @@ impl Serialize for Function {
         S: Serializer,
     {
         // Start a struct serialization with the number of fields
-        let mut state = serializer.serialize_struct("Function", 5)?;
+        let mut state = serializer.serialize_struct("Function", 6)?;
 
         // Serialize each actual field
         state.serialize_field("id", &self.id)?;
         state.serialize_field("name", &self.name)?;
         state.serialize_field("parameters", &self.parameters)?;
         state.serialize_field("body", &self.body)?;
+        state.serialize_field("location", &self.location)?;
 
         // Add a custom field for the corresponding source code
         state.serialize_field("source_code", &self.to_string())?;

@@ -35,7 +35,7 @@ jobs:
           startGroup "Install"
             sudo chown -R $(whoami) .
             # We compile in debug (dev) mode to go faster
-            cargo install --path tooling/nargo_cliv --profile dev
+            cargo install --path tooling/nargo_cli --profile dev
           endGroup
           startGroup "Checkout noir_base64 example"
             git clone https://github.com/noir-lang/noir_base64.git

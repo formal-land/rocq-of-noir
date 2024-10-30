@@ -345,6 +345,7 @@ impl<'interner> Monomorphizer<'interner> {
             unconstrained,
             inline_type,
             func_sig,
+            location,
         };
 
         self.push_function(id, function);
@@ -1576,6 +1577,7 @@ impl<'interner> Monomorphizer<'interner> {
             unconstrained,
             inline_type: InlineType::default(),
             func_sig: FunctionSignature::default(),
+            location,
         };
         self.push_function(id, function);
 
@@ -1710,6 +1712,7 @@ impl<'interner> Monomorphizer<'interner> {
             unconstrained,
             inline_type: InlineType::default(),
             func_sig: FunctionSignature::default(),
+            location: self.interner.expr_location(&expr),
         };
         self.push_function(id, function);
 
@@ -1834,6 +1837,7 @@ impl<'interner> Monomorphizer<'interner> {
             unconstrained,
             inline_type: InlineType::default(),
             func_sig: FunctionSignature::default(),
+            location,
         };
         self.push_function(id, function);
 

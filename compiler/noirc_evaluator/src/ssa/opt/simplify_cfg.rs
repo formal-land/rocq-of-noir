@@ -10,7 +10,7 @@
 //!
 //! Currently, 1 and 4 are unimplemented.
 use std::{
-    collections::{hash_map::DefaultHasher, HashSet},
+    collections::HashSet,
     hash::BuildHasherDefault,
 };
 
@@ -51,7 +51,7 @@ impl Function {
     pub(crate) fn simplify_function(&mut self) {
         let mut cfg = ControlFlowGraph::with_function(self);
         let mut stack = vec![self.entry_block()];
-        let mut visited = HashSet::<_, BuildHasherDefault<DefaultHasher>>::default();
+        let mut visited = HashSet::<_, BuildHasherDefault<fxhash::FxHasher>>::default();
 
         while let Some(block) = stack.pop() {
             if visited.insert(block) {

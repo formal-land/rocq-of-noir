@@ -18,6 +18,7 @@ num-bigint.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 serde.workspace = true
+fxhash.workspace = true
 
 acir.workspace = true
 brillig_vm.workspace = true
