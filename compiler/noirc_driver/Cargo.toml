@@ -24,6 +24,7 @@ acvm.workspace = true
 iter-extended.workspace = true
 fm.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 fxhash.workspace = true
 rust-embed.workspace = true
 tracing.workspace = true

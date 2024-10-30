@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::fmt::Display;
 use std::sync::atomic::{AtomicU32, Ordering};
 
@@ -180,7 +181,7 @@ impl StatementKind {
     }
 }
 
-#[derive(Eq, Debug, Clone, Default)]
+#[derive(Eq, Debug, Clone, Default, Serialize)]
 pub struct Ident(pub Spanned<String>);
 
 impl Ident {

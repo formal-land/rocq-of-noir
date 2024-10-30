@@ -8,6 +8,7 @@ use crate::token::{FunctionAttribute, SecondaryAttribute, TestScope};
 use fm::{FileId, FileManager};
 use noirc_arena::{Arena, Index};
 use noirc_errors::Location;
+use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
 mod module_def;
 pub use module_def::*;
@@ -24,7 +25,7 @@ pub const MAIN_FUNCTION: &str = "main";
 // XXX: Ultimately, we want to constrain an index to be of a certain type just like in RA
 /// Lets first check if this is offered by any external crate
 /// XXX: RA has made this a crate on crates.io
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
 pub struct LocalModuleId(pub Index);
 
 impl LocalModuleId {
@@ -33,7 +34,7 @@ impl LocalModuleId {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct ModuleId {
     pub krate: CrateId,
     pub local_id: LocalModuleId,

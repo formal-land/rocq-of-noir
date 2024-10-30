@@ -26,9 +26,11 @@ use super::{
     traits::NamedType,
 };
 
+use serde::Serialize;
+
 mod arithmetic;
 
-#[derive(Eq, Clone, Ord, PartialOrd)]
+#[derive(Eq, Clone, Ord, PartialOrd, Serialize)]
 pub enum Type {
     /// A primitive Field type
     FieldElement,
@@ -136,7 +138,7 @@ pub enum Type {
 /// For example, the type of a struct field or a function parameter is expected to be
 /// a type of kind * (represented here as `Normal`). Types used in positions where a number
 /// is expected (such as in an array length position) are expected to be of kind `Kind::Numeric`.
-#[derive(PartialEq, Eq, Clone, Hash, Debug, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, Clone, Hash, Debug, PartialOrd, Ord, Serialize)]
 pub enum Kind {
     /// Can bind to any type
     // TODO(https://github.com/noir-lang/noir/issues/6194): evaluate need for and usage of
@@ -277,7 +279,7 @@ impl std::fmt::Display for Kind {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
 #[cfg_attr(test, derive(strum_macros::EnumIter))]
 pub enum QuotedType {
     Expr,
@@ -303,6 +305,7 @@ pub type TypeBindings = HashMap<TypeVariableId, (TypeVariable, Kind, Type)>;
 /// Represents a struct type in the type system. Each instance of this
 /// rust struct will be shared across all Type::Struct variants that represent
 /// the same struct type.
+#[derive(Serialize)]
 pub struct StructType {
     /// A unique id representing this struct type. Used to check if two
     /// struct types are equal.
@@ -319,6 +322,7 @@ pub struct StructType {
     pub location: Location,
 }
 
+#[derive(Serialize)]
 pub struct StructField {
     pub visibility: ItemVisibility,
     pub name: Ident,
@@ -335,7 +339,7 @@ pub type GenericTypeVars = Vec<TypeVariable>;
 /// correctly resolving types.
 pub type Generics = Vec<ResolvedGeneric>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResolvedGeneric {
     pub name: Rc<String>,
     pub type_var: TypeVariable,
@@ -520,7 +524,7 @@ impl std::fmt::Display for StructType {
 }
 
 /// Wrap around an unsolved type
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq, Serialize)]
 pub struct TypeAlias {
     pub name: Ident,
     pub id: TypeAliasId,
@@ -594,7 +598,7 @@ impl TypeAlias {
 
 /// A shared, mutable reference to some T.
 /// Wrapper is required for Hash impl of RefCell.
-#[derive(Debug, Eq, PartialOrd, Ord)]
+#[derive(Debug, Eq, PartialOrd, Ord, Serialize)]
 pub struct Shared<T>(Rc<RefCell<T>>);
 
 impl<T: std::hash::Hash> std::hash::Hash for Shared<T> {
@@ -649,7 +653,7 @@ impl<T> Shared<T> {
 
 /// A restricted subset of binary operators useable on
 /// type level integers for use in the array length positions of types.
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub enum BinaryTypeOperator {
     Addition,
     Subtraction,
@@ -660,7 +664,7 @@ pub enum BinaryTypeOperator {
 
 /// A TypeVariable is a mutable reference that is either
 /// bound to some type, or unbound with a given TypeVariableId.
-#[derive(PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize)]
 pub struct TypeVariable(TypeVariableId, Shared<TypeBinding>);
 
 impl TypeVariable {
@@ -779,7 +783,7 @@ impl TypeVariable {
 
 /// TypeBindings are the mutable insides of a TypeVariable.
 /// They are either bound to some type, or are unbound.
-#[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord, Serialize)]
 pub enum TypeBinding {
     Bound(Type),
     Unbound(TypeVariableId, Kind),
@@ -792,7 +796,7 @@ impl TypeBinding {
 }
 
 /// A unique ID used to differentiate different type variables
-#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct TypeVariableId(pub usize);
 
 impl std::fmt::Display for Type {
