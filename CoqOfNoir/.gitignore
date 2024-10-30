@@ -7,6 +7,3 @@ CoqMakefile.conf
 *.vo
 *.vok
 *.vos
-# We put this file in the .gitignore because it is generated and the translation is not yet
-# stable: there might be re-oderings in the file depending on the build.
-base64/translation.v

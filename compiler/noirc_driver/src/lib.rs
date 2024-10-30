@@ -564,7 +564,7 @@ pub fn compile_no_check(
         let monomorphized_program = to_string_pretty(&program).unwrap();
         let monomorphized_program_path =
             context.package_build_path.join("monomorphized_program.json");
-        std::fs::write(&monomorphized_program_path, monomorphized_program).unwrap();
+        std::fs::write(monomorphized_program_path, monomorphized_program).unwrap();
     }
 
     // If user has specified that they want to see intermediate steps printed then we should
