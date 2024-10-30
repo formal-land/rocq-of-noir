@@ -23,101 +23,6 @@ def parameters_to_coq(parameters: list) -> list[str]:
 
 
 '''
-pub enum Type {
-    Field,
-    Array(/*len:*/ u32, Box<Type>), // Array(4, Field) = [Field; 4]
-    Integer(Signedness, /*bits:*/ IntegerBitSize), // u32 = Integer(unsigned, ThirtyTwo)
-    Bool,
-    String(/*len:*/ u32), // String(4) = str[4]
-    FmtString(/*len:*/ u32, Box<Type>),
-    Unit,
-    Tuple(Vec<Type>),
-    Slice(Box<Type>),
-    MutableReference(Box<Type>),
-    Function(
-        /*args:*/ Vec<Type>,
-        /*ret:*/ Box<Type>,
-        /*env:*/ Box<Type>,
-        /*unconstrained:*/ bool,
-    ),
-}
-'''
-def type_to_coq(with_paren: bool, node) -> str:
-    if node == "Field":
-        return "Ty.Field"
-
-    node_type: str = list(node.keys())[0]
-
-    if node_type == "Array":
-        node = node["Array"]
-        return paren(
-            with_paren,
-            f"Ty.Array {node[0]} {type_to_coq(True, node[1])}",
-        )
-
-    if node_type == "Integer":
-        node = node["Integer"]
-        return paren(
-            with_paren,
-            f"Ty.Integer Ty.Signedness.{node[0]} Ty.IntegerBitSize.{node[1]}",
-        )
-
-    if node_type == "Bool":
-        return "Ty.Bool"
-
-    if node_type == "String":
-        node = node["String"]
-        return paren(
-            with_paren,
-            f"Ty.String {node}",
-        )
-
-    if node_type == "FmtString":
-        node = node["FmtString"]
-        return paren(
-            with_paren,
-            f"Ty.FmtString {node[0]} {type_to_coq(True, node[1])}"
-        )
-
-    if node_type == "Unit":
-        return "Ty.Unit"
-
-    if node_type == "Tuple":
-        node = node["Tuple"]
-        return paren(
-            with_paren,
-            f"Ty.Tuple [{'; '.join(type_to_coq(False, t) for t in node)}]",
-        )
-
-    if node_type == "Slice":
-        node = node["Slice"]
-        return paren(
-            with_paren,
-            f"Ty.Slice {type_to_coq(True, node)}",
-        )
-
-    if node_type == "MutableReference":
-        node = node["MutableReference"]
-        return paren(
-            with_paren,
-            f"Ty.MutableReference {type_to_coq(True, node)}",
-        )
-
-    if node_type == "Function":
-        node = node["Function"]
-        return paren(
-            with_paren,
-            "Ty.Function [" +
-            '; '.join(type_to_coq(False, t) for t in node[0]) +
-            "] " + type_to_coq(False, node[1]) + " " +
-            type_to_coq(False, node[2]) + " " +
-            ("true" if node[3] else "false"),
-        )
-
-    raise Exception(f"Unknown node type: {node_type}")
-
-
-'''
 pub enum Definition {
     Local(LocalId),
     Function(FuncId),
@@ -188,6 +93,49 @@ def escape_string(string: str) -> str:
 
 
 '''
+pub enum Signedness {
+    Unsigned,
+    Signed,
+}
+
+pub enum IntegerBitSize {
+    One,
+    Eight,
+    Sixteen,
+    ThirtyTwo,
+    SixtyFour,
+}
+
+pub enum Type {
+    Field,
+    Integer(Signedness, /*bits:*/ IntegerBitSize), // u32 = Integer(unsigned, ThirtyTwo)
+    // ...
+}
+'''
+def type_to_integer_kind(node) -> str:
+    if node == "Field":
+        return "IntegerKind.Field"
+
+    node_type = list(node.keys())[0]
+
+    if node_type == "Integer":
+        node = node["Integer"]
+        bit_sizes: dict[str, int] = {
+            "One": 1,
+            "Eight": 8,
+            "Sixteen": 16,
+            "ThirtyTwo": 32,
+            "SixtyFour": 64,
+        }
+        if node[0] == "Unsigned":
+            return f"IntegerKind.U{bit_sizes[node[1]]}"
+        if node[0] == "Signed":
+            return f"IntegerKind.S{bit_sizes[node[1]]}"
+
+    raise Exception(f"Unknown node type: {node_type}")
+
+
+'''
 pub enum Literal {
     Array(ArrayLiteral),
     Slice(ArrayLiteral),
@@ -214,8 +162,10 @@ def literal_to_coq(node) -> str:
         node = node["Integer"]
         return \
             "Value.Integer " + \
-            ("-" if node[1] else "") + \
-            str(int(node[0], 16))
+            type_to_integer_kind(node[2]) + " " + \
+            ("(-" if node[1] else "") + \
+            str(int(node[0], 16)) + \
+            (")" if node[1] else "")
 
     if node_type == "Bool":
         node = node["Bool"]
@@ -314,7 +264,7 @@ def cast_to_coq(node) -> str:
         "M.cast (|\n" +
         indent(
             read(expression_to_coq(node["lhs"])) + ",\n" +
-            type_to_coq(False, node["type"])
+            type_to_integer_kind(node["type"])
         ) + "\n" +
         "|)"
     )
