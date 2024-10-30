@@ -1,0 +1,24 @@
+opam-version: "2.0"
+name: "coq-of-noir"
+version: "0.1"
+synopsis: "Coq of Noir"
+description: """
+Formal verification for Noir by translation to the proof system Coq
+"""
+maintainer: "Guillaume Claret <dev@clarus.me>"
+authors: [
+  "Formal Land <contact@formal.land>"
+]
+license: "MIT and APACHE-2.0"
+homepage: "https://github.com/formal-land/coq-of-noir"
+bug-reports: "https://github.com/formal-land/coq-of-noir/issues"
+dev-repo: "git+https://github.com/formal-land/coq-of-noir.git"
+depends: [
+  "ocaml" {>= "4.08"}
+  "coq" {>= "8.17.1" & < "8.18"}
+  "coq-hammer" {>= "1.3.2+8.17" & < "1.3.2+8.18"}
+  "coq-coqutil" {>= "0.0.5"}
+]
+build: [
+  [make]
+]
