@@ -1,6 +1,7 @@
 use fm::FileId;
 use iter_extended::vecmap;
 use noirc_errors::{Location, Span};
+use serde::Serialize;
 
 use super::expr::{HirBlockExpression, HirExpression, HirIdent};
 use super::stmt::HirPattern;
@@ -14,7 +15,7 @@ use crate::{ResolvedGeneric, Type};
 
 /// A Hir function is a block expression with a list of statements.
 /// If the function has yet to be resolved, the body starts off empty (None).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirFunction(Option<ExprId>);
 
 impl HirFunction {

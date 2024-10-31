@@ -69,7 +69,7 @@ type StructAttributes = Vec<SecondaryAttribute>;
 /// monomorphization - and it is not useful afterward.
 #[derive(Debug)]
 pub struct NodeInterner {
-    pub(crate) nodes: Arena<Node>,
+    pub nodes: Arena<Node>,
     pub(crate) func_meta: HashMap<FuncId, FuncMeta>,
 
     function_definition_ids: HashMap<FuncId, DefinitionId>,
@@ -433,7 +433,7 @@ impl GlobalId {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy, Serialize)]
 pub struct StmtId(Index);
 
 impl StmtId {
@@ -445,7 +445,7 @@ impl StmtId {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, PartialOrd, Ord)]
+#[derive(Debug, Eq, PartialEq, Hash, Copy, Clone, PartialOrd, Ord, Serialize)]
 pub struct ExprId(Index);
 
 #[derive(Debug, Eq, PartialEq, Hash, Copy, Clone)]
@@ -548,8 +548,8 @@ into_index!(StmtId);
 /// We use one Arena for all types that can be interned as that has better cache locality
 /// This data structure is never accessed directly, so API wise there is no difference between using
 /// Multiple arenas and a single Arena
-#[derive(Debug, Clone)]
-pub(crate) enum Node {
+#[derive(Debug, Clone, Serialize)]
+pub enum Node {
     Function(HirFunction),
     Statement(HirStatement),
     Expression(HirExpression),

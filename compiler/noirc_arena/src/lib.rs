@@ -34,7 +34,7 @@ impl fmt::Display for Index {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Arena<T> {
     pub vec: Vec<T>,
 }
