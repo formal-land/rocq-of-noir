@@ -46,7 +46,7 @@ impl ModuleData {
 
         ModuleData {
             parent,
-            children: HashMap::new(),
+            children: HashMap::default(),
             scope: ItemScope::default(),
             definitions: ItemScope::default(),
             location,

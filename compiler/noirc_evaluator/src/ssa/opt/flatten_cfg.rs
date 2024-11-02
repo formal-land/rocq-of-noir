@@ -264,7 +264,7 @@ fn flatten_function_cfg(function: &mut Function, no_predicates: &HashMap<Functio
         inserter: FunctionInserter::new(function),
         cfg,
         store_values: HashMap::default(),
-        local_allocations: HashSet::new(),
+        local_allocations: HashSet::default(),
         branch_ends,
         slice_sizes: HashMap::default(),
         condition_stack: Vec::new(),

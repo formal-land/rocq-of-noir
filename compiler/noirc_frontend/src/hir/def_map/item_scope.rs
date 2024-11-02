@@ -60,7 +60,7 @@ impl ItemScope {
                     Ok(())
                 }
             } else {
-                let mut trait_hashmap = HashMap::new();
+                let mut trait_hashmap = HashMap::default();
                 trait_hashmap.insert(trait_id, (mod_def, visibility, is_prelude));
                 map.insert(name, trait_hashmap);
                 Ok(())

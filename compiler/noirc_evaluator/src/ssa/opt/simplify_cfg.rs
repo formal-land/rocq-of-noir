@@ -9,7 +9,10 @@
 //!    only 1 successor then (2) also will be applied.
 //!
 //! Currently, 1 and 4 are unimplemented.
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    hash::BuildHasherDefault,
+};
 
 use acvm::acir::AcirField;
 
@@ -48,7 +51,7 @@ impl Function {
     pub(crate) fn simplify_function(&mut self) {
         let mut cfg = ControlFlowGraph::with_function(self);
         let mut stack = vec![self.entry_block()];
-        let mut visited = HashSet::new();
+        let mut visited = HashSet::<_, BuildHasherDefault<fxhash::FxHasher>>::default();
 
         while let Some(block) = stack.pop() {
             if visited.insert(block) {

@@ -1,0 +1,59 @@
+name: Coq
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-gnu]
+
+    steps:
+    - name: Checkout Noir repo
+      uses: actions/checkout@v4
+
+    - name: Download Git submodules
+      run: git submodule update --init --recursive
+
+    - name: Run the Coq tests
+      uses: coq-community/docker-coq-action@v1
+      with:
+        custom_image: coqorg/coq:8.17-ocaml-4.14-flambda
+        custom_script: |
+          startGroup "Install dependencies"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source "$HOME/.cargo/env"
+            cargo --version
+            sudo ln -s `which python3` /usr/bin/python
+            opam install -y --deps-only CoqOfNoir/coq-of-noir.opam
+          endGroup
+          startGroup "Install"
+            sudo chown -R $(whoami) .
+            # We compile in debug (dev) mode to go faster
+            cargo install --path tooling/nargo_cli --profile dev
+          endGroup
+          startGroup "Checkout noir_base64 example"
+            git clone https://github.com/noir-lang/noir_base64.git
+            cd noir_base64/
+            git checkout eb933f20b8175132f8e965e519b98c41ad805af1
+            cd ..
+          endGroup
+          startGroup "Convert to Coq"
+            cd noir_base64/
+            nargo test --show-monomorphized
+            cd ..
+            python scripts/coq_of_noir.py noir_base64/monomorphized_program.json >CoqOfNoir/base64/translation.v
+          endGroup
+          startGroup "Check that the diff is empty (excluding submodules)"
+            git -c color.ui=always diff --exit-code --ignore-submodules=dirty
+          endGroup
+          startGroup "Compile Coq translations"
+            cd CoqOfNoir
+            make
+            cd ..
+          endGroup

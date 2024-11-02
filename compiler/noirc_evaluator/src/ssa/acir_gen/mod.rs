@@ -358,7 +358,7 @@ impl<'a> Context<'a> {
             ssa_values: HashMap::default(),
             current_side_effects_enabled_var,
             acir_context,
-            initialized_arrays: HashSet::new(),
+            initialized_arrays: HashSet::default(),
             memory_blocks: HashMap::default(),
             internal_memory_blocks: HashMap::default(),
             internal_mem_block_lengths: HashMap::default(),

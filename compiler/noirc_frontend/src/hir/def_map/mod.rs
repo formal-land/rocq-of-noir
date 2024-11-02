@@ -225,8 +225,10 @@ impl CrateDefMap {
                         })
                         .collect();
 
-                    let mut outputs =
-                        ContractOutputs { structs: HashMap::new(), globals: HashMap::new() };
+                    let mut outputs = ContractOutputs {
+                        structs: HashMap::default(),
+                        globals: HashMap::default(),
+                    };
 
                     interner.get_all_globals().iter().for_each(|global_info| {
                         interner.global_attributes(&global_info.id).iter().for_each(|attr| {

@@ -2,7 +2,10 @@
 //! The purpose of this pass is to inline the instructions of each function call
 //! within the function caller. If all function calls are known, there will only
 //! be a single function remaining when the pass finishes.
-use std::collections::{BTreeSet, HashSet, VecDeque};
+use std::{
+    collections::{BTreeSet, HashSet, VecDeque},
+    hash::BuildHasherDefault,
+};
 
 use acvm::acir::AcirField;
 use iter_extended::{btree_map, vecmap};
@@ -18,7 +21,7 @@ use crate::ssa::{
     },
     ssa_gen::Ssa,
 };
-use fxhash::FxHashMap as HashMap;
+use fxhash::{FxHashMap as HashMap, FxHasher};
 
 /// An arbitrary limit to the maximum number of recursive call
 /// frames at any point in time.
@@ -414,7 +417,7 @@ impl<'function> PerFunctionContext<'function> {
 
     /// Inline all reachable blocks within the source_function into the destination function.
     fn inline_blocks(&mut self, ssa: &Ssa) -> Vec<ValueId> {
-        let mut seen_blocks = HashSet::new();
+        let mut seen_blocks = HashSet::<_, BuildHasherDefault<FxHasher>>::default();
         let mut block_queue = VecDeque::new();
         block_queue.push_back(self.source_function.entry_block());
 

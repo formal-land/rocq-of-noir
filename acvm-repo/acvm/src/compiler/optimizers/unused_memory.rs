@@ -19,7 +19,7 @@ impl<F> UnusedMemoryOptimizer<F> {
     ///
     /// These memory blocks can be safely removed.
     fn collect_unused_memory_initializations(circuit: &Circuit<F>) -> HashSet<BlockId> {
-        let mut unused_memory_initialization = HashSet::new();
+        let mut unused_memory_initialization = HashSet::default();
 
         for opcode in &circuit.opcodes {
             match opcode {

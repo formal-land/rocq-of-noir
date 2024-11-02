@@ -122,14 +122,14 @@ impl LspState {
             client: client.clone(),
             root_path: None,
             solver: WrapperSolver(Box::new(solver)),
-            input_files: HashMap::new(),
-            cached_lenses: HashMap::new(),
-            cached_parsed_files: HashMap::new(),
-            workspace_cache: HashMap::new(),
-            package_cache: HashMap::new(),
+            input_files: HashMap::default(),
+            cached_lenses: HashMap::default(),
+            cached_parsed_files: HashMap::default(),
+            workspace_cache: HashMap::default(),
+            package_cache: HashMap::default(),
             open_documents_count: 0,
             options: Default::default(),
-            files_with_errors: HashMap::new(),
+            files_with_errors: HashMap::default(),
         }
     }
 }
@@ -425,7 +425,7 @@ pub fn insert_all_files_for_workspace_into_file_manager(
     file_manager: &mut FileManager,
 ) {
     // Source code for files we cached override those that are read from disk.
-    let mut overrides: HashMap<&Path, &str> = HashMap::new();
+    let mut overrides: HashMap<&Path, &str> = HashMap::default();
     for (path, source) in &state.input_files {
         let path = path.strip_prefix("file://").unwrap();
         overrides.insert(Path::new(path), source);

@@ -224,7 +224,7 @@ fn prepare_context(
         <JsValue as JsValueSerdeExt>::into_serde(&JsValue::from(dependency_graph))
             .map_err(|err| err.to_string())?
     } else {
-        DependencyGraph { root_dependencies: vec![], library_dependencies: HashMap::new() }
+        DependencyGraph { root_dependencies: vec![], library_dependencies: HashMap::default() }
     };
 
     let fm = file_manager_with_source_map(file_source_map);
@@ -265,7 +265,7 @@ pub(crate) fn file_manager_with_source_map(source_map: PathToFileSourceMap) -> F
 // upon some library `lib1`. Then the packages that `lib1` depend upon will be placed in the
 // `library_dependencies` list and the `lib1` will be placed in the `root_dependencies` list.
 fn process_dependency_graph(context: &mut Context, dependency_graph: DependencyGraph) {
-    let mut crate_names: HashMap<&CrateName, CrateId> = HashMap::new();
+    let mut crate_names: HashMap<&CrateName, CrateId> = HashMap::default();
 
     for lib in &dependency_graph.root_dependencies {
         let crate_id = add_noir_lib(context, lib);
@@ -326,7 +326,7 @@ mod test {
     #[test]
     fn test_works_with_empty_dependency_graph() {
         let dependency_graph =
-            DependencyGraph { root_dependencies: vec![], library_dependencies: HashMap::new() };
+            DependencyGraph { root_dependencies: vec![], library_dependencies: HashMap::default() };
 
         let source_map = PathToFileSourceMap::default();
         let mut context = setup_test_context(source_map);
@@ -341,7 +341,7 @@ mod test {
     fn test_works_with_root_dependencies() {
         let dependency_graph = DependencyGraph {
             root_dependencies: vec![crate_name("lib1")],
-            library_dependencies: HashMap::new(),
+            library_dependencies: HashMap::default(),
         };
 
         let source_map = PathToFileSourceMap(
@@ -361,7 +361,7 @@ mod test {
     fn test_works_with_duplicate_root_dependencies() {
         let dependency_graph = DependencyGraph {
             root_dependencies: vec![crate_name("lib1"), crate_name("lib1")],
-            library_dependencies: HashMap::new(),
+            library_dependencies: HashMap::default(),
         };
 
         let source_map = PathToFileSourceMap(

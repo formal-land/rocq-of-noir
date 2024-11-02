@@ -183,7 +183,7 @@ impl ConstantBackpropagationOptimizer {
                         Opcode::Brillig(new_brillig)
                     } else if let Ok(mut solver) = BrilligSolver::new(
                         &known_witnesses,
-                        &HashMap::new(),
+                        &HashMap::default(),
                         &new_brillig,
                         &StubbedBlackBoxSolver,
                         idx,

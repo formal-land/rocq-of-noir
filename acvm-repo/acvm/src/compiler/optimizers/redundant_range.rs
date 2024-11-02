@@ -6,7 +6,11 @@ use acir::{
     native_types::Witness,
     AcirField,
 };
-use std::collections::{BTreeMap, HashSet};
+use fxhash::FxHasher;
+use std::{
+    collections::{BTreeMap, HashSet},
+    hash::BuildHasherDefault,
+};
 
 /// `RangeOptimizer` will remove redundant range constraints.
 ///
@@ -104,7 +108,7 @@ impl<F: AcirField> RangeOptimizer<F> {
         self,
         order_list: Vec<usize>,
     ) -> (Circuit<F>, Vec<usize>) {
-        let mut already_seen_witness = HashSet::new();
+        let mut already_seen_witness = HashSet::<_, BuildHasherDefault<FxHasher>>::default();
 
         let mut new_order_list = Vec::with_capacity(order_list.len());
         let mut optimized_opcodes = Vec::with_capacity(self.circuit.opcodes.len());

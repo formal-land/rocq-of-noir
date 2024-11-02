@@ -149,7 +149,7 @@ impl DebugInfo {
     }
 
     pub fn count_span_opcodes(&self) -> HashMap<Location, OpCodesCount> {
-        let mut accumulator: HashMap<Location, Vec<&OpcodeLocation>> = HashMap::new();
+        let mut accumulator: HashMap<Location, Vec<&OpcodeLocation>> = HashMap::default();
 
         for (opcode_location, locations) in self.locations.iter() {
             for location in locations.iter() {

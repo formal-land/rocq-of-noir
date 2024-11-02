@@ -85,7 +85,7 @@ impl Default for FileMap {
     fn default() -> Self {
         FileMap {
             files: SimpleFiles::new(),
-            name_to_id: HashMap::new(),
+            name_to_id: HashMap::default(),
             current_dir: std::env::current_dir().ok(),
         }
     }
