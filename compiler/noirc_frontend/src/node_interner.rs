@@ -516,7 +516,7 @@ impl TraitId {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy, Serialize)]
 pub struct TraitImplId(pub usize);
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
