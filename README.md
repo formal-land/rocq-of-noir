@@ -6,6 +6,12 @@ Noir is a Domain Specific Language for SNARK proving systems. With `coq-of-noir`
 
 This is still a work in progress. Contact us at [Formal Land](https://formal.land/) if you are interested.
 
+## Blog posts
+
+Here are some blog posts featuring this tool:
+
+- [◼️ A formal verification tool for Noir – 1](https://formal.land/blog/2024/11/01/tool-for-noir-1)
+
 ## License
 
 `coq-of-noir` is free and open source. It is distributed under a dual license. (MIT/APACHE) The translation phase is based on the code of the Noir compiler to maximize code reuse.
