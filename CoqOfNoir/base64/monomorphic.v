@@ -22,37 +22,37 @@ Definition encode_and_decode₀ (α : list Value.t) : M.t :=
       |) ]] in
       let~ encoded := [[ M.copy (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "base64_encode", 1 |) |),
+          get_function "base64_encode" 1,
           [
-            M.read (| M.alloc (M.call_closure (|
+            M.call_closure (|
               M.read (| Builtin.as_bytes |),
               [
                 M.read (| input |)
               ]
-            |)) |)
+            |)
           ]
         |))
       |) ]] in
       do~ [[
         M.alloc (M.assert (|
-          M.read (| M.alloc (M.call_closure (|
-            M.read (| M.get_function (| "eq", 2 |) |),
+          M.call_closure (|
+            get_function "eq" 2,
             [
               M.read (| encoded |);
-              M.read (| M.alloc (M.call_closure (|
+              M.call_closure (|
                 M.read (| Builtin.as_bytes |),
                 [
                   M.read (| base64_encoded |)
                 ]
-              |)) |)
+              |)
             ]
-          |)) |),
+          |),
           None
         |))
       ]] in
       let~ decoded := [[ M.copy (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "base64_decode", 3 |) |),
+          get_function "base64_decode" 3,
           [
             M.read (| encoded |)
           ]
@@ -60,24 +60,29 @@ Definition encode_and_decode₀ (α : list Value.t) : M.t :=
       |) ]] in
       [[
         M.alloc (M.assert (|
-          M.read (| M.alloc (M.call_closure (|
-            M.read (| M.get_function (| "eq", 4 |) |),
+          M.call_closure (|
+            get_function "eq" 4,
             [
               M.read (| decoded |);
-              M.read (| M.alloc (M.call_closure (|
+              M.call_closure (|
                 M.read (| Builtin.as_bytes |),
                 [
                   M.read (| input |)
                 ]
-              |)) |)
+              |)
             ]
-          |)) |),
+          |),
           None
         |))
       ]] in
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_encode_and_decode₀ :
+  get_function "encode_and_decode" 0 =
+  closure encode_and_decode₀.
+Global Hint Rewrite get_function_encode_and_decode₀ : get_function.
 
 (*
   fn base64_encode$f1(input$l4: [u8; 88]) -> [u8; 118] {
@@ -123,124 +128,124 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
     let* result :=
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |)
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0
         ])
       |) ]] in
       let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
@@ -251,106 +256,106 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
       |) ]] in
       let~ num_chunks := [[ M.copy (|
         M.alloc (Binary.add (|
-          M.read (| M.alloc (Binary.divide (|
-            M.read (| M.alloc (Value.Integer IntegerKind.U32 88) |),
+          Binary.divide (|
+            Value.Integer IntegerKind.U32 88,
             M.read (| BYTES_PER_CHUNK |)
-          |)) |),
-          M.read (| M.alloc (M.cast (|
-            M.read (| M.alloc (Binary.not_equal (|
-              M.read (| M.alloc (Binary.modulo (|
-                M.read (| M.alloc (Value.Integer IntegerKind.U32 88) |),
+          |),
+          M.cast (|
+            Binary.not_equal (|
+              Binary.modulo (|
+                Value.Integer IntegerKind.U32 88,
                 M.read (| BYTES_PER_CHUNK |)
-              |)) |),
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |)
-            |)) |),
+              |),
+              Value.Integer IntegerKind.U32 0
+            |),
             IntegerKind.U32
-          |)) |)
+          |)
         |))
       |) ]] in
       do~ [[
         M.if_ (|
-          M.read (| M.alloc (Binary.greater (|
+          Binary.greater (|
             M.read (| num_chunks |),
-            M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |)
-          |)) |),
+            Value.Integer IntegerKind.U32 0
+          |),
           do~ [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-              M.read (| M.alloc (Binary.subtract (|
+              Value.Integer IntegerKind.U32 0,
+              Binary.subtract (|
                 M.read (| num_chunks |),
-                M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-              |)) |),
+                Value.Integer IntegerKind.U32 1
+              |),
               fun (i : Value.t) =>
               let~ slice := [[ M.copy_mutable (|
                 M.alloc (Value.Integer IntegerKind.Field 0)
               |) ]] in
               do~ [[
                 M.for_ (|
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+                  Value.Integer IntegerKind.U32 0,
                   M.read (| BYTES_PER_CHUNK |),
                   fun (j : Value.t) =>
                   do~ [[
                     M.alloc (M.assign (|
-                      M.read (| M.alloc (slice) |),
-                      M.read (| M.alloc (Binary.multiply (|
+                      slice,
+                      Binary.multiply (|
                         M.read (| slice |),
-                        M.read (| M.alloc (Value.Integer IntegerKind.Field 256) |)
-                      |)) |)
+                        Value.Integer IntegerKind.Field 256
+                      |)
                     |))
                   ]] in
                   [[
                     M.alloc (M.assign (|
-                      M.read (| M.alloc (slice) |),
-                      M.read (| M.alloc (Binary.add (|
+                      slice,
+                      Binary.add (|
                         M.read (| slice |),
-                        M.read (| M.alloc (M.cast (|
-                          M.read (| M.alloc (M.index (|
+                        M.cast (|
+                          M.index (|
                             M.read (| input |),
-                            M.read (| M.alloc (Binary.add (|
-                              M.read (| M.alloc (Binary.multiply (|
+                            Binary.add (|
+                              Binary.multiply (|
                                 M.read (| i |),
                                 M.read (| BYTES_PER_CHUNK |)
-                              |)) |),
+                              |),
                               M.read (| j |)
-                            |)) |)
-                          |)) |),
+                            |)
+                          |),
                           IntegerKind.Field
-                        |)) |)
-                      |)) |)
+                        |)
+                      |)
                     |))
                   ]]
                 |)
               ]] in
               let~ slice_base64_chunks := [[ M.copy (|
                 M.alloc (M.call_closure (|
-                  M.read (| M.get_function (| "to_be_radix", 5 |) |),
+                  get_function "to_be_radix" 5,
                   [
                     M.read (| slice |);
-                    M.read (| M.alloc (Value.Integer IntegerKind.U32 64) |)
+                    Value.Integer IntegerKind.U32 64
                   ]
                 |))
               |) ]] in
               [[
                 M.for_ (|
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+                  Value.Integer IntegerKind.U32 0,
                   M.read (| BASE64_ELEMENTS_PER_CHUNK |),
                   fun (j : Value.t) =>
                   [[
                     M.alloc (M.assign (|
-                      M.read (| M.alloc (M.index (|
-                        M.read (| M.alloc (result) |),
-                        M.read (| M.alloc (Binary.add (|
-                          M.read (| M.alloc (Binary.multiply (|
+                      M.index (|
+                        result,
+                        Binary.add (|
+                          Binary.multiply (|
                             M.read (| i |),
                             M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-                          |)) |),
+                          |),
                           M.read (| j |)
-                        |)) |)
-                      |)) |),
-                      M.read (| M.alloc (M.index (|
+                        |)
+                      |),
+                      M.index (|
                         M.read (| slice_base64_chunks |),
                         M.read (| j |)
-                      |)) |)
+                      |)
                     |))
                   ]]
                 |)
@@ -359,14 +364,14 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
           ]] in
           let~ bytes_in_final_chunk := [[ M.copy (|
             M.alloc (Binary.subtract (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 88) |),
-              M.read (| M.alloc (Binary.multiply (|
-                M.read (| M.alloc (Binary.subtract (|
+              Value.Integer IntegerKind.U32 88,
+              Binary.multiply (|
+                Binary.subtract (|
                   M.read (| num_chunks |),
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                |)) |),
+                  Value.Integer IntegerKind.U32 1
+                |),
                 M.read (| BYTES_PER_CHUNK |)
-              |)) |)
+              |)
             |))
           |) ]] in
           let~ slice := [[ M.copy_mutable (|
@@ -374,40 +379,40 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
           |) ]] in
           do~ [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+              Value.Integer IntegerKind.U32 0,
               M.read (| bytes_in_final_chunk |),
               fun (j : Value.t) =>
               do~ [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Binary.multiply (|
+                  slice,
+                  Binary.multiply (|
                     M.read (| slice |),
-                    M.read (| M.alloc (Value.Integer IntegerKind.Field 256) |)
-                  |)) |)
+                    Value.Integer IntegerKind.Field 256
+                  |)
                 |))
               ]] in
               [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Binary.add (|
+                  slice,
+                  Binary.add (|
                     M.read (| slice |),
-                    M.read (| M.alloc (M.cast (|
-                      M.read (| M.alloc (M.index (|
+                    M.cast (|
+                      M.index (|
                         M.read (| input |),
-                        M.read (| M.alloc (Binary.add (|
-                          M.read (| M.alloc (Binary.multiply (|
-                            M.read (| M.alloc (Binary.subtract (|
+                        Binary.add (|
+                          Binary.multiply (|
+                            Binary.subtract (|
                               M.read (| num_chunks |),
-                              M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                            |)) |),
+                              Value.Integer IntegerKind.U32 1
+                            |),
                             M.read (| BYTES_PER_CHUNK |)
-                          |)) |),
+                          |),
                           M.read (| j |)
-                        |)) |)
-                      |)) |),
+                        |)
+                      |),
                       IntegerKind.Field
-                    |)) |)
-                  |)) |)
+                    |)
+                  |)
                 |))
               ]]
             |)
@@ -419,73 +424,73 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
               fun (_ : Value.t) =>
               [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Binary.multiply (|
+                  slice,
+                  Binary.multiply (|
                     M.read (| slice |),
-                    M.read (| M.alloc (Value.Integer IntegerKind.Field 256) |)
-                  |)) |)
+                    Value.Integer IntegerKind.Field 256
+                  |)
                 |))
               ]]
             |)
           ]] in
           let~ slice_base64_chunks := [[ M.copy (|
             M.alloc (M.call_closure (|
-              M.read (| M.get_function (| "to_be_radix", 5 |) |),
+              get_function "to_be_radix" 5,
               [
                 M.read (| slice |);
-                M.read (| M.alloc (Value.Integer IntegerKind.U32 64) |)
+                Value.Integer IntegerKind.U32 64
               ]
             |))
           |) ]] in
           let~ num_elements_in_final_chunk := [[ M.copy (|
             M.alloc (Binary.subtract (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 118) |),
-              M.read (| M.alloc (Binary.multiply (|
-                M.read (| M.alloc (Binary.subtract (|
+              Value.Integer IntegerKind.U32 118,
+              Binary.multiply (|
+                Binary.subtract (|
                   M.read (| num_chunks |),
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                |)) |),
+                  Value.Integer IntegerKind.U32 1
+                |),
                 M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-              |)) |)
+              |)
             |))
           |) ]] in
           do~ [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+              Value.Integer IntegerKind.U32 0,
               M.read (| num_elements_in_final_chunk |),
               fun (i : Value.t) =>
               [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (M.index (|
-                    M.read (| M.alloc (result) |),
-                    M.read (| M.alloc (Binary.add (|
-                      M.read (| M.alloc (Binary.multiply (|
-                        M.read (| M.alloc (Binary.subtract (|
+                  M.index (|
+                    result,
+                    Binary.add (|
+                      Binary.multiply (|
+                        Binary.subtract (|
                           M.read (| num_chunks |),
-                          M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                        |)) |),
+                          Value.Integer IntegerKind.U32 1
+                        |),
                         M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-                      |)) |),
+                      |),
                       M.read (| i |)
-                    |)) |)
-                  |)) |),
-                  M.read (| M.alloc (M.index (|
+                    |)
+                  |),
+                  M.index (|
                     M.read (| slice_base64_chunks |),
                     M.read (| i |)
-                  |)) |)
+                  |)
                 |))
               ]]
             |)
           ]] in
           [[
             M.alloc (M.assign (|
-              M.read (| M.alloc (result) |),
-              M.read (| M.alloc (M.call_closure (|
-                M.read (| M.get_function (| "base64_encode_elements", 6 |) |),
+              result,
+              M.call_closure (|
+                get_function "base64_encode_elements" 6,
                 [
                   M.read (| result |)
                 ]
-              |)) |)
+              |)
             |))
           ]],
           None
@@ -497,6 +502,11 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_base64_encode₁ :
+  get_function "base64_encode" 1 =
+  closure base64_encode₁.
+Global Hint Rewrite get_function_base64_encode₁ : get_function.
 
 (*
   fn eq$f2(self$l21: [u8; 118], other$l22: [u8; 118]) -> bool {
@@ -518,33 +528,33 @@ Definition eq₂ (α : list Value.t) : M.t :=
       |) ]] in
       do~ [[
         M.for_ (|
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-          M.read (| M.alloc (M.call_closure (|
+          Value.Integer IntegerKind.U32 0,
+          M.call_closure (|
             M.read (| Builtin.len |),
             [
               M.read (| self |)
             ]
-          |)) |),
+          |),
           fun (i : Value.t) =>
           [[
             M.alloc (M.assign (|
-              M.read (| M.alloc (result) |),
-              M.read (| M.alloc (Binary.and_ (|
+              result,
+              Binary.and_ (|
                 M.read (| result |),
-                M.read (| M.alloc (M.call_closure (|
-                  M.read (| M.get_function (| "eq", 7 |) |),
+                M.call_closure (|
+                  get_function "eq" 7,
                   [
-                    M.read (| M.alloc (M.index (|
+                    M.index (|
                       M.read (| self |),
                       M.read (| i |)
-                    |)) |);
-                    M.read (| M.alloc (M.index (|
+                    |);
+                    M.index (|
                       M.read (| other |),
                       M.read (| i |)
-                    |)) |)
+                    |)
                   ]
-                |)) |)
-              |)) |)
+                |)
+              |)
             |))
           ]]
         |)
@@ -555,6 +565,11 @@ Definition eq₂ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_eq₂ :
+  get_function "eq" 2 =
+  closure eq₂.
+Global Hint Rewrite get_function_eq₂ : get_function.
 
 (*
   fn base64_decode$f3(input$l25: [u8; 118]) -> [u8; 88] {
@@ -600,7 +615,7 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
     let* result :=
       let~ decoded := [[ M.copy (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "base64_decode_elements", 8 |) |),
+          get_function "base64_decode_elements" 8,
           [
             M.read (| input |)
           ]
@@ -608,94 +623,94 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |)
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0
         ])
       |) ]] in
       let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
@@ -706,79 +721,79 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
       |) ]] in
       let~ num_chunks := [[ M.copy (|
         M.alloc (Binary.add (|
-          M.read (| M.alloc (Binary.divide (|
-            M.read (| M.alloc (Value.Integer IntegerKind.U32 118) |),
+          Binary.divide (|
+            Value.Integer IntegerKind.U32 118,
             M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-          |)) |),
-          M.read (| M.alloc (M.cast (|
-            M.read (| M.alloc (Binary.not_equal (|
-              M.read (| M.alloc (Binary.modulo (|
-                M.read (| M.alloc (Value.Integer IntegerKind.U32 118) |),
+          |),
+          M.cast (|
+            Binary.not_equal (|
+              Binary.modulo (|
+                Value.Integer IntegerKind.U32 118,
                 M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-              |)) |),
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |)
-            |)) |),
+              |),
+              Value.Integer IntegerKind.U32 0
+            |),
             IntegerKind.U32
-          |)) |)
+          |)
         |))
       |) ]] in
       do~ [[
         M.if_ (|
-          M.read (| M.alloc (Binary.greater (|
+          Binary.greater (|
             M.read (| num_chunks |),
-            M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |)
-          |)) |),
+            Value.Integer IntegerKind.U32 0
+          |),
           do~ [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-              M.read (| M.alloc (Binary.subtract (|
+              Value.Integer IntegerKind.U32 0,
+              Binary.subtract (|
                 M.read (| num_chunks |),
-                M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-              |)) |),
+                Value.Integer IntegerKind.U32 1
+              |),
               fun (i : Value.t) =>
               let~ slice := [[ M.copy_mutable (|
                 M.alloc (Value.Integer IntegerKind.Field 0)
               |) ]] in
               do~ [[
                 M.for_ (|
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+                  Value.Integer IntegerKind.U32 0,
                   M.read (| BASE64_ELEMENTS_PER_CHUNK |),
                   fun (j : Value.t) =>
                   do~ [[
                     M.alloc (M.assign (|
-                      M.read (| M.alloc (slice) |),
-                      M.read (| M.alloc (Binary.multiply (|
+                      slice,
+                      Binary.multiply (|
                         M.read (| slice |),
-                        M.read (| M.alloc (Value.Integer IntegerKind.Field 64) |)
-                      |)) |)
+                        Value.Integer IntegerKind.Field 64
+                      |)
                     |))
                   ]] in
                   [[
                     M.alloc (M.assign (|
-                      M.read (| M.alloc (slice) |),
-                      M.read (| M.alloc (Binary.add (|
+                      slice,
+                      Binary.add (|
                         M.read (| slice |),
-                        M.read (| M.alloc (M.cast (|
-                          M.read (| M.alloc (M.index (|
+                        M.cast (|
+                          M.index (|
                             M.read (| decoded |),
-                            M.read (| M.alloc (Binary.add (|
-                              M.read (| M.alloc (Binary.multiply (|
+                            Binary.add (|
+                              Binary.multiply (|
                                 M.read (| i |),
                                 M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-                              |)) |),
+                              |),
                               M.read (| j |)
-                            |)) |)
-                          |)) |),
+                            |)
+                          |),
                           IntegerKind.Field
-                        |)) |)
-                      |)) |)
+                        |)
+                      |)
                     |))
                   ]]
                 |)
               ]] in
               let~ slice_bytes := [[ M.copy (|
                 M.alloc (M.call_closure (|
-                  M.read (| M.get_function (| "to_be_bytes", 9 |) |),
+                  get_function "to_be_bytes" 9,
                   [
                     M.read (| slice |)
                   ]
@@ -786,25 +801,25 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
               |) ]] in
               [[
                 M.for_ (|
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+                  Value.Integer IntegerKind.U32 0,
                   M.read (| BYTES_PER_CHUNK |),
                   fun (j : Value.t) =>
                   [[
                     M.alloc (M.assign (|
-                      M.read (| M.alloc (M.index (|
-                        M.read (| M.alloc (result) |),
-                        M.read (| M.alloc (Binary.add (|
-                          M.read (| M.alloc (Binary.multiply (|
+                      M.index (|
+                        result,
+                        Binary.add (|
+                          Binary.multiply (|
                             M.read (| i |),
                             M.read (| BYTES_PER_CHUNK |)
-                          |)) |),
+                          |),
                           M.read (| j |)
-                        |)) |)
-                      |)) |),
-                      M.read (| M.alloc (M.index (|
+                        |)
+                      |),
+                      M.index (|
                         M.read (| slice_bytes |),
                         M.read (| j |)
-                      |)) |)
+                      |)
                     |))
                   ]]
                 |)
@@ -813,14 +828,14 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
           ]] in
           let~ base64_elements_in_final_chunk := [[ M.copy (|
             M.alloc (Binary.subtract (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 118) |),
-              M.read (| M.alloc (Binary.multiply (|
-                M.read (| M.alloc (Binary.subtract (|
+              Value.Integer IntegerKind.U32 118,
+              Binary.multiply (|
+                Binary.subtract (|
                   M.read (| num_chunks |),
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                |)) |),
+                  Value.Integer IntegerKind.U32 1
+                |),
                 M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-              |)) |)
+              |)
             |))
           |) ]] in
           let~ slice := [[ M.copy_mutable (|
@@ -828,40 +843,40 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
           |) ]] in
           do~ [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+              Value.Integer IntegerKind.U32 0,
               M.read (| base64_elements_in_final_chunk |),
               fun (j : Value.t) =>
               do~ [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Binary.multiply (|
+                  slice,
+                  Binary.multiply (|
                     M.read (| slice |),
-                    M.read (| M.alloc (Value.Integer IntegerKind.Field 64) |)
-                  |)) |)
+                    Value.Integer IntegerKind.Field 64
+                  |)
                 |))
               ]] in
               [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Binary.add (|
+                  slice,
+                  Binary.add (|
                     M.read (| slice |),
-                    M.read (| M.alloc (M.cast (|
-                      M.read (| M.alloc (M.index (|
+                    M.cast (|
+                      M.index (|
                         M.read (| decoded |),
-                        M.read (| M.alloc (Binary.add (|
-                          M.read (| M.alloc (Binary.multiply (|
-                            M.read (| M.alloc (Binary.subtract (|
+                        Binary.add (|
+                          Binary.multiply (|
+                            Binary.subtract (|
                               M.read (| num_chunks |),
-                              M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                            |)) |),
+                              Value.Integer IntegerKind.U32 1
+                            |),
                             M.read (| BASE64_ELEMENTS_PER_CHUNK |)
-                          |)) |),
+                          |),
                           M.read (| j |)
-                        |)) |)
-                      |)) |),
+                        |)
+                      |),
                       IntegerKind.Field
-                    |)) |)
-                  |)) |)
+                    |)
+                  |)
                 |))
               ]]
             |)
@@ -873,18 +888,18 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
               fun (_ : Value.t) =>
               [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (slice) |),
-                  M.read (| M.alloc (Binary.multiply (|
+                  slice,
+                  Binary.multiply (|
                     M.read (| slice |),
-                    M.read (| M.alloc (Value.Integer IntegerKind.Field 64) |)
-                  |)) |)
+                    Value.Integer IntegerKind.Field 64
+                  |)
                 |))
               ]]
             |)
           ]] in
           let~ slice_bytes := [[ M.copy (|
             M.alloc (M.call_closure (|
-              M.read (| M.get_function (| "to_be_bytes", 9 |) |),
+              get_function "to_be_bytes" 9,
               [
                 M.read (| slice |)
               ]
@@ -892,40 +907,40 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
           |) ]] in
           let~ num_bytes_in_final_chunk := [[ M.copy (|
             M.alloc (Binary.subtract (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 88) |),
-              M.read (| M.alloc (Binary.multiply (|
-                M.read (| M.alloc (Binary.subtract (|
+              Value.Integer IntegerKind.U32 88,
+              Binary.multiply (|
+                Binary.subtract (|
                   M.read (| num_chunks |),
-                  M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                |)) |),
+                  Value.Integer IntegerKind.U32 1
+                |),
                 M.read (| BYTES_PER_CHUNK |)
-              |)) |)
+              |)
             |))
           |) ]] in
           [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
+              Value.Integer IntegerKind.U32 0,
               M.read (| num_bytes_in_final_chunk |),
               fun (i : Value.t) =>
               [[
                 M.alloc (M.assign (|
-                  M.read (| M.alloc (M.index (|
-                    M.read (| M.alloc (result) |),
-                    M.read (| M.alloc (Binary.add (|
-                      M.read (| M.alloc (Binary.multiply (|
-                        M.read (| M.alloc (Binary.subtract (|
+                  M.index (|
+                    result,
+                    Binary.add (|
+                      Binary.multiply (|
+                        Binary.subtract (|
                           M.read (| num_chunks |),
-                          M.read (| M.alloc (Value.Integer IntegerKind.U32 1) |)
-                        |)) |),
+                          Value.Integer IntegerKind.U32 1
+                        |),
                         M.read (| BYTES_PER_CHUNK |)
-                      |)) |),
+                      |),
                       M.read (| i |)
-                    |)) |)
-                  |)) |),
-                  M.read (| M.alloc (M.index (|
+                    |)
+                  |),
+                  M.index (|
                     M.read (| slice_bytes |),
                     M.read (| i |)
-                  |)) |)
+                  |)
                 |))
               ]]
             |)
@@ -939,6 +954,11 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_base64_decode₃ :
+  get_function "base64_decode" 3 =
+  closure base64_decode₃.
+Global Hint Rewrite get_function_base64_decode₃ : get_function.
 
 (*
   fn eq$f4(self$l43: [u8; 88], other$l44: [u8; 88]) -> bool {
@@ -960,33 +980,33 @@ Definition eq₄ (α : list Value.t) : M.t :=
       |) ]] in
       do~ [[
         M.for_ (|
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-          M.read (| M.alloc (M.call_closure (|
+          Value.Integer IntegerKind.U32 0,
+          M.call_closure (|
             M.read (| Builtin.len |),
             [
               M.read (| self |)
             ]
-          |)) |),
+          |),
           fun (i : Value.t) =>
           [[
             M.alloc (M.assign (|
-              M.read (| M.alloc (result) |),
-              M.read (| M.alloc (Binary.and_ (|
+              result,
+              Binary.and_ (|
                 M.read (| result |),
-                M.read (| M.alloc (M.call_closure (|
-                  M.read (| M.get_function (| "eq", 7 |) |),
+                M.call_closure (|
+                  get_function "eq" 7,
                   [
-                    M.read (| M.alloc (M.index (|
+                    M.index (|
                       M.read (| self |),
                       M.read (| i |)
-                    |)) |);
-                    M.read (| M.alloc (M.index (|
+                    |);
+                    M.index (|
                       M.read (| other |),
                       M.read (| i |)
-                    |)) |)
+                    |)
                   ]
-                |)) |)
-              |)) |)
+                |)
+              |)
             |))
           ]]
         |)
@@ -997,6 +1017,11 @@ Definition eq₄ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_eq₄ :
+  get_function "eq" 4 =
+  closure eq₄.
+Global Hint Rewrite get_function_eq₄ : get_function.
 
 (*
   fn to_be_radix$f5(self$l47: Field, radix$l48: u32) -> [u8; 40] {
@@ -1031,6 +1056,11 @@ Definition to_be_radix₅ (α : list Value.t) : M.t :=
   | _ => M.impossible "wrong number of arguments"
   end.
 
+Axiom get_function_to_be_radix₅ :
+  get_function "to_be_radix" 5 =
+  closure to_be_radix₅.
+Global Hint Rewrite get_function_to_be_radix₅ : get_function.
+
 (*
   fn base64_encode_elements$f6(input$l49: [u8; 118]) -> [u8; 118] {
       let Base64Encoder$50 = new$f10();
@@ -1048,156 +1078,156 @@ Definition base64_encode_elements₆ (α : list Value.t) : M.t :=
     let* result :=
       let~ Base64Encoder := [[ M.copy_mutable (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "new", 10 |) |),
+          get_function "new" 10,
           []
         |))
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |)
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0
         ])
       |) ]] in
       do~ [[
         M.for_ (|
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 118) |),
+          Value.Integer IntegerKind.U32 0,
+          Value.Integer IntegerKind.U32 118,
           fun (i : Value.t) =>
           [[
             M.alloc (M.assign (|
-              M.read (| M.alloc (M.index (|
-                M.read (| M.alloc (result) |),
+              M.index (|
+                result,
                 M.read (| i |)
-              |)) |),
-              M.read (| M.alloc (M.call_closure (|
-                M.read (| M.get_function (| "get", 11 |) |),
+              |),
+              M.call_closure (|
+                get_function "get" 11,
                 [
                   M.read (| Base64Encoder |);
-                  M.read (| M.alloc (M.cast (|
-                    M.read (| M.alloc (M.index (|
+                  M.cast (|
+                    M.index (|
                       M.read (| input |),
                       M.read (| i |)
-                    |)) |),
+                    |),
                     IntegerKind.Field
-                  |)) |)
+                  |)
                 ]
-              |)) |)
+              |)
             |))
           ]]
         |)
@@ -1208,6 +1238,11 @@ Definition base64_encode_elements₆ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_base64_encode_elements₆ :
+  get_function "base64_encode_elements" 6 =
+  closure base64_encode_elements₆.
+Global Hint Rewrite get_function_base64_encode_elements₆ : get_function.
 
 (*
   fn eq$f7(self$l53: u8, other$l54: u8) -> bool {
@@ -1230,6 +1265,11 @@ Definition eq₇ (α : list Value.t) : M.t :=
   | _ => M.impossible "wrong number of arguments"
   end.
 
+Axiom get_function_eq₇ :
+  get_function "eq" 7 =
+  closure eq₇.
+Global Hint Rewrite get_function_eq₇ : get_function.
+
 (*
   fn base64_decode_elements$f8(input$l55: [u8; 118]) -> [u8; 118] {
       let Base64Decoder$56 = new$f12();
@@ -1249,136 +1289,136 @@ Definition base64_decode_elements₈ (α : list Value.t) : M.t :=
     let* result :=
       let~ Base64Decoder := [[ M.copy_mutable (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "new", 12 |) |),
+          get_function "new" 12,
           []
         |))
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array [
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-          M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |)
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0;
+          Value.Integer IntegerKind.U8 0
         ])
       |) ]] in
       do~ [[
         M.for_ (|
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-          M.read (| M.alloc (Value.Integer IntegerKind.U32 118) |),
+          Value.Integer IntegerKind.U32 0,
+          Value.Integer IntegerKind.U32 118,
           fun (i : Value.t) =>
           let~ input_byte := [[ M.copy (|
             M.alloc (M.index (|
@@ -1388,32 +1428,32 @@ Definition base64_decode_elements₈ (α : list Value.t) : M.t :=
           |) ]] in
           do~ [[
             M.alloc (M.assign (|
-              M.read (| M.alloc (M.index (|
-                M.read (| M.alloc (result) |),
+              M.index (|
+                result,
                 M.read (| i |)
-              |)) |),
-              M.read (| M.alloc (M.call_closure (|
-                M.read (| M.get_function (| "get", 13 |) |),
+              |),
+              M.call_closure (|
+                get_function "get" 13,
                 [
                   M.read (| Base64Decoder |);
-                  M.read (| M.alloc (M.cast (|
+                  M.cast (|
                     M.read (| input_byte |),
                     IntegerKind.Field
-                  |)) |)
+                  |)
                 ]
-              |)) |)
+              |)
             |))
           ]] in
           [[
             M.alloc (M.assert (|
-              M.read (| M.alloc (Binary.not_equal (|
-                M.read (| M.alloc (M.index (|
+              Binary.not_equal (|
+                M.index (|
                   M.read (| result |),
                   M.read (| i |)
-                |)) |),
-                M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |)
-              |)) |),
-              Some (M.read (| M.alloc (Value.fmt_str "DecodeError: invalid symbol {input_byte}, offset {i}." 2(M.alloc (Value.Tuple [M.read (| input_byte |); M.read (| i |)]))) |))
+                |),
+                Value.Integer IntegerKind.U8 255
+              |),
+              Some (Value.fmt_str "DecodeError: invalid symbol {input_byte}, offset {i}." 2(M.alloc (Value.Tuple [M.read (| input_byte |); M.read (| i |)])))
             |))
           ]]
         |)
@@ -1424,6 +1464,11 @@ Definition base64_decode_elements₈ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_base64_decode_elements₈ :
+  get_function "base64_decode_elements" 8 =
+  closure base64_decode_elements₈.
+Global Hint Rewrite get_function_base64_decode_elements₈ : get_function.
 
 (*
   fn to_be_bytes$f9(self$l60: Field) -> [u8; 30] {
@@ -1452,133 +1497,133 @@ Definition to_be_bytes₉ (α : list Value.t) : M.t :=
     let* result :=
       let~ bytes := [[ M.copy (|
         M.alloc (M.call_closure (|
-          M.read (| M.get_function (| "to_be_radix", 14 |) |),
+          get_function "to_be_radix" 14,
           [
             M.read (| self |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U32 256) |)
+            Value.Integer IntegerKind.U32 256
           ]
         |))
       |) ]] in
       do~ [[
         M.if_ (|
-          M.read (| M.alloc (Unary.not (|
-            M.read (| M.alloc (M.call_closure (|
+          Unary.not (|
+            M.call_closure (|
               M.read (| Builtin.is_unconstrained |),
               []
-            |)) |)
-          |)) |),
+            |)
+          |),
           let~ p := [[ M.copy (|
             M.alloc (Value.Slice [
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 48) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 100) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 78) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 114) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 225) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 49) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 160) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 41) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 184) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 80) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 69) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 182) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 129) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 129) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 88) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 93) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 40) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 51) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 232) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 72) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 121) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 185) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 112) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 145) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 67) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 225) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 245) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 147) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 240) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-              M.read (| M.alloc (Value.Integer IntegerKind.U8 1) |)
+              Value.Integer IntegerKind.U8 48;
+              Value.Integer IntegerKind.U8 100;
+              Value.Integer IntegerKind.U8 78;
+              Value.Integer IntegerKind.U8 114;
+              Value.Integer IntegerKind.U8 225;
+              Value.Integer IntegerKind.U8 49;
+              Value.Integer IntegerKind.U8 160;
+              Value.Integer IntegerKind.U8 41;
+              Value.Integer IntegerKind.U8 184;
+              Value.Integer IntegerKind.U8 80;
+              Value.Integer IntegerKind.U8 69;
+              Value.Integer IntegerKind.U8 182;
+              Value.Integer IntegerKind.U8 129;
+              Value.Integer IntegerKind.U8 129;
+              Value.Integer IntegerKind.U8 88;
+              Value.Integer IntegerKind.U8 93;
+              Value.Integer IntegerKind.U8 40;
+              Value.Integer IntegerKind.U8 51;
+              Value.Integer IntegerKind.U8 232;
+              Value.Integer IntegerKind.U8 72;
+              Value.Integer IntegerKind.U8 121;
+              Value.Integer IntegerKind.U8 185;
+              Value.Integer IntegerKind.U8 112;
+              Value.Integer IntegerKind.U8 145;
+              Value.Integer IntegerKind.U8 67;
+              Value.Integer IntegerKind.U8 225;
+              Value.Integer IntegerKind.U8 245;
+              Value.Integer IntegerKind.U8 147;
+              Value.Integer IntegerKind.U8 240;
+              Value.Integer IntegerKind.U8 0;
+              Value.Integer IntegerKind.U8 0;
+              Value.Integer IntegerKind.U8 1
             ])
           |) ]] in
           do~ [[
             M.alloc (M.assert (|
-              M.read (| M.alloc (Binary.less_equal (|
-                M.read (| M.alloc (M.call_closure (|
+              Binary.less_equal (|
+                M.call_closure (|
                   M.read (| Builtin.len |),
                   [
                     M.read (| bytes |)
                   ]
-                |)) |),
-                M.read (| M.alloc (M.call_closure (|
+                |),
+                M.call_closure (|
                   M.read (| Builtin.len |),
                   [
                     M.read (| p |)
                   ]
-                |)) |)
-              |)) |),
+                |)
+              |),
               None
             |))
           ]] in
           let~ ok := [[ M.copy_mutable (|
             M.alloc (Binary.not_equal (|
-              M.read (| M.alloc (M.call_closure (|
+              M.call_closure (|
                 M.read (| Builtin.len |),
                 [
                   M.read (| bytes |)
                 ]
-              |)) |),
-              M.read (| M.alloc (M.call_closure (|
+              |),
+              M.call_closure (|
                 M.read (| Builtin.len |),
                 [
                   M.read (| p |)
                 ]
-              |)) |)
+              |)
             |))
           |) ]] in
           do~ [[
             M.for_ (|
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 0) |),
-              M.read (| M.alloc (Value.Integer IntegerKind.U32 30) |),
+              Value.Integer IntegerKind.U32 0,
+              Value.Integer IntegerKind.U32 30,
               fun (i : Value.t) =>
               [[
                 M.if_ (|
-                  M.read (| M.alloc (Unary.not (|
+                  Unary.not (|
                     M.read (| ok |)
-                  |)) |),
+                  |),
                   [[
                     M.if_ (|
-                      M.read (| M.alloc (Binary.not_equal (|
-                        M.read (| M.alloc (M.index (|
+                      Binary.not_equal (|
+                        M.index (|
                           M.read (| bytes |),
                           M.read (| i |)
-                        |)) |),
-                        M.read (| M.alloc (M.index (|
+                        |),
+                        M.index (|
                           M.read (| p |),
                           M.read (| i |)
-                        |)) |)
-                      |)) |),
+                        |)
+                      |),
                       do~ [[
                         M.alloc (M.assert (|
-                          M.read (| M.alloc (Binary.less (|
-                            M.read (| M.alloc (M.index (|
+                          Binary.less (|
+                            M.index (|
                               M.read (| bytes |),
                               M.read (| i |)
-                            |)) |),
-                            M.read (| M.alloc (M.index (|
+                            |),
+                            M.index (|
                               M.read (| p |),
                               M.read (| i |)
-                            |)) |)
-                          |)) |),
+                            |)
+                          |),
                           None
                         |))
                       ]] in
                       [[
                         M.alloc (M.assign (|
-                          M.read (| M.alloc (ok) |),
-                          M.read (| M.alloc (Value.Bool true) |)
+                          ok,
+                          Value.Bool true
                         |))
                       ]],
                       None
@@ -1605,6 +1650,11 @@ Definition to_be_bytes₉ (α : list Value.t) : M.t :=
   | _ => M.impossible "wrong number of arguments"
   end.
 
+Axiom get_function_to_be_bytes₉ :
+  get_function "to_be_bytes" 9 =
+  closure to_be_bytes₉.
+Global Hint Rewrite get_function_to_be_bytes₉ : get_function.
+
 (*
   fn new$f10() -> ([u8; 64]) {
       {
@@ -1620,70 +1670,70 @@ Definition new₁₀ (α : list Value.t) : M.t :=
       [[
         let~ table := [[ M.copy (|
           M.alloc (Value.Array [
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 65) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 66) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 67) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 68) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 69) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 70) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 71) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 72) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 73) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 74) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 75) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 76) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 77) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 78) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 79) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 80) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 81) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 82) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 83) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 84) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 85) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 86) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 87) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 88) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 89) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 90) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 97) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 98) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 99) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 100) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 101) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 102) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 103) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 104) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 105) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 106) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 107) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 108) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 109) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 110) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 111) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 112) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 113) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 114) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 115) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 116) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 117) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 118) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 119) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 120) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 121) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 122) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 48) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 49) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 50) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 51) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 52) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 53) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 54) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 55) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 56) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 57) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 43) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 47) |)
+            Value.Integer IntegerKind.U8 65;
+            Value.Integer IntegerKind.U8 66;
+            Value.Integer IntegerKind.U8 67;
+            Value.Integer IntegerKind.U8 68;
+            Value.Integer IntegerKind.U8 69;
+            Value.Integer IntegerKind.U8 70;
+            Value.Integer IntegerKind.U8 71;
+            Value.Integer IntegerKind.U8 72;
+            Value.Integer IntegerKind.U8 73;
+            Value.Integer IntegerKind.U8 74;
+            Value.Integer IntegerKind.U8 75;
+            Value.Integer IntegerKind.U8 76;
+            Value.Integer IntegerKind.U8 77;
+            Value.Integer IntegerKind.U8 78;
+            Value.Integer IntegerKind.U8 79;
+            Value.Integer IntegerKind.U8 80;
+            Value.Integer IntegerKind.U8 81;
+            Value.Integer IntegerKind.U8 82;
+            Value.Integer IntegerKind.U8 83;
+            Value.Integer IntegerKind.U8 84;
+            Value.Integer IntegerKind.U8 85;
+            Value.Integer IntegerKind.U8 86;
+            Value.Integer IntegerKind.U8 87;
+            Value.Integer IntegerKind.U8 88;
+            Value.Integer IntegerKind.U8 89;
+            Value.Integer IntegerKind.U8 90;
+            Value.Integer IntegerKind.U8 97;
+            Value.Integer IntegerKind.U8 98;
+            Value.Integer IntegerKind.U8 99;
+            Value.Integer IntegerKind.U8 100;
+            Value.Integer IntegerKind.U8 101;
+            Value.Integer IntegerKind.U8 102;
+            Value.Integer IntegerKind.U8 103;
+            Value.Integer IntegerKind.U8 104;
+            Value.Integer IntegerKind.U8 105;
+            Value.Integer IntegerKind.U8 106;
+            Value.Integer IntegerKind.U8 107;
+            Value.Integer IntegerKind.U8 108;
+            Value.Integer IntegerKind.U8 109;
+            Value.Integer IntegerKind.U8 110;
+            Value.Integer IntegerKind.U8 111;
+            Value.Integer IntegerKind.U8 112;
+            Value.Integer IntegerKind.U8 113;
+            Value.Integer IntegerKind.U8 114;
+            Value.Integer IntegerKind.U8 115;
+            Value.Integer IntegerKind.U8 116;
+            Value.Integer IntegerKind.U8 117;
+            Value.Integer IntegerKind.U8 118;
+            Value.Integer IntegerKind.U8 119;
+            Value.Integer IntegerKind.U8 120;
+            Value.Integer IntegerKind.U8 121;
+            Value.Integer IntegerKind.U8 122;
+            Value.Integer IntegerKind.U8 48;
+            Value.Integer IntegerKind.U8 49;
+            Value.Integer IntegerKind.U8 50;
+            Value.Integer IntegerKind.U8 51;
+            Value.Integer IntegerKind.U8 52;
+            Value.Integer IntegerKind.U8 53;
+            Value.Integer IntegerKind.U8 54;
+            Value.Integer IntegerKind.U8 55;
+            Value.Integer IntegerKind.U8 56;
+            Value.Integer IntegerKind.U8 57;
+            Value.Integer IntegerKind.U8 43;
+            Value.Integer IntegerKind.U8 47
           ])
         |) ]] in
         [[
@@ -1693,6 +1743,11 @@ Definition new₁₀ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_new₁₀ :
+  get_function "new" 10 =
+  closure new₁₀.
+Global Hint Rewrite get_function_new₁₀ : get_function.
 
 (*
   fn get$f11(self$l66: ([u8; 64]), idx$l67: Field) -> u8 {
@@ -1707,16 +1762,21 @@ Definition get₁₁ (α : list Value.t) : M.t :=
     let* result :=
       [[
         M.alloc (M.index (|
-          M.read (| M.alloc (M.extract_tuple_field (|
+          M.extract_tuple_field (|
               self,
             0
-          |)) |),
+          |),
           M.read (| idx |)
         |))
       ]] in
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_get₁₁ :
+  get_function "get" 11 =
+  closure get₁₁.
+Global Hint Rewrite get_function_get₁₁ : get_function.
 
 (*
   fn new$f12() -> ([u8; 256]) {
@@ -1733,262 +1793,262 @@ Definition new₁₂ (α : list Value.t) : M.t :=
       [[
         let~ table := [[ M.copy (|
           M.alloc (Value.Array [
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 62) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 63) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 52) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 53) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 54) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 55) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 56) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 57) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 58) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 59) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 60) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 61) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 0) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 1) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 2) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 3) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 4) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 5) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 6) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 7) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 8) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 9) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 10) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 11) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 12) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 13) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 14) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 15) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 16) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 17) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 18) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 19) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 20) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 21) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 22) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 23) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 24) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 25) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 26) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 27) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 28) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 29) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 30) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 31) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 32) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 33) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 34) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 35) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 36) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 37) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 38) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 39) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 40) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 41) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 42) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 43) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 44) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 45) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 46) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 47) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 48) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 49) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 50) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 51) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |);
-            M.read (| M.alloc (Value.Integer IntegerKind.U8 255) |)
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 62;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 63;
+            Value.Integer IntegerKind.U8 52;
+            Value.Integer IntegerKind.U8 53;
+            Value.Integer IntegerKind.U8 54;
+            Value.Integer IntegerKind.U8 55;
+            Value.Integer IntegerKind.U8 56;
+            Value.Integer IntegerKind.U8 57;
+            Value.Integer IntegerKind.U8 58;
+            Value.Integer IntegerKind.U8 59;
+            Value.Integer IntegerKind.U8 60;
+            Value.Integer IntegerKind.U8 61;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 0;
+            Value.Integer IntegerKind.U8 1;
+            Value.Integer IntegerKind.U8 2;
+            Value.Integer IntegerKind.U8 3;
+            Value.Integer IntegerKind.U8 4;
+            Value.Integer IntegerKind.U8 5;
+            Value.Integer IntegerKind.U8 6;
+            Value.Integer IntegerKind.U8 7;
+            Value.Integer IntegerKind.U8 8;
+            Value.Integer IntegerKind.U8 9;
+            Value.Integer IntegerKind.U8 10;
+            Value.Integer IntegerKind.U8 11;
+            Value.Integer IntegerKind.U8 12;
+            Value.Integer IntegerKind.U8 13;
+            Value.Integer IntegerKind.U8 14;
+            Value.Integer IntegerKind.U8 15;
+            Value.Integer IntegerKind.U8 16;
+            Value.Integer IntegerKind.U8 17;
+            Value.Integer IntegerKind.U8 18;
+            Value.Integer IntegerKind.U8 19;
+            Value.Integer IntegerKind.U8 20;
+            Value.Integer IntegerKind.U8 21;
+            Value.Integer IntegerKind.U8 22;
+            Value.Integer IntegerKind.U8 23;
+            Value.Integer IntegerKind.U8 24;
+            Value.Integer IntegerKind.U8 25;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 26;
+            Value.Integer IntegerKind.U8 27;
+            Value.Integer IntegerKind.U8 28;
+            Value.Integer IntegerKind.U8 29;
+            Value.Integer IntegerKind.U8 30;
+            Value.Integer IntegerKind.U8 31;
+            Value.Integer IntegerKind.U8 32;
+            Value.Integer IntegerKind.U8 33;
+            Value.Integer IntegerKind.U8 34;
+            Value.Integer IntegerKind.U8 35;
+            Value.Integer IntegerKind.U8 36;
+            Value.Integer IntegerKind.U8 37;
+            Value.Integer IntegerKind.U8 38;
+            Value.Integer IntegerKind.U8 39;
+            Value.Integer IntegerKind.U8 40;
+            Value.Integer IntegerKind.U8 41;
+            Value.Integer IntegerKind.U8 42;
+            Value.Integer IntegerKind.U8 43;
+            Value.Integer IntegerKind.U8 44;
+            Value.Integer IntegerKind.U8 45;
+            Value.Integer IntegerKind.U8 46;
+            Value.Integer IntegerKind.U8 47;
+            Value.Integer IntegerKind.U8 48;
+            Value.Integer IntegerKind.U8 49;
+            Value.Integer IntegerKind.U8 50;
+            Value.Integer IntegerKind.U8 51;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255;
+            Value.Integer IntegerKind.U8 255
           ])
         |) ]] in
         [[
@@ -1998,6 +2058,11 @@ Definition new₁₂ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_new₁₂ :
+  get_function "new" 12 =
+  closure new₁₂.
+Global Hint Rewrite get_function_new₁₂ : get_function.
 
 (*
   fn get$f13(self$l69: ([u8; 256]), idx$l70: Field) -> u8 {
@@ -2012,16 +2077,21 @@ Definition get₁₃ (α : list Value.t) : M.t :=
     let* result :=
       [[
         M.alloc (M.index (|
-          M.read (| M.alloc (M.extract_tuple_field (|
+          M.extract_tuple_field (|
               self,
             0
-          |)) |),
+          |),
           M.read (| idx |)
         |))
       ]] in
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_get₁₃ :
+  get_function "get" 13 =
+  closure get₁₃.
+Global Hint Rewrite get_function_get₁₃ : get_function.
 
 (*
   fn to_be_radix$f14(self$l71: Field, radix$l72: u32) -> [u8; 30] {
@@ -2055,3 +2125,8 @@ Definition to_be_radix₁₄ (α : list Value.t) : M.t :=
     M.read result
   | _ => M.impossible "wrong number of arguments"
   end.
+
+Axiom get_function_to_be_radix₁₄ :
+  get_function "to_be_radix" 14 =
+  closure to_be_radix₁₄.
+Global Hint Rewrite get_function_to_be_radix₁₄ : get_function.

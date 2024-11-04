@@ -50,10 +50,7 @@ def ident_to_coq(node) -> str:
 
     if definition_node_type == "Function":
         definition_node = definition_node["Function"]
-        return \
-            "M.get_function (| \"" + \
-            node["name"] + "\", " + str(definition_node) + \
-            " |)"
+        return alloc("get_function \"" + node["name"] + "\" " + str(definition_node))
 
     if definition_node_type == "Builtin":
         definition_node = definition_node["Builtin"]
@@ -454,8 +451,8 @@ def alloc(expression: str) -> str:
 
 def read(expression: str) -> str:
     # If the expression is an alloc
-    alloc_beginning = "M.alloc (| "
-    alloc_end = " |)"
+    alloc_beginning = "M.alloc ("
+    alloc_end = ")"
     if expression.startswith(alloc_beginning) and expression.endswith(alloc_end):
         return expression[len(alloc_beginning):-len(alloc_end)]
     return "M.read (| " + expression + " |)"
@@ -632,7 +629,15 @@ def function_to_coq(node) -> str:
             ) + "\n" +
             "| _ => M.impossible \"wrong number of arguments\"\n" +
             "end."
-        )
+        ) + "\n" + \
+        "\n" + \
+        "Axiom get_function_" + name_id_to_coq(node['name'], node['id']) + " :\n" + \
+        indent (
+            "get_function \"" + node['name'] + "\" " + str(node['id']) + " =\n" + \
+            "closure " + name_id_to_coq(node['name'], node['id']) + "."
+        ) + "\n" + \
+        "Global Hint Rewrite get_function_" + \
+        name_id_to_coq(node['name'], node['id']) + " : get_function."
 
 
 def program_to_coq(node) -> str:
