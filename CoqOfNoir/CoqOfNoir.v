@@ -1,3 +1,4 @@
+Require Export Coq.Logic.FunctionalExtensionality.
 Require Export Coq.Strings.Ascii.
 Require Coq.Strings.HexString.
 Require Export Coq.Strings.String.
@@ -357,9 +358,6 @@ Module M.
     alloc_mutable v.
   Arguments copy /.
 
-  Definition get_function (path : string) (id : Z) : M.t :=
-    LowM.CallPrimitive (Primitive.GetFunction path id) pure.
-
   Definition assert (condition : Value.t) (message : option Value.t) : M.t :=
     match condition with
     | Value.Bool b =>
@@ -469,12 +467,17 @@ Module M.
     match start, end_ with
     | Value.Integer integer_kind start, Value.Integer _ end_ =>
       (* We assume that the integer kind of the [end_] is the same and checked by the compiler. *)
-      for_Z start end_ (fun i => body (Value.Integer integer_kind i))
+      for_Z start end_ (fun i => body (alloc (Value.Integer integer_kind i)))
     | _, _ => impossible "for: expected integer values"
     end.
 End M.
 
 Export M.Notations.
+
+Parameter get_function : forall (name : string) (id : Z), Value.t.
+
+Definition closure (definition : list Value.t -> M.t) : Value.t :=
+  Value.Closure (existS (Value.t, M.t) definition).
 
 Module Builtin.
   Parameter __to_be_radix : Value.t.
