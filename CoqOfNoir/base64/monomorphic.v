@@ -309,8 +309,8 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
                       Binary.add (|
                         M.read (| slice |),
                         M.cast (|
-                          M.index (|
-                            M.read (| input |),
+                          M.read (| M.index (|
+                            input,
                             Binary.add (|
                               Binary.multiply (|
                                 M.read (| i |),
@@ -318,7 +318,7 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
                               |),
                               M.read (| j |)
                             |)
-                          |),
+                          |) |),
                           IntegerKind.Field
                         |)
                       |)
@@ -352,10 +352,10 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
                           M.read (| j |)
                         |)
                       |),
-                      M.index (|
-                        M.read (| slice_base64_chunks |),
+                      M.read (| M.index (|
+                        slice_base64_chunks,
                         M.read (| j |)
-                      |)
+                      |) |)
                     |))
                   ]]
                 |)
@@ -397,8 +397,8 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
                   Binary.add (|
                     M.read (| slice |),
                     M.cast (|
-                      M.index (|
-                        M.read (| input |),
+                      M.read (| M.index (|
+                        input,
                         Binary.add (|
                           Binary.multiply (|
                             Binary.subtract (|
@@ -409,7 +409,7 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
                           |),
                           M.read (| j |)
                         |)
-                      |),
+                      |) |),
                       IntegerKind.Field
                     |)
                   |)
@@ -474,10 +474,10 @@ Definition base64_encode₁ (α : list Value.t) : M.t :=
                       M.read (| i |)
                     |)
                   |),
-                  M.index (|
-                    M.read (| slice_base64_chunks |),
+                  M.read (| M.index (|
+                    slice_base64_chunks,
                     M.read (| i |)
-                  |)
+                  |) |)
                 |))
               ]]
             |)
@@ -544,14 +544,14 @@ Definition eq₂ (α : list Value.t) : M.t :=
                 M.call_closure (|
                   get_function "eq" 7,
                   [
-                    M.index (|
-                      M.read (| self |),
+                    M.read (| M.index (|
+                      self,
                       M.read (| i |)
-                    |);
-                    M.index (|
-                      M.read (| other |),
+                    |) |);
+                    M.read (| M.index (|
+                      other,
                       M.read (| i |)
-                    |)
+                    |) |)
                   ]
                 |)
               |)
@@ -774,8 +774,8 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
                       Binary.add (|
                         M.read (| slice |),
                         M.cast (|
-                          M.index (|
-                            M.read (| decoded |),
+                          M.read (| M.index (|
+                            decoded,
                             Binary.add (|
                               Binary.multiply (|
                                 M.read (| i |),
@@ -783,7 +783,7 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
                               |),
                               M.read (| j |)
                             |)
-                          |),
+                          |) |),
                           IntegerKind.Field
                         |)
                       |)
@@ -816,10 +816,10 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
                           M.read (| j |)
                         |)
                       |),
-                      M.index (|
-                        M.read (| slice_bytes |),
+                      M.read (| M.index (|
+                        slice_bytes,
                         M.read (| j |)
-                      |)
+                      |) |)
                     |))
                   ]]
                 |)
@@ -861,8 +861,8 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
                   Binary.add (|
                     M.read (| slice |),
                     M.cast (|
-                      M.index (|
-                        M.read (| decoded |),
+                      M.read (| M.index (|
+                        decoded,
                         Binary.add (|
                           Binary.multiply (|
                             Binary.subtract (|
@@ -873,7 +873,7 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
                           |),
                           M.read (| j |)
                         |)
-                      |),
+                      |) |),
                       IntegerKind.Field
                     |)
                   |)
@@ -937,10 +937,10 @@ Definition base64_decode₃ (α : list Value.t) : M.t :=
                       M.read (| i |)
                     |)
                   |),
-                  M.index (|
-                    M.read (| slice_bytes |),
+                  M.read (| M.index (|
+                    slice_bytes,
                     M.read (| i |)
-                  |)
+                  |) |)
                 |))
               ]]
             |)
@@ -996,14 +996,14 @@ Definition eq₄ (α : list Value.t) : M.t :=
                 M.call_closure (|
                   get_function "eq" 7,
                   [
-                    M.index (|
-                      M.read (| self |),
+                    M.read (| M.index (|
+                      self,
                       M.read (| i |)
-                    |);
-                    M.index (|
-                      M.read (| other |),
+                    |) |);
+                    M.read (| M.index (|
+                      other,
                       M.read (| i |)
-                    |)
+                    |) |)
                   ]
                 |)
               |)
@@ -1220,10 +1220,10 @@ Definition base64_encode_elements₆ (α : list Value.t) : M.t :=
                 [
                   M.read (| Base64Encoder |);
                   M.cast (|
-                    M.index (|
-                      M.read (| input |),
+                    M.read (| M.index (|
+                      input,
                       M.read (| i |)
-                    |),
+                    |) |),
                     IntegerKind.Field
                   |)
                 ]
@@ -1421,10 +1421,10 @@ Definition base64_decode_elements₈ (α : list Value.t) : M.t :=
           Value.Integer IntegerKind.U32 118,
           fun (i : Value.t) =>
           let~ input_byte := [[ M.copy (|
-            M.alloc (M.index (|
-              M.read (| input |),
+            M.index (|
+              input,
               M.read (| i |)
-            |))
+            |)
           |) ]] in
           do~ [[
             M.alloc (M.assign (|
@@ -1447,10 +1447,10 @@ Definition base64_decode_elements₈ (α : list Value.t) : M.t :=
           [[
             M.alloc (M.assert (|
               Binary.not_equal (|
-                M.index (|
-                  M.read (| result |),
+                M.read (| M.index (|
+                  result,
                   M.read (| i |)
-                |),
+                |) |),
                 Value.Integer IntegerKind.U8 255
               |),
               Some (Value.fmt_str "DecodeError: invalid symbol {input_byte}, offset {i}." 2(M.alloc (Value.Tuple [M.read (| input_byte |); M.read (| i |)])))
@@ -1596,26 +1596,26 @@ Definition to_be_bytes₉ (α : list Value.t) : M.t :=
                   [[
                     M.if_ (|
                       Binary.not_equal (|
-                        M.index (|
-                          M.read (| bytes |),
+                        M.read (| M.index (|
+                          bytes,
                           M.read (| i |)
-                        |),
-                        M.index (|
-                          M.read (| p |),
+                        |) |),
+                        M.read (| M.index (|
+                          p,
                           M.read (| i |)
-                        |)
+                        |) |)
                       |),
                       do~ [[
                         M.alloc (M.assert (|
                           Binary.less (|
-                            M.index (|
-                              M.read (| bytes |),
+                            M.read (| M.index (|
+                              bytes,
                               M.read (| i |)
-                            |),
-                            M.index (|
-                              M.read (| p |),
+                            |) |),
+                            M.read (| M.index (|
+                              p,
                               M.read (| i |)
-                            |)
+                            |) |)
                           |),
                           None
                         |))
@@ -1761,13 +1761,13 @@ Definition get₁₁ (α : list Value.t) : M.t :=
     let idx := M.alloc idx in
     let* result :=
       [[
-        M.alloc (M.index (|
+        M.index (|
           M.extract_tuple_field (|
               self,
             0
           |),
           M.read (| idx |)
-        |))
+        |)
       ]] in
     M.read result
   | _ => M.impossible "wrong number of arguments"
@@ -2076,13 +2076,13 @@ Definition get₁₃ (α : list Value.t) : M.t :=
     let idx := M.alloc idx in
     let* result :=
       [[
-        M.alloc (M.index (|
+        M.index (|
           M.extract_tuple_field (|
               self,
             0
           |),
           M.read (| idx |)
-        |))
+        |)
       ]] in
     M.read result
   | _ => M.impossible "wrong number of arguments"

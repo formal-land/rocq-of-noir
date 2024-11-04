@@ -202,13 +202,13 @@ Module Base64EncodeBE.
     let idx := M.alloc idx in
     let* result :=
       [[
-        M.alloc (M.index (|
+        M.index (|
           M.extract_tuple_field (|
               self,
             0
           |),
           M.read (| idx |)
-        |))
+        |)
       ]] in
     M.read result
   | _ => M.impossible "wrong number of arguments"
@@ -216,7 +216,8 @@ Module Base64EncodeBE.
 
   Lemma eq_get₁₁ : get_function "get" 11 = closure get.
   Proof.
-    autorewrite with get_function; f_equal.
+    autorewrite with get_function; apply f_equal.
+    reflexivity.
   Qed.
   Global Hint Rewrite eq_get₁₁ : get_function_eq.
 End Base64EncodeBE.
@@ -234,7 +235,7 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array (
-          List.repeat (Value.Integer IntegerKind.U8 0) (Z.to_nat (Integer.to_Z InputElements))
+          List.repeat (Value.Integer IntegerKind.U8 0) (Integer.to_nat InputElements)
         ))
       |) ]] in
       do~ [[
@@ -253,10 +254,10 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
                 [
                   M.read (| Base64Encoder |);
                   M.cast (|
-                    M.index (|
-                      M.read (| input |),
+                    M.read (| M.index (|
+                      input,
                       M.read (| i |)
-                    |),
+                    |) |),
                     IntegerKind.Field
                   |)
                 ]
@@ -291,7 +292,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array (List.repeat
           (Value.Integer IntegerKind.U8 0)
-          (Z.to_nat (Integer.to_Z OutputElements))
+          (Integer.to_nat OutputElements)
         ))
       |) ]] in
       let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
@@ -355,8 +356,8 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                       Binary.add (|
                         M.read (| slice |),
                         M.cast (|
-                          M.index (|
-                            M.read (| input |),
+                          M.read (| M.index (|
+                            input,
                             Binary.add (|
                               Binary.multiply (|
                                 M.read (| i |),
@@ -364,7 +365,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                               |),
                               M.read (| j |)
                             |)
-                          |),
+                          |) |),
                           IntegerKind.Field
                         |)
                       |)
@@ -398,10 +399,10 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                           M.read (| j |)
                         |)
                       |),
-                      M.index (|
-                        M.read (| slice_base64_chunks |),
+                      M.read (| M.index (|
+                        slice_base64_chunks,
                         M.read (| j |)
-                      |)
+                      |) |)
                     |))
                   ]]
                 |)
@@ -443,8 +444,8 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                   Binary.add (|
                     M.read (| slice |),
                     M.cast (|
-                      M.index (|
-                        M.read (| input |),
+                      M.read (| M.index (|
+                        input,
                         Binary.add (|
                           Binary.multiply (|
                             Binary.subtract (|
@@ -455,7 +456,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                           |),
                           M.read (| j |)
                         |)
-                      |),
+                      |) |),
                       IntegerKind.Field
                     |)
                   |)
@@ -520,10 +521,10 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                       M.read (| i |)
                     |)
                   |),
-                  M.index (|
-                    M.read (| slice_base64_chunks |),
+                  M.read (| M.index (|
+                    slice_base64_chunks,
                     M.read (| i |)
-                  |)
+                  |) |)
                 |))
               ]]
             |)
