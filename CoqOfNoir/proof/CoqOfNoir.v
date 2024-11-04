@@ -125,4 +125,14 @@ Module Run.
 
   where "{{ p , state_in | e ⇓ output | state_out }}" :=
     (t p output state_out state_in e).
+
+  Lemma PureEq {State Address : Set} `{State.Trait State Address}
+      (p : Z) (output output' : Result.t) (state state' : State) :
+    output = output' ->
+    state = state' ->
+    {{ p, state | LowM.Pure output ⇓ output' | state' }}.
+  Proof.
+    intros -> ->.
+    apply Pure.
+  Qed.
 End Run.

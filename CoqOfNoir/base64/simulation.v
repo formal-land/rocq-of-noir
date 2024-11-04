@@ -5,27 +5,6 @@ Require CoqOfNoir.base64.polymorphic.
 
 Import Run.
 
-Lemma run_eq₅ {State Address : Set} `{State.Trait State Address}
-    (p : Z) (state : State) (self other : U8.t) :
-  {{ p, state |
-    translation.eq₅ [to_value self; to_value other] ⇓
-    Result.Ok (to_value (Eq.eq self other))
-  | state }}.
-Proof.
-  unfold translation.eq₅.
-  destruct self as [self], other as [other]; cbn.
-  destruct (self =? other) eqn:H_eq; cbn.
-  { apply Run.CallPrimitiveIsEqualTrue; [f_equal; lia|].
-    apply Run.Pure.
-  }
-  { apply Run.CallPrimitiveIsEqualFalse. {
-      assert (self <> other) by lia.
-      congruence.
-    }
-    apply Run.Pure.
-  }
-Qed.
-
 Module Base64EncodeBE.
   (*
   struct Base64EncodeBE {
@@ -69,18 +48,48 @@ Module Base64EncodeBE.
     ])
   |}.
 
-  Lemma run_new₆ {State Address : Set} `{State.Trait State Address}
+  Lemma run_new {State Address : Set} `{State.Trait State Address}
       (p : Z) (state : State) :
     {{ p, state |
-      translation.new₆ [] ⇓
+      polymorphic.Base64EncodeBE.new [] ⇓
       Result.Ok (to_value new)
     | state }}.
   Proof.
-    unfold translation.new₆, new.
+    unfold polymorphic.Base64EncodeBE.new, new.
     eapply Run.Let. {
       apply Run.Pure.
     }
     apply Run.Pure.
+  Qed.
+
+  (*
+  fn get(self, idx: Field) -> u8 {
+      self.table[idx]
+  }
+  *)
+  Definition get (self : t) (idx : Field.t) : M! U8.t :=
+    Array.get self.(table) idx.
+
+  Lemma run_get {State Address : Set} `{State.Trait State Address}
+      (p : Z) (state : State)
+      (self : t) (idx : Field.t) (result : U8.t)
+      (H_result : Array.get self.(table) idx = return! result) :
+    {{ p, state |
+      polymorphic.Base64EncodeBE.get [to_value self; to_value idx] ⇓
+      Result.Ok (to_value result)
+    | state }}.
+  Proof.
+    unfold polymorphic.Base64EncodeBE.get.
+    destruct self as [ [table] ], idx as [idx].
+    cbn in *.
+    rewrite List.nth_error_map.
+    destruct List.nth_error; cbn.
+    { inversion_clear H_result.
+      apply Run.Pure.
+    }
+    { exfalso.
+      discriminate.
+    }
   Qed.
 End Base64EncodeBE.
 

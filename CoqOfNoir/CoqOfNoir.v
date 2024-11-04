@@ -435,11 +435,47 @@ Module M.
     | _ => impossible "cast: expected an integer"
     end.
 
-  Parameter index : Value.t -> Value.t -> M.t.
+  Definition index (table idx : Value.t) : M.t :=
+    match table with
+    | Value.Pointer table_pointer =>
+      match idx with
+      | Value.Integer _ idx =>
+        match table_pointer with
+        | Pointer.Mutable (Pointer.Mutable.Make table_address path) =>
+          pure (Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make
+            table_address
+            (path ++ [Pointer.Index.Index idx])
+          )))
+        | Pointer.Immediate table_value =>
+          match Value.read_index table_value (Pointer.Index.Index idx) with
+          | Some value => pure (Value.Pointer (Pointer.Immediate value))
+          | None => panic ("index: out of bounds", table, idx)
+          end
+        end
+      | _ => impossible "index: expected an integer"
+      end
+    | _ => impossible "index: expected a pointer"
+    end.
 
   Parameter assign : Value.t -> Value.t -> M.t.
 
-  Parameter extract_tuple_field : Value.t -> Z -> M.t.
+  Definition extract_tuple_field (tuple : Value.t) (field : Z) : M.t :=
+    match tuple with
+    | Value.Pointer tuple_pointer =>
+      match tuple_pointer with
+      | Pointer.Mutable (Pointer.Mutable.Make address path) =>
+        pure (Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make
+          address
+          (path ++ [Pointer.Index.Field field])
+        )))
+      | Pointer.Immediate tuple_value =>
+        match Value.read_index tuple_value (Pointer.Index.Field field) with
+        | Some value => pure (Value.Pointer (Pointer.Immediate value))
+        | None => panic ("extract_tuple_field: out of bounds", tuple, field)
+        end
+      end
+    | _ => impossible "extract_tuple_field: expected a pointer"
+    end.
 
   Definition if_ (condition : Value.t) (then_ : M.t) (else_ : option M.t) : M.t :=
     match condition with

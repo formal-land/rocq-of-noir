@@ -239,14 +239,13 @@ pub struct Index {
 }
 '''
 def index_to_coq(node) -> str:
-    return alloc(
-        "M.index (|\n" +
+    return \
+        "M.index (|\n" + \
         indent(
-            read(expression_to_coq(node["collection"])) + ",\n" +
+            expression_to_coq(node["collection"]) + ",\n" +
             read(expression_to_coq(node["index"]))
-        ) + "\n" +
+        ) + "\n" + \
         "|)"
-    )
 
 
 '''
@@ -543,14 +542,13 @@ def expression_to_coq(node) -> str:
 
     if node_type == "ExtractTupleField":
         node = node["ExtractTupleField"]
-        return alloc(
+        return \
             "M.extract_tuple_field (|\n" + \
             indent(
                 indent(expression_to_coq(node[0])) + ",\n" + \
                 str(node[1])
             ) + "\n" + \
             "|)"
-        )
 
     if node_type == "Call":
         node = node["Call"]
