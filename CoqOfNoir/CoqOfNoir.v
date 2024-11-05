@@ -159,7 +159,6 @@ Module Primitive.
   | StateAlloc (value : Value.t) : t Value.t
   | StateRead {Address : Set} (address : Address) : t Value.t
   | StateWrite {Address : Set} (address : Address) (value : Value.t) : t unit
-  | GetFunction (path : string) (id : Z) : t Value.t
   | GetFieldPrime : t Z
   | IsEqual (value1 value2 : Value.t) : t bool.
 End Primitive.
@@ -170,13 +169,11 @@ Module LowM.
   | CallPrimitive {B : Set} (primitive : Primitive.t B) (k : B -> t A)
   | CallClosure (closure : Value.t) (args : list Value.t) (k : A -> t A)
   | Let (e : t A) (k : A -> t A)
-  | Loop (body : t A) (k : A -> t A)
   | Impossible (message : string).
   Arguments Pure {_}.
   Arguments CallPrimitive {_ _}.
   Arguments CallClosure {_}.
   Arguments Let {_}.
-  Arguments Loop {_}.
   Arguments Impossible {_}.
 
   Fixpoint let_ {A : Set} (e1 : t A) (e2 : A -> t A) : t A :=
@@ -188,8 +185,6 @@ Module LowM.
       CallClosure f args (fun v => let_ (k v) e2)
     | Let e k =>
       Let e (fun v => let_ (k v) e2)
-    | Loop body k =>
-      Loop body (fun v => let_ (k v) e2)
     | Impossible message => Impossible message
     end.
 End LowM.
