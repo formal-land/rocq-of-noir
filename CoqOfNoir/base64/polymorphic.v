@@ -35,10 +35,6 @@ Module Eq.
       apply functional_extensionality; intro x.
       now rewrite LetMinus with (e1' := k x) (e2' := e2').
     }
-    { f_equal.
-      apply functional_extensionality; intro x.
-      now rewrite LetMinus with (e1' := k x) (e2' := e2').
-    }
     { reflexivity. }
   Qed.
 
@@ -241,7 +237,7 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
       do~ [[
         M.for_ (|
           Value.Integer IntegerKind.U32 0,
-          Value.Integer IntegerKind.U32 118,
+          to_value InputElements,
           fun (i : Value.t) =>
           [[
             M.alloc (M.assign (|

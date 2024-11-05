@@ -48,6 +48,7 @@ Module Run.
       (k : Value.t -> M.t)
       (state_in state_in' : State) :
     let pointer := Pointer.Mutable (Pointer.Mutable.Make address []) in
+    State.read address state_in = None ->
     State.alloc_write address state_in value = Some state_in' ->
     {{ p, state_in' | k (Value.Pointer pointer) ⇓ output | state_out }} ->
     {{ p, state_in | LowM.CallPrimitive (Primitive.StateAlloc value) k ⇓ output | state_out }}
@@ -91,29 +92,15 @@ Module Run.
     value1 <> value2 ->
     {{ p, state_in | k false ⇓ output | state_out }} ->
     {{ p, state_in | LowM.CallPrimitive (Primitive.IsEqual value1 value2) k ⇓ output | state_out }}
-  (*| CallPrimitiveGetFunction
-      (name : string) (generic_consts : list Value.t) (generic_tys : list Ty.t)
-      (function : PolymorphicFunction.t)
-      (k : Value.t -> M.t)
-      (state_in : State) :
-    let closure := Value.Closure (existS (_, _) (function generic_consts generic_tys)) in
-    M.IsFunction name function ->
-    {{ p, state_in | k closure ⇓ output | state_out }} ->
-    {{ p, state_in |
-      LowM.CallPrimitive (Primitive.GetFunction name generic_tys) k ⇓ output
-    | state_out }}
   | CallClosure
-      (output_inter : Value.t + Exception.t)
       (f : list Value.t -> M.t) (args : list Value.t)
-      (k : Value.t + Exception.t -> M.t)
+      (k : Result.t -> M.t)
+      (output_inter : Result.t)
       (state_in state_inter : State) :
     let closure := Value.Closure (existS (_, _) f) in
     {{ p, state_in | f args ⇓ output_inter | state_inter }} ->
-    (* We do not de-allocate what was already there on the state. *)
-    (* IsWritePreserved.t state state' -> *)
     {{ p, state_inter | k output_inter ⇓ output | state_out }} ->
     {{ p, state_in | LowM.CallClosure closure args k ⇓ output | state_out }}
-  *)
   | Let
       (e : M.t)
       (k : Result.t -> M.t)
@@ -121,6 +108,12 @@ Module Run.
       (state_in state_inter : State) :
     {{ p, state_in | e ⇓ output_inter | state_inter }} ->
     {{ p, state_inter | k output_inter ⇓ output | state_out }} ->
+    {{ p, state_in | LowM.Let e k ⇓ output | state_out }}
+  | LetUnfold
+      (e : M.t)
+      (k : Result.t -> M.t)
+      (state_in : State) :
+    {{ p, state_in | LowM.let_ e k ⇓ output | state_out }} ->
     {{ p, state_in | LowM.Let e k ⇓ output | state_out }}
 
   where "{{ p , state_in | e ⇓ output | state_out }}" :=
@@ -136,3 +129,23 @@ Module Run.
     apply Pure.
   Qed.
 End Run.
+
+Module Singleton.
+  Module State.
+    Definition t : Set := option Value.t.
+  End State.
+
+  Module Address.
+    Definition t : Set := unit.
+  End Address.
+
+  Global Instance IsState : State.Trait State.t Address.t := {
+    read _ s := s;
+    alloc_write _ s v := Some (Some v);
+  }.
+
+  Lemma IsStateValid : State.Valid.t IsState.
+  Proof.
+    sauto lq: on rew: off.
+  Qed.
+End Singleton.

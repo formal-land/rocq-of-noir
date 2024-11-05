@@ -354,13 +354,22 @@ Module Array.
   Definition repeat {A : Set} (size : U32.t) (value : A) : t A size :=
     Make (List.repeat value (Z.to_nat (SemiInteger.to_Z size))).
 
-  Definition get {A Index: Set} `{SemiInteger.Trait Index} {size : U32.t}
+  Definition read {A Index: Set} `{SemiInteger.Trait Index} {size : U32.t}
       (array : t A size) (index : Index) :
       M! A :=
     let 'Make array := array in
     match List.nth_error array (Z.to_nat (SemiInteger.to_Z index)) with
     | Some result => return! result
     | None => panic! ("Array.get: index out of bounds", array, index)
+    end.
+
+  Definition write {A Index: Set} `{SemiInteger.Trait Index} {size : U32.t}
+      (array : t A size) (index : Index) (value : A) :
+      M! (t A size) :=
+    let 'Make array := array in
+    match List.listUpdate_error array (Z.to_nat (SemiInteger.to_Z index)) value with
+    | Some array => return! (Make array)
+    | None => panic! ("Array.write: index out of bounds", array, index)
     end.
 End Array.
 
