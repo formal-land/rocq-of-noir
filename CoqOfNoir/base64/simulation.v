@@ -20,6 +20,14 @@ Module Base64EncodeBE.
       Value.Tuple [to_value x.(table)];
   }.
 
+  Definition ascii_codes : list Z := [
+    65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90;
+    97; 98; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122;
+    48; 49; 50; 51; 52; 53; 54; 55; 56; 57;
+    43;
+    47
+  ].
+
   (*
   /// Creates a new encoder that uses the standard Base64 Alphabet (base64) specified in RFC 4648 
   /// (https://datatracker.ietf.org/doc/html/rfc4648#section-4)
@@ -39,13 +47,7 @@ Module Base64EncodeBE.
   }
   *)
   Definition new : t := {|
-    table := Array.Make (List.map U8.Make [
-      65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90;
-      97; 98; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122;
-      48; 49; 50; 51; 52; 53; 54; 55; 56; 57;
-      43;
-      47
-    ])
+    table := Array.Make (List.map U8.Make ascii_codes)
   |}.
 
   Lemma run_new {State Address : Set} `{State.Trait State Address}
@@ -90,6 +92,43 @@ Module Base64EncodeBE.
     { exfalso.
       discriminate.
     }
+  Qed.
+
+  (** How accessing the table of characters is used in practice *)
+  Definition get_ascii_table (idx : Z) : Z :=
+    List.nth_default 0 ascii_codes (Z.to_nat idx).
+
+  Lemma get_ascii_table_eq (idx : Z)
+      (H_idx : 0 <= idx < 64) :
+    return! (U8.Make (get_ascii_table idx)) = get new (Field.Make idx).
+  Proof.
+    unfold get_ascii_table, ascii_codes; cbn.
+    unfold List.nth_default.
+    pose proof (List.nth_error_map U8.Make (Z.to_nat idx) ascii_codes) as H_eq.
+    cbn in H_eq.
+    rewrite H_eq.
+    fold ascii_codes.
+    clear H_eq.
+    destruct List.nth_error eqn:?; cbn.
+    { reflexivity. }
+    { exfalso.
+      apply (List.nth_error_Some ascii_codes (Z.to_nat idx)); trivial.
+      cbn.
+      lia.
+    }
+  Qed.
+
+  Lemma run_get_ascii_table {State Address : Set} `{State.Trait State Address}
+      (p : Z) (state : State)
+      (idx : Z)
+      (H_idx : 0 <= idx < 64) :
+    {{ p, state |
+      polymorphic.Base64EncodeBE.get [to_value new; to_value (Field.Make idx)] ⇓
+      Result.Ok (to_value (U8.Make (get_ascii_table idx)))
+    | state }}.
+  Proof.
+    apply run_get.
+    now rewrite get_ascii_table_eq.
   Qed.
 End Base64EncodeBE.
 
@@ -165,6 +204,7 @@ Module base64_encode_elements.
   Qed.
 End base64_encode_elements.
 
+(*
 Lemma run_base64_encode_elements
     (p : Z)
     {InputElements : U32.t}
@@ -197,17 +237,8 @@ Proof.
     (* Entering the fold *)
     destruct input as [input].
   simpl.
-    cbn.
-      eapply Run.Let. {
-        eapply Base64EncodeBE.run_new.
-      }
-      apply Run.Pure.
-    }
-    apply Base64EncodeBE.run_new.
-  }
-  unfold base64_encode_elements in H_result.
-
 Qed.
+*)
 
 (* Lemma run_eq₂ {State Address : Set} `{State.Trait State Address}
     (state : State) (self other : Array.t U8.t 36) :
