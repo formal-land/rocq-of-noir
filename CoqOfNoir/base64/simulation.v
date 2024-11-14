@@ -12,7 +12,7 @@ Module Base64EncodeBE.
   }
   *)
   Record t : Set := {
-    table : Array.t U8.t (U32.Make 64);
+    table : Array.t U8.t (U32.Build_t 64);
   }.
 
   Global Instance Impl_ToValue : ToValue.Trait t := {
@@ -20,7 +20,7 @@ Module Base64EncodeBE.
       Value.Tuple [to_value x.(table)];
   }.
 
-  Definition ascii_codes : list Z := [
+  Definition ascii_codes : list U8.t := List.map U8.Build_t [
     65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90;
     97; 98; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122;
     48; 49; 50; 51; 52; 53; 54; 55; 56; 57;
@@ -47,7 +47,7 @@ Module Base64EncodeBE.
   }
   *)
   Definition new : t := {|
-    table := Array.Make (List.map U8.Make ascii_codes)
+    table := Array.Build_t ascii_codes
   |}.
 
   Lemma run_new {State Address : Set} `{State.Trait State Address}
@@ -82,7 +82,8 @@ Module Base64EncodeBE.
     | state }}.
   Proof.
     unfold polymorphic.Base64EncodeBE.get.
-    destruct self as [ [table] ], idx as [idx].
+    unfold get, Array.read in H_result.
+    (* destruct self as [ [table] ], idx as [idx]. *)
     cbn in *.
     rewrite List.nth_error_map.
     destruct List.nth_error; cbn.
@@ -94,17 +95,18 @@ Module Base64EncodeBE.
     }
   Qed.
 
+  (*
   (** How accessing the table of characters is used in practice *)
   Definition get_ascii_table (idx : Z) : Z :=
     List.nth_default 0 ascii_codes (Z.to_nat idx).
 
   Lemma get_ascii_table_eq (idx : Z)
       (H_idx : 0 <= idx < 64) :
-    return! (U8.Make (get_ascii_table idx)) = get new (Field.Make idx).
+    return! (U8.Build_t (get_ascii_table idx)) = get new (Field.Build_t idx).
   Proof.
     unfold get_ascii_table, ascii_codes; cbn.
     unfold List.nth_default.
-    pose proof (List.nth_error_map U8.Make (Z.to_nat idx) ascii_codes) as H_eq.
+    pose proof (List.nth_error_map U8.Build_t (Z.to_nat idx) ascii_codes) as H_eq.
     cbn in H_eq.
     rewrite H_eq.
     fold ascii_codes.
@@ -123,13 +125,14 @@ Module Base64EncodeBE.
       (idx : Z)
       (H_idx : 0 <= idx < 64) :
     {{ p, state |
-      polymorphic.Base64EncodeBE.get [to_value new; to_value (Field.Make idx)] ⇓
-      Result.Ok (to_value (U8.Make (get_ascii_table idx)))
+      polymorphic.Base64EncodeBE.get [to_value new; to_value (Field.Build_t idx)] ⇓
+      Result.Ok (to_value (U8.Build_t (get_ascii_table idx)))
     | state }}.
   Proof.
     apply run_get.
     now rewrite get_ascii_table_eq.
   Qed.
+  *)
 End Base64EncodeBE.
 
 (*
@@ -152,14 +155,14 @@ Definition base64_encode_elements {InputElements : U32.t} (input : Array.t U8.t 
     M! (Array.t U8.t InputElements) :=
   let Base64Encoder := Base64EncodeBE.new in
 
-  let result : Array.t U8.t InputElements := Array.repeat InputElements (U8.Make 0) in
+  let result : Array.t U8.t InputElements := Array.repeat InputElements (U8.Build_t 0) in
 
   List.fold_left
     (fun (result : M! (Array.t U8.t InputElements)) (i : nat) =>
       let! result := result in
-      let i : U32.t := U32.Make (Z.of_nat i) in
+      let i : U32.t := U32.Build_t (Z.of_nat i) in
       let! input_i := Array.read input i in
-      let! new_result_i := Base64EncodeBE.get Base64Encoder (Field.Make (Integer.to_Z input_i)) in
+      let! new_result_i := Base64EncodeBE.get Base64Encoder (Field.Build_t (Integer.to_Z input_i)) in
       Array.write result i new_result_i
     )
     (List.seq 0 (Z.to_nat (SemiInteger.to_Z InputElements)))
@@ -204,17 +207,34 @@ Module base64_encode_elements.
   Qed.
 End base64_encode_elements.
 
+Ltac cbn_goal :=
+  match goal with
+  | |- Run.t _ _ _ _ ?e =>
+    let e' := eval cbn in e in
+    change e with e'
+  end.
+
 (*
 Lemma run_base64_encode_elements
     (p : Z)
     {InputElements : U32.t}
-    (input : Array.t U8.t InputElements) (result : Array.t U8.t InputElements)
-    (H_result : base64_encode_elements input = return! result) :
-  {{ p, base64_encode_elements.State.init |
-    polymorphic.base64_encode_elements InputElements [to_value input] ⇓
-    Result.Ok (to_value result)
-  | base64_encode_elements.State.init }}.
+    (input : Array.t U8.t InputElements)
+    (H_input : Array.Valid.t input) :
+  let output := base64_encode_elements input in
+  let state_end := {|
+    base64_encode_elements.State.base64_encoder := Some (to_value Base64EncodeBE.new);
+    base64_encode_elements.State.result := Some (to_value output);
+  |} in
+    {{ p, base64_encode_elements.State.init |
+      polymorphic.base64_encode_elements InputElements [to_value input] ⇓
+      Result.Ok (to_value output)
+    | state_end }}
+  | Panic.Panic _ => True
+  end.
 Proof.
+  Opaque Base64EncodeBE.get M.index.
+  destruct base64_encode_elements as [output|] eqn:H_base64_encode_elements;
+    [|trivial].
   unfold polymorphic.base64_encode_elements.
   eapply Run.Let. {
     eapply Run.CallClosure. {
@@ -232,9 +252,39 @@ Proof.
   fold @LowM.let_.
   apply Run.LetUnfold.
   fold @LowM.let_.
-  
-   {
-    (* Entering the fold *)
+  unfold M.for_, M.for_Z.
+  cbn_goal.
+  unfold Integer.to_nat, Integer.to_Z.
+  repeat match goal with
+  | |- context[Z.to_nat ?x] =>
+    let n' := eval cbn in (Z.to_nat x) in
+    change (Z.to_nat x) with n'
+  end.
+  match goal with
+  | |- context[?x - 0] =>
+    replace (x - 0) with x by lia
+  end.
+  unfold Array.Valid.t in H_input.
+  cbn in H_input.
+  unfold base64_encode_elements, Array.repeat in H_base64_encode_elements.
+  cbn in H_base64_encode_elements.
+  induction (Z.to_nat _); cbn_goal.
+  { eapply Run.CallPrimitiveStateRead; [reflexivity|].
+    cbn in H_base64_encode_elements.
+    inversion_clear H_base64_encode_elements.
+    apply Run.Pure.
+  }
+  { eapply Run.CallPrimitiveStateRead; [reflexivity|].
+    fold @LowM.let_.
+    Transparent M.index.
+    unfold M.index.
+    cbn_goal.
+  }
+  set (n := Z.to_nat _).
+
+  simpl.
+  cbn.
+    (* Entering the loop *)
     destruct input as [input].
   simpl.
 Qed.
@@ -299,13 +349,13 @@ pub fn base64_encode<let InputBytes: u32, let OutputElements: u32>(input: [u8; I
 *)
 (* Definition base64_encode {InputBytes OutputElements : U32.t} (input : Array.t U8.t InputBytes) :
     Array.t U8.t OutputElements :=
-  let result : Array.t U8.t OutputElements := Array.repeat OutputElements (U8.Make 0) in
-  let BASE64_ELEMENTS_PER_CHUNK : U32.t := U32.Make 40 in
-  let BYTES_PER_CHUNK : U32.t := U32.Make 30 in
+  let result : Array.t U8.t OutputElements := Array.repeat OutputElements (U8.Build_t 0) in
+  let BASE64_ELEMENTS_PER_CHUNK : U32.t := U32.Build_t 40 in
+  let BYTES_PER_CHUNK : U32.t := U32.Build_t 30 in
   let num_chunks : U32.t :=
     Integer.add
       (Integer.div InputBytes BYTES_PER_CHUNK)
-      (Integer.of_bool (negb (Eq.eq (Integer.mod_ InputBytes BYTES_PER_CHUNK) (U32.Make 0)))) in
+      (Integer.of_bool (negb (Eq.eq (Integer.mod_ InputBytes BYTES_PER_CHUNK) (U32.Build_t 0)))) in
 
   if Integer.to_Z num_chunks >? 0 then
     M.for_ () *)

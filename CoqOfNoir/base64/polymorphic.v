@@ -92,7 +92,7 @@ Module Field.
     | _ => M.impossible "wrong number of arguments"
     end.
 
-  Lemma eq_to_be_radix₅ : get_function "to_be_radix" 5 = closure (to_be_radix(U32.Make 40)).
+  Lemma eq_to_be_radix₅ : get_function "to_be_radix" 5 = closure (to_be_radix (U32.Build_t 40)).
   Proof.
     autorewrite with get_function; f_equal.
   Qed.
@@ -101,7 +101,7 @@ End Field.
 
 Module Base64EncodeBE.
   Record t : Set := {
-    table : Array.t U8.t (U32.Make 64);
+    table : Array.t U8.t (U32.Build_t 64);
   }.
 
   Definition new (α : list Value.t) : M.t :=
@@ -270,7 +270,7 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
   end.
 
 Lemma eq_base64_encode_elements₆ :
-  get_function "base64_encode_elements" 6 = closure (base64_encode_elements (U32.Make 118)).
+  get_function "base64_encode_elements" 6 = closure (base64_encode_elements (U32.Build_t 118)).
 Proof.
   autorewrite with get_function; apply f_equal.
   apply functional_extensionality; intro α.
@@ -371,7 +371,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
               ]] in
               let~ slice_base64_chunks := [[ M.copy (|
                 M.alloc (M.call_closure (|
-                  closure (Field.to_be_radix (U32.Make 30)),
+                  closure (Field.to_be_radix (U32.Build_t 30)),
                   [
                     M.read (| slice |);
                     Value.Integer IntegerKind.U32 64
@@ -478,7 +478,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
           ]] in
           let~ slice_base64_chunks := [[ M.copy (|
             M.alloc (M.call_closure (|
-              closure (Field.to_be_radix (U32.Make 30)),
+              closure (Field.to_be_radix (U32.Build_t 30)),
               [
                 M.read (| slice |);
                 Value.Integer IntegerKind.U32 64
@@ -529,7 +529,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
             M.alloc (M.assign (|
               result,
               M.call_closure (|
-                closure (base64_encode_elements (U32.Make 118)),
+                closure (base64_encode_elements (U32.Build_t 118)),
                 [
                   M.read (| result |)
                 ]
@@ -547,7 +547,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
   end.
 
 Lemma base64_encode₁ :
-  get_function "base64_encode" 1 = closure (base64_encode (U32.Make 88) (U32.Make 118)).
+  get_function "base64_encode" 1 = closure (base64_encode (U32.Build_t 88) (U32.Build_t 118)).
 Proof.
   autorewrite with get_function; apply f_equal.
   apply functional_extensionality; intro α.
