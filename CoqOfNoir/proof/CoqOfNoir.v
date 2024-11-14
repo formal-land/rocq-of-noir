@@ -1,4 +1,6 @@
 Require Import CoqOfNoir.CoqOfNoir.
+Require Import CoqOfNoir.simulation.CoqOfNoir.
+
 
 Module State.
   Class Trait (State Address : Set) : Type := {
@@ -115,6 +117,12 @@ Module Run.
       (state_in : State) :
     {{ p, state_in | LowM.let_ e k ⇓ output | state_out }} ->
     {{ p, state_in | LowM.Let e k ⇓ output | state_out }}
+  | LetUnUnfold
+      (e : M.t)
+      (k : Result.t -> M.t)
+      (state_in : State) :
+    {{ p, state_in | LowM.Let e k ⇓ output | state_out }} ->
+    {{ p, state_in | LowM.let_ e k ⇓ output | state_out }}
 
   where "{{ p , state_in | e ⇓ output | state_out }}" :=
     (t p output state_out state_in e).
@@ -127,6 +135,74 @@ Module Run.
   Proof.
     intros -> ->.
     apply Pure.
+  Qed.
+
+  Lemma For {State Address : Set} `{State.Trait State Address}
+      (p : Z) (state_in : State)
+      (integer_kind : IntegerKind.t) (start : Z) (len : nat) (body : Value.t -> M.t)
+      {Accumulator : Set}
+      (inject : State -> Accumulator -> State)
+      (accumulator_in : Accumulator)
+      (body_expression : Z -> MS! Accumulator unit)
+      (H_body : forall (accumulator_in : Accumulator) (i : Z),
+        let output_accumulator_out := body_expression i accumulator_in in
+        {{ p, inject state_in accumulator_in |
+          body (M.alloc (Value.Integer integer_kind i)) ⇓
+          Panic.to_result (fst output_accumulator_out)
+        | inject state_in (snd output_accumulator_out) }}
+      ) :
+    let output_accumulator_out :=
+      foldS!
+        tt
+        (List.map (fun offset => start + Z.of_nat offset) (List.seq 0 len))
+        (fun (_ : unit) => body_expression)
+        accumulator_in in
+    {{ p, inject state_in accumulator_in |
+      M.for_
+        (Value.Integer integer_kind start)
+        (Value.Integer integer_kind (start + Z.of_nat len))
+        body ⇓
+      Panic.to_result (fst output_accumulator_out)
+    | inject state_in (snd output_accumulator_out) }}.
+  Proof.
+    revert start accumulator_in.
+    induction len as [| len IHlen]; intros; unfold M.for_, M.for_Z in *; simpl in *.
+    { replace (start + 0) with start by lia.
+      replace (start - start) with 0 by lia.
+      apply Pure.
+    }
+    { replace (Z.to_nat (start + _ - start)) with (S len) by lia.
+      simpl.
+      apply LetUnUnfold.
+      eapply Let. {
+        apply H_body.
+      }
+      replace (start + _ - _) with start by lia.
+      unfold output_accumulator_out.
+      replace (start + 0) with start by lia.
+      unfold StatePanic.bind.
+      destruct body_expression as [output accumulator_out]; simpl.
+      destruct output as [ [] |]; simpl.
+      { replace (start + Z.pos _) with (start + 1 + Z.of_nat len) by lia.
+        pose proof (IHlen (start + 1) accumulator_out) as IHlen'.
+        replace ((start + 1) + _ - (start + 1)) with (Z.of_nat len) in IHlen' by lia.
+        replace (Z.to_nat (Z.of_nat len)) with len in IHlen' by lia.
+        assert (H_map_seq_one :
+          List.map (fun offset : nat => start + Z.of_nat offset) (List.seq 1 len) =
+          List.map (fun offset : nat => start + 1 + Z.of_nat offset) (List.seq 0 len)
+        ). {
+          clear.
+          generalize 0%nat as n.
+          induction len; simpl; [reflexivity|]; intros.
+          rewrite <- IHlen.
+          f_equal.
+          lia.
+        }
+        rewrite <- H_map_seq_one in IHlen'.
+        apply IHlen'.
+      }
+      { apply Run.Pure. }
+    }
   Qed.
 End Run.
 

@@ -194,7 +194,7 @@ Module Result.
   | Ok (value : Value.t)
   | Break
   | Continue
-  | Panic {A : Set} (payload : A).
+  | Panic.
 End Result.
 
 Module M.
@@ -303,14 +303,16 @@ Module M.
     LowM.Impossible message.
 
   Definition panic {A : Set} (payload : A) : M.t :=
-    LowM.Pure (Result.Panic payload).
+    LowM.Pure Result.Panic.
+  (* We use the payload of this function for debugging but throw it away for the semantics *)
+  Opaque panic.
 
   Definition alloc (value : Value.t) : Value.t :=
     Value.Pointer (Pointer.Immediate value).
   Arguments alloc /.
 
   Definition alloc_mutable (value : Value.t) : M.t :=
-    LowM.CallPrimitive (Primitive.StateAlloc value) (fun _ => pure (Value.Tuple [])).
+    LowM.CallPrimitive (Primitive.StateAlloc value) (fun value => pure value).
   Arguments alloc_mutable /.
 
   Definition read (r : Value.t) : M.t :=
