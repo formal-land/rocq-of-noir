@@ -1,3 +1,4 @@
+Require Export Coq.Logic.FunctionalExtensionality.
 Require Export Coq.Strings.Ascii.
 Require Coq.Strings.HexString.
 Require Export Coq.Strings.String.
@@ -158,7 +159,6 @@ Module Primitive.
   | StateAlloc (value : Value.t) : t Value.t
   | StateRead {Address : Set} (address : Address) : t Value.t
   | StateWrite {Address : Set} (address : Address) (value : Value.t) : t unit
-  | GetFunction (path : string) (id : Z) : t Value.t
   | GetFieldPrime : t Z
   | IsEqual (value1 value2 : Value.t) : t bool.
 End Primitive.
@@ -169,13 +169,11 @@ Module LowM.
   | CallPrimitive {B : Set} (primitive : Primitive.t B) (k : B -> t A)
   | CallClosure (closure : Value.t) (args : list Value.t) (k : A -> t A)
   | Let (e : t A) (k : A -> t A)
-  | Loop (body : t A) (k : A -> t A)
   | Impossible (message : string).
   Arguments Pure {_}.
   Arguments CallPrimitive {_ _}.
   Arguments CallClosure {_}.
   Arguments Let {_}.
-  Arguments Loop {_}.
   Arguments Impossible {_}.
 
   Fixpoint let_ {A : Set} (e1 : t A) (e2 : A -> t A) : t A :=
@@ -187,8 +185,6 @@ Module LowM.
       CallClosure f args (fun v => let_ (k v) e2)
     | Let e k =>
       Let e (fun v => let_ (k v) e2)
-    | Loop body k =>
-      Loop body (fun v => let_ (k v) e2)
     | Impossible message => Impossible message
     end.
 End LowM.
@@ -198,7 +194,7 @@ Module Result.
   | Ok (value : Value.t)
   | Break
   | Continue
-  | Panic {A : Set} (payload : A).
+  | Panic.
 End Result.
 
 Module M.
@@ -307,14 +303,16 @@ Module M.
     LowM.Impossible message.
 
   Definition panic {A : Set} (payload : A) : M.t :=
-    LowM.Pure (Result.Panic payload).
+    LowM.Pure Result.Panic.
+  (* We use the payload of this function for debugging but throw it away for the semantics *)
+  Opaque panic.
 
   Definition alloc (value : Value.t) : Value.t :=
     Value.Pointer (Pointer.Immediate value).
   Arguments alloc /.
 
   Definition alloc_mutable (value : Value.t) : M.t :=
-    LowM.CallPrimitive (Primitive.StateAlloc value) (fun _ => pure (Value.Tuple [])).
+    LowM.CallPrimitive (Primitive.StateAlloc value) (fun value => pure value).
   Arguments alloc_mutable /.
 
   Definition read (r : Value.t) : M.t :=
@@ -356,9 +354,6 @@ Module M.
     let* v := read r in
     alloc_mutable v.
   Arguments copy /.
-
-  Definition get_function (path : string) (id : Z) : M.t :=
-    LowM.CallPrimitive (Primitive.GetFunction path id) pure.
 
   Definition assert (condition : Value.t) (message : option Value.t) : M.t :=
     match condition with
@@ -437,11 +432,47 @@ Module M.
     | _ => impossible "cast: expected an integer"
     end.
 
-  Parameter index : Value.t -> Value.t -> M.t.
+  Definition index (table idx : Value.t) : M.t :=
+    match table with
+    | Value.Pointer table_pointer =>
+      match idx with
+      | Value.Integer _ idx =>
+        match table_pointer with
+        | Pointer.Mutable (Pointer.Mutable.Make table_address path) =>
+          pure (Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make
+            table_address
+            (path ++ [Pointer.Index.Index idx])
+          )))
+        | Pointer.Immediate table_value =>
+          match Value.read_index table_value (Pointer.Index.Index idx) with
+          | Some value => pure (Value.Pointer (Pointer.Immediate value))
+          | None => panic ("index: out of bounds", table, idx)
+          end
+        end
+      | _ => impossible "index: expected an integer"
+      end
+    | _ => impossible "index: expected a pointer"
+    end.
 
   Parameter assign : Value.t -> Value.t -> M.t.
 
-  Parameter extract_tuple_field : Value.t -> Z -> M.t.
+  Definition extract_tuple_field (tuple : Value.t) (field : Z) : M.t :=
+    match tuple with
+    | Value.Pointer tuple_pointer =>
+      match tuple_pointer with
+      | Pointer.Mutable (Pointer.Mutable.Make address path) =>
+        pure (Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make
+          address
+          (path ++ [Pointer.Index.Field field])
+        )))
+      | Pointer.Immediate tuple_value =>
+        match Value.read_index tuple_value (Pointer.Index.Field field) with
+        | Some value => pure (Value.Pointer (Pointer.Immediate value))
+        | None => panic ("extract_tuple_field: out of bounds", tuple, field)
+        end
+      end
+    | _ => impossible "extract_tuple_field: expected a pointer"
+    end.
 
   Definition if_ (condition : Value.t) (then_ : M.t) (else_ : option M.t) : M.t :=
     match condition with
@@ -469,12 +500,17 @@ Module M.
     match start, end_ with
     | Value.Integer integer_kind start, Value.Integer _ end_ =>
       (* We assume that the integer kind of the [end_] is the same and checked by the compiler. *)
-      for_Z start end_ (fun i => body (Value.Integer integer_kind i))
+      for_Z start end_ (fun i => body (alloc (Value.Integer integer_kind i)))
     | _, _ => impossible "for: expected integer values"
     end.
 End M.
 
 Export M.Notations.
+
+Parameter get_function : forall (name : string) (id : Z), Value.t.
+
+Definition closure (definition : list Value.t -> M.t) : Value.t :=
+  Value.Closure (existS (Value.t, M.t) definition).
 
 Module Builtin.
   Parameter __to_be_radix : Value.t.
