@@ -11,6 +11,7 @@ This is still a work in progress. Contact us at [Formal Land](https://formal.lan
 Here are some blog posts featuring this tool:
 
 - [◼️ A formal verification tool for Noir – 1](https://formal.land/blog/2024/11/01/tool-for-noir-1)
+- [◼️ A formal verification tool for Noir – 2](https://formal.land/blog/2024/11/15/tool-for-noir-2)
 
 ## License
 
