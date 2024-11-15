@@ -1,7 +1,10 @@
 name: Deploy preview for PR
 
+# We disable the job in this fork as it is failing otherwise
 on:
-  pull_request:
+  push:
+    branches-ignore:
+      - '*'
 
 jobs:
   add_label:
