@@ -273,6 +273,64 @@ pub fn add_dep(
         .expect("cyclic dependency triggered");
 }
 
+mod print_hir {
+    use std::rc::Rc;
+
+    use noirc_frontend::{
+        hir::{
+            def_map::{ModuleDefId, ModuleId},
+            Context,
+        },
+        hir_def::function::{FuncMeta, HirFunction},
+    };
+    use serde::Serialize;
+
+    type Elements = Vec<Rc<Element>>;
+
+    #[derive(Serialize)]
+    enum Element {
+        Module { name: String, children: Rc<Elements> },
+        Function { name: String, meta: Rc<FuncMeta>, hir: Rc<HirFunction> },
+    }
+
+    fn get_elements_of_module(context: &Context, module_id: &ModuleId) -> Elements {
+        let def_map = context.def_map(&module_id.krate).unwrap();
+        let module = &def_map.modules()[module_id.local_id.0];
+
+        module
+            .definitions()
+            .definitions()
+            .iter()
+            .filter_map(|module_def_id| match module_def_id {
+                ModuleDefId::ModuleId(module_id) => Some(Rc::new(Element::Module {
+                    name: context.def_interner.module_attributes(module_id).name.clone(),
+                    children: Rc::new(get_elements_of_module(context, module_id)),
+                })),
+                ModuleDefId::FunctionId(func_id) => Some(Rc::new(Element::Function {
+                    name: context.def_interner.function_name(func_id).to_string(),
+                    meta: Rc::new(context.def_interner.function_meta(func_id).clone()),
+                    hir: Rc::new(context.def_interner.function(func_id)),
+                })),
+                _ => None,
+            })
+            .collect()
+    }
+
+    fn get_elements_of_root_module(context: &Context) -> Elements {
+        let def_map = context.def_map(context.root_crate_id()).unwrap();
+        let root_module_id = ModuleId { krate: *context.root_crate_id(), local_id: def_map.root() };
+
+        get_elements_of_module(context, &root_module_id)
+    }
+
+    pub(crate) fn save(context: &Context) {
+        let elements = get_elements_of_root_module(context);
+        let elements = serde_json::to_string_pretty(&elements).unwrap();
+        let output_path = context.package_build_path.join("elements.json");
+        std::fs::write(output_path, elements).unwrap();
+    }
+}
+
 /// Run the lexing, parsing, name resolution, and type checking passes.
 ///
 /// This returns a (possibly empty) vector of any warnings found on success.
@@ -295,6 +353,19 @@ pub fn check_crate(
         let diagnostic = CustomDiagnostic::from(&error);
         diagnostic.in_file(file_id)
     }));
+
+    println!("Checking crate: {:?}", crate_id);
+    let nodes = to_string_pretty(&context.def_interner.nodes).unwrap();
+    let nodes_path = context.package_build_path.join("hir.json");
+    std::fs::write(nodes_path, nodes).unwrap();
+    let def_map = context.def_map(&crate_id).unwrap();
+    let root_module = &def_map.modules()[def_map.root().0];
+    let root_module_definition_names =
+        root_module.definitions().values().keys().collect::<Vec<_>>();
+    println!("Root module definitions: {:#?}", root_module_definition_names);
+    let root_module_sub_module_names = root_module.children.keys().collect::<Vec<_>>();
+    println!("Root module sub-modules: {:#?}", root_module_sub_module_names);
+    print_hir::save(context);
 
     if has_errors(&errors, options.deny_warnings) {
         Err(errors)

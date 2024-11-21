@@ -11,7 +11,7 @@ use serde::Serialize;
 /// the Statement AST node. Unlike the AST node, any nested nodes
 /// are referred to indirectly via ExprId or StmtId, which can be
 /// used to retrieve the relevant node via the NodeInterner.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum HirStatement {
     Let(HirLetStatement),
     Constrain(HirConstrainStatement),
@@ -25,7 +25,7 @@ pub enum HirStatement {
     Error,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirLetStatement {
     pub pattern: HirPattern,
     pub r#type: Type,
@@ -43,7 +43,7 @@ impl HirLetStatement {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirForStatement {
     pub identifier: HirIdent,
     pub start_range: ExprId,
@@ -52,7 +52,7 @@ pub struct HirForStatement {
 }
 
 /// Corresponds to `lvalue = expression;` in the source code
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirAssignStatement {
     pub lvalue: HirLValue,
     pub expression: ExprId,
@@ -62,7 +62,7 @@ pub struct HirAssignStatement {
 /// This node also contains the FileId of the file the constrain
 /// originates from. This is used later in the SSA pass to issue
 /// an error if a constrain is found to be always false.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirConstrainStatement(pub ExprId, pub FileId, pub Option<ExprId>);
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize)]
@@ -118,7 +118,7 @@ impl HirPattern {
 
 /// Represents an Ast form that can be assigned to. These
 /// can be found on the left hand side of an assignment `=`.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub enum HirLValue {
     Ident(HirIdent, Type),
     MemberAccess {

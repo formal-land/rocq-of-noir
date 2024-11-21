@@ -1,6 +1,7 @@
 use fm::FileId;
 use iter_extended::vecmap;
 use noirc_errors::{Location, Span};
+use serde::Serialize;
 
 use super::expr::{HirBlockExpression, HirExpression, HirIdent};
 use super::stmt::HirPattern;
@@ -14,7 +15,7 @@ use crate::{ResolvedGeneric, Type};
 
 /// A Hir function is a block expression with a list of statements.
 /// If the function has yet to be resolved, the body starts off empty (None).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct HirFunction(Option<ExprId>);
 
 impl HirFunction {
@@ -45,7 +46,7 @@ impl HirFunction {
 /// An interned function parameter from a function definition
 pub type Param = (HirPattern, Type, Visibility);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Parameters(pub Vec<Param>);
 
 impl Parameters {
@@ -93,7 +94,7 @@ pub type FunctionSignature = (Vec<Param>, Option<Type>);
 /// A FuncMeta contains the signature of the function and any associated meta data like
 /// the function's Location, FunctionKind, and attributes. If the function's body is
 /// needed, it can be retrieved separately via `NodeInterner::function(&self, &FuncId)`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct FuncMeta {
     pub name: HirIdent,
 
@@ -105,6 +106,7 @@ pub struct FuncMeta {
     /// Note that this includes separate entries for each identifier in e.g. tuple patterns.
     pub parameter_idents: Vec<HirIdent>,
 
+    #[serde(skip_serializing)]
     pub return_type: FunctionReturnType,
 
     pub return_visibility: Visibility,
@@ -150,6 +152,7 @@ pub struct FuncMeta {
     /// For example, such as `fold` (never inlined) or `no_predicates` (inlined after flattening)
     pub has_inline_attribute: bool,
 
+    #[serde(skip_serializing)]
     pub function_body: FunctionBody,
 
     /// The crate this function was defined in

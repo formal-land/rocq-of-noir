@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use noirc_errors::Span;
+use serde::Serialize;
 
 use crate::{
     ast::{FunctionReturnType, Ident, Param, Visibility},
@@ -23,7 +24,7 @@ pub struct NoirFunction {
 /// - Normal functions
 /// - LowLevel/Foreign which link to an OPCODE in ACIR
 /// - BuiltIn which are provided by the runtime
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum FunctionKind {
     LowLevel,
     Builtin,

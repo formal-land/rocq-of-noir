@@ -1,5 +1,6 @@
 use acvm::{acir::AcirField, FieldElement};
 use noirc_errors::{Position, Span, Spanned};
+use serde::{Serialize, Serializer};
 use std::fmt;
 
 use crate::{
@@ -933,7 +934,7 @@ impl fmt::Display for FunctionAttribute {
 /// Secondary attributes are those which a function can have many of.
 /// They are not able to change the `FunctionKind` and thus do not have direct impact on the IR output
 /// They are often consumed by libraries or used as notices for the developer
-#[derive(PartialEq, Eq, Hash, Debug, Clone, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone, PartialOrd, Ord, Serialize)]
 pub enum SecondaryAttribute {
     Deprecated(Option<String>),
     // This is an attribute to specify that a function
@@ -1021,7 +1022,7 @@ impl fmt::Display for SecondaryAttribute {
     }
 }
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone, PartialOrd, Ord, Serialize)]
 pub struct CustomAttribute {
     pub contents: String,
     // The span of the entire attribute, including leading `#[` and trailing `]`
@@ -1259,6 +1260,14 @@ impl Keyword {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Tokens(pub Vec<SpannedToken>);
+
+/// A custom serializer that does not show the tokens, as this would be too complex to serialize
+/// and they are not supposed to appear in the output anyway.
+impl Serialize for Tokens {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str("Tokens")
+    }
+}
 
 #[cfg(test)]
 mod keywords {
