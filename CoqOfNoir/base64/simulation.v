@@ -240,7 +240,8 @@ Definition base64_encode_elements_for_body (p : Z) {InputElements : U32.t}
   letS! result := return!toS! (Array.write result i new_result_i) in
   writeS! result.
 
-Definition base64_encode_elements (p : Z) {InputElements : U32.t} (input : Array.t U8.t InputElements) :
+Definition base64_encode_elements (p : Z) {InputElements : U32.t}
+    (input : Array.t U8.t InputElements) :
     M! (Array.t U8.t InputElements) * Array.t U8.t InputElements :=
   let Base64Encoder := Base64EncodeBE.new in
 
@@ -255,20 +256,14 @@ Definition base64_encode_elements (p : Z) {InputElements : U32.t} (input : Array
     returnS! result
   ) (base64_encode_elements_for_init input).
 
-Ltac cbn_goal :=
-  match goal with
-  | |- Run.t _ ?result _ _ ?e =>
-    let result' := eval cbn in result in
-    change result with result';
-    let e' := eval cbn in e in
-    change e with e'
-  end.
-
 Lemma map_listUpdate_eq {A B : Type} (f : A -> B) (l : list A) (i : nat) (x : A) (y : B)
     (H_y : y = f x) :
   List.listUpdate (List.map f l) i y = List.map f (List.listUpdate l i x).
 Proof.
-Admitted.
+  unfold List.listUpdate.
+  rewrite List.firstn_map, List.skipn_map, List.map_app.
+  sfirstorder.
+Qed.
 
 Lemma map_listUpdate_error_eq {A B : Type} (f : A -> B) (l : list A) (i : nat) (x : A) (y : B)
     (H_y : y = f x) :
@@ -356,7 +351,6 @@ Proof.
     unfold cast_to_field; cbn.
     destruct (_ && _); cbn; [|apply Run.Pure].
     eapply Run.CallClosure. {
-      repeat rewrite Array.rewrite_to_value by (intros; now autorewrite with to_value).
       autorewrite with to_value.
       match goal with
       | |- context[Value.Integer IntegerKind.Field ?i] =>
@@ -385,105 +379,11 @@ Proof.
     }
   }
   fold @LowM.let_.
-  (* destruct fst; cbn; [|apply Run.Pure]. *)
+  unfold StatePanic.bind.
   destruct (foldS! _ _ _) as [status result].
-  destruct status; cbn.
-  { 
-
-  }
-      { exfalso.
-        set (Z.to_nat i) in *.
-        
-        lia.
-      }
-       [lia|].
-      Search List.listUpdate_error.
-      {
-        (* pose proof (List.nth_error_None accumulator_in.(Array.value) (Z.to_nat i)).
-        best. *)
-        
-      }
-      epose proof (List.nth_error_None _ _). H_nth_error).
-    }
-    set (length := Z.of_nat (List.length accumulator_in.(Array.value))).
-    destruct (i <? length) eqn:H_i.
-    { assert (i < length) by lia.
-      pose proof (List.nth_error_Some_bound_index _ _ _ H).
-      best use: List.nth_error_Some_bound_index.
-      destruct List.nth_error eqn:?.
-      2: {
-        assert (length <= i). {
-          best use: List.nth_error_nth'.
-      }
-    
-    as [result|]; cbn; [|apply Run.Pure].
-      apply Run.Pure.
-    }
-    { apply Run.Pure. }
-
-    }
-    Search List.nth_error.
-    Search List.listUpdate_error.
-    2: {
-      apply Run.Pure.
-    }
-    Search List.nth_error.
-    cbn.
-
-    eapply Run.Let.
-    
-    epose proof (Run.For (State := State.t) _ _ _ _ _ _ _ _
-      (
-        fun state accumulator =>
-          state <| State.base64_encode_elements :=
-            state.(State.base64_encode_elements) <|
-              base64_encode_elements.State.result := Some accumulator
-            |>
-          |>
-      )
-    ).
-    apply H.
-    eapply (Run.For (State := State.t)).
-  }
-
-  apply Run.LetUnfold.
-  fold @LowM.let_.
-  apply Run.LetUnfold.
-  unfold M.for_, M.for_Z.
-  cbn_goal.
-  unfold Integer.to_nat, Integer.to_Z.
-  repeat match goal with
-  | |- context[Z.to_nat ?x] =>
-    let n' := eval cbn in (Z.to_nat x) in
-    change (Z.to_nat x) with n'
-  end.
-  match goal with
-  | |- context[?x - 0] =>
-    replace (x - 0) with x by lia
-  end.
-  unfold Array.Valid.t in H_input.
-  cbn in H_input.
-  unfold base64_encode_elements, Array.repeat in H_base64_encode_elements.
-  cbn in H_base64_encode_elements.
-  induction (Z.to_nat _); cbn_goal.
-  { eapply Run.CallPrimitiveStateRead; [reflexivity|].
-    cbn in H_base64_encode_elements.
-    inversion_clear H_base64_encode_elements.
-    apply Run.Pure.
-  }
-  { eapply Run.CallPrimitiveStateRead; [reflexivity|].
-    fold @LowM.let_.
-    Transparent M.index.
-    unfold M.index.
-    cbn_goal.
-  }
-  set (n := Z.to_nat _).
-
-  simpl.
-  cbn.
-    (* Entering the loop *)
-    destruct input as [input].
-  simpl.
+  destruct status; cbn; [|apply Run.Pure].
+  eapply Run.CallPrimitiveStateRead; [reflexivity|].
+  apply Run.Pure.
 Qed.
 
 (* Lemma run_eq₂ {State Address : Set} `{State.Trait State Address}
