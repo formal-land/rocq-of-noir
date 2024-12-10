@@ -1,5 +1,4 @@
 Require Import CoqOfNoir.CoqOfNoir.
-Require Import Coq.Logic.FunctionalExtensionality.
 
 Module ToValue.
   Class Trait (Self : Set) : Set := {
@@ -141,8 +140,8 @@ Global Instance Impl_ToValue_for_bool : ToValue.Trait bool := {
     Value.Bool b;
 }.
 
-Lemma rewrite_to_value_bool (b : bool) :
-  Value.Bool b = to_value b.
+Lemma rewrite_to_value_bool :
+  Value.Bool = to_value.
 Proof. reflexivity. Qed.
 Global Hint Rewrite rewrite_to_value_bool : to_value.
 
@@ -156,8 +155,8 @@ Module Field.
       Value.Integer IntegerKind.Field i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.Field i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.Field i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End Field.
@@ -172,8 +171,8 @@ Module U1.
       Value.Integer IntegerKind.U1 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.U1 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.U1 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End U1.
@@ -188,8 +187,8 @@ Module U8.
       Value.Integer IntegerKind.U8 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.U8 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.U8 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End U8.
@@ -204,8 +203,8 @@ Module U16.
       Value.Integer IntegerKind.U16 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.U16 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.U16 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End U16.
@@ -220,8 +219,8 @@ Module U32.
       Value.Integer IntegerKind.U32 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.U32 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.U32 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End U32.
@@ -236,8 +235,8 @@ Module U64.
       Value.Integer IntegerKind.U64 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.U64 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.U64 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End U64.
@@ -252,8 +251,8 @@ Module I1.
       Value.Integer IntegerKind.I1 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.I1 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.I1 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End I1.
@@ -268,8 +267,8 @@ Module I8.
       Value.Integer IntegerKind.I8 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.I8 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.I8 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End I8.
@@ -284,8 +283,8 @@ Module I16.
       Value.Integer IntegerKind.I16 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.I16 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.I16 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End I16.
@@ -300,8 +299,8 @@ Module I32.
       Value.Integer IntegerKind.I32 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.I32 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.I32 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End I32.
@@ -316,8 +315,8 @@ Module I64.
       Value.Integer IntegerKind.I64 i.(value);
   }.
 
-  Lemma rewrite_to_value (i : t) :
-    Value.Integer IntegerKind.I64 i.(value) = to_value i.
+  Lemma rewrite_to_value :
+    (fun i => Value.Integer IntegerKind.I64 i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 End I64.
@@ -472,12 +471,9 @@ Module Array.
       Value.Array (List.map to_value array.(value));
   }.
 
-  Lemma rewrite_to_value {A : Set} `{ToValue.Trait A} {size : U32.t} (array : t A size) f :
-    (forall (x : A), f x = to_value x) ->
-    Value.Array (List.map f array.(value)) = to_value array.
-  Proof.
-    hauto lq: on use: functional_extensionality.
-  Qed.
+  Lemma rewrite_to_value {A : Set} `{ToValue.Trait A} {size : U32.t} (array : t A size) :
+    Value.Array (List.map to_value array.(value)) = to_value array.
+  Proof. reflexivity. Qed.
   Global Hint Rewrite @rewrite_to_value : to_value.
 
   Definition repeat {A : Set} (size : U32.t) (value : A) : t A size :=
