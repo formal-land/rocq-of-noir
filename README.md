@@ -1,12 +1,24 @@
 # ◼️🐓 coq-of-noir
 
-Noir is a Domain Specific Language for SNARK proving systems. With `coq-of-noir`, we provide an **affordable way to formally verify smart contracts written in Noir**. We rely on the well-known proof assistant [Coq](https://coq.inria.fr/) for the verification work as well proof techniques developed for [coq-of-rust](https://github.com/formal-land/coq-of-rust) and [coq-of-solidity](https://github.com/formal-land/coq-of-solidity).
+With `coq-of-noir`, we provide an **open-source and extensive way to formally verify smart contracts written in ⬛&nbsp;Noir**. Formal verification is about checking for any possible input that your code has no security issues, what is essential for code deployed on the blockchain! 🛡️
 
-## Status
+To keep things simple, we rely on the well-known proof assistant [Rocq](https://rocq-prover.org/) for all the verification work: if you are already knowledgeable into this system, you can readily use `coq-of-noir` to verify your smart contracts!
 
-This is still a work in progress. Contact us at [&#099;&#111;&#110;&#116;&#097;&#099;&#116;&#064;formal&#046;&#108;&#097;&#110;&#100;](mailto:&#099;&#111;&#110;&#116;&#097;&#099;&#116;&#064;formal&#046;&#108;&#097;&#110;&#100;) or by direct message on our [X account](https://x.com/FormalLand) if you are interested.
+## 🏎️ Getting Started
 
-## Goal and Vision
+Follow what we do in our CI file [coq.yml](.github/workflows/coq.yml). Sorry for not having the time to provide more explanations!
+
+## ✅ What Works
+
+The following steps work:
+
+- A generated translation of the `base64` library of Noir to Coq in a code that compiles; we should thus support a large part of the Noir language.
+- Semantics rules to reason on code like the above together with a proof strategy. This should already cover most of the Noir language.
+- A formally verified functional specification of one of the functions with a loop from the `base64` library, exercising mutations and array access. We consider this to be our main test to see that `coq-of-noir` can work on non-trivial examples.
+
+Note that the proof process is still very verbose, and this tool is still a work in progress. Contact us at [&#099;&#111;&#110;&#116;&#097;&#099;&#116;&#064;formal&#046;&#108;&#097;&#110;&#100;](mailto:&#099;&#111;&#110;&#116;&#097;&#099;&#116;&#064;formal&#046;&#108;&#097;&#110;&#100;) or by direct message on our [X account](https://x.com/FormalLand) if you are interested.
+
+## 🔭 Goal and Vision
 
 The goal is to enable each team developing critical applications (meaning handling user money) to verify the correctness of their code with the higest degree of certainty thanks to **formal verification**.
 
@@ -20,13 +32,13 @@ Our initial target is to verify a part of the [base64](https://github.com/noir-l
 
 _If you have a Noir project that you want to formally verify, either start using `coq-of-noir` or contact us!_
 
-## Blog posts
+## 📚 Blog posts
 
 Here are some blog posts featuring this tool:
 
 - [◼️ A formal verification tool for Noir – 1](https://formal.land/blog/2024/11/01/tool-for-noir-1)
 - [◼️ A formal verification tool for Noir – 2](https://formal.land/blog/2024/11/15/tool-for-noir-2)
 
-## License
+## ⚖️ License
 
-`coq-of-noir` is free and open source. It is distributed under a dual license. (MIT/APACHE) The translation phase is based on the code of the Noir compiler to maximize code reuse.
+`coq-of-noir` is free and **open source**. It is distributed under a dual license. (MIT/APACHE) The translation phase is based on the code of the Noir compiler to maximize code reuse.
