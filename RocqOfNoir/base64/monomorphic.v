@@ -1,4 +1,4 @@
-Require Import CoqOfNoir.CoqOfNoir.
+Require Import RocqOfNoir.RocqOfNoir.
 
 (*
   fn encode_and_decode$f0() -> () {

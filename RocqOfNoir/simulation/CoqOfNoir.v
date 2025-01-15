@@ -1,4 +1,4 @@
-Require Import CoqOfNoir.CoqOfNoir.
+Require Import RocqOfNoir.RocqOfNoir.
 
 Module ToValue.
   Class Trait (Self : Set) : Set := {

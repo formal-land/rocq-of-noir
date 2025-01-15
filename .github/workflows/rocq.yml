@@ -1,4 +1,4 @@
-name: Coq
+name: Rocq
 
 on:
   push:
@@ -20,26 +20,26 @@ jobs:
     - name: Download Git submodules
       run: git submodule update --init --recursive
 
-    - name: Run the Coq tests
+    - name: Run the Rocq tests
       uses: coq-community/docker-coq-action@v1
       with:
         custom_image: coqorg/coq:8.17-ocaml-4.14-flambda
         custom_script: |
           startGroup "Install dependencies"
             sudo ln -s `which python3` /usr/bin/python
-            opam install -y --deps-only CoqOfNoir/coq-of-noir.opam
+            opam install -y --deps-only RocqOfNoir/rocq-of-noir.opam
           endGroup
           startGroup "Change permissions"
             sudo chown -R $(whoami) .
           endGroup
-          startGroup "Convert to Coq"
-            python scripts/coq_of_noir.py CoqOfNoir/base64/monomorphized_program.json >CoqOfNoir/base64/monomorphic.v
+          startGroup "Convert to Rocq"
+            python scripts/rocq_of_noir.py RocqOfNoir/base64/monomorphized_program.json >RocqOfNoir/base64/monomorphic.v
           endGroup
           startGroup "Check that the diff is empty (excluding submodules)"
             git -c color.ui=always diff --exit-code --ignore-submodules=dirty
           endGroup
-          startGroup "Compile Coq translations"
-            cd CoqOfNoir
+          startGroup "Compile Rocq translations"
+            cd RocqOfNoir
             make
             cd ..
           endGroup

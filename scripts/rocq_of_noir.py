@@ -14,11 +14,11 @@ def integer_to_subscript(integer: int) -> str:
     return "".join("₀₁₂₃₄₅₆₇₈₉"[int(digit)] for digit in str(integer))
 
 
-def name_id_to_coq(name: str, id: int) -> str:
+def name_id_to_rocq(name: str, id: int) -> str:
     return f"{name}{integer_to_subscript(id)}"
 
 
-def parameters_to_coq(parameters: list) -> list[str]:
+def parameters_to_rocq(parameters: list) -> list[str]:
     return [parameter[2] for parameter in parameters]
 
 
@@ -40,7 +40,7 @@ pub struct Ident {
     pub typ: Type,
 }
 '''
-def ident_to_coq(node) -> str:
+def ident_to_rocq(node) -> str:
     definition_node = node["definition"]
     definition_node_type: str = list(definition_node.keys())[0]
 
@@ -73,12 +73,12 @@ pub struct ArrayLiteral {
     pub typ: Type,
 }
 '''
-def array_literal_to_coq(node) -> str:
+def array_literal_to_rocq(node) -> str:
     return \
         "[\n" + \
         indent(
             ";\n".join(
-                read(expression_to_coq(expression))
+                read(expression_to_rocq(expression))
                 for expression in node["contents"]
             )
          ) + "\n" + \
@@ -144,16 +144,16 @@ pub enum Literal {
     FmtStr(String, u64, Box<Expression>),
 }
 '''
-def literal_to_coq(node) -> str:
+def literal_to_rocq(node) -> str:
     node_type: str = list(node.keys())[0]
 
     if node_type == "Array":
         node = node["Array"]
-        return "Value.Array " + array_literal_to_coq(node)
+        return "Value.Array " + array_literal_to_rocq(node)
 
     if node_type == "Slice":
         node = node["Slice"]
-        return "Value.Slice " + array_literal_to_coq(node)
+        return "Value.Slice " + array_literal_to_rocq(node)
 
     if node_type == "Integer":
         node = node["Integer"]
@@ -181,7 +181,7 @@ def literal_to_coq(node) -> str:
             "Value.fmt_str " + \
             "\"" + escape_string(node[0]) + "\" " + \
             str(node[1]) + \
-            paren(True, expression_to_coq(node[2]))
+            paren(True, expression_to_rocq(node[2]))
 
     raise Exception(f"Unknown node type: {node_type}")
 
@@ -201,10 +201,10 @@ pub struct Unary {
     pub location: Location,
 }
 '''
-def unary_to_coq(node) -> str:
+def unary_to_rocq(node) -> str:
     return alloc(
         "Unary." + camel_case_to_snake_case(node["operator"]) + " (|\n" +
-        indent(read(expression_to_coq(node["rhs"]))) + "\n" +
+        indent(read(expression_to_rocq(node["rhs"]))) + "\n" +
         "|)"
     )
 
@@ -217,14 +217,14 @@ pub struct Binary {
     pub location: Location,
 }
 '''
-def binary_to_coq(node) -> str:
+def binary_to_rocq(node) -> str:
     operator = camel_case_to_snake_case(node["operator"])
     operator = operator.replace("and", "and_").replace("or", "or_")
     return alloc(
         "Binary." + operator + " (|\n" +
         indent(
-            read(expression_to_coq(node["lhs"])) + ",\n" +
-            read(expression_to_coq(node["rhs"]))
+            read(expression_to_rocq(node["lhs"])) + ",\n" +
+            read(expression_to_rocq(node["rhs"]))
         ) + "\n" + \
         "|)"
     )
@@ -238,12 +238,12 @@ pub struct Index {
     pub location: Location,
 }
 '''
-def index_to_coq(node) -> str:
+def index_to_rocq(node) -> str:
     return \
         "M.index (|\n" + \
         indent(
-            expression_to_coq(node["collection"]) + ",\n" +
-            read(expression_to_coq(node["index"]))
+            expression_to_rocq(node["collection"]) + ",\n" +
+            read(expression_to_rocq(node["index"]))
         ) + "\n" + \
         "|)"
 
@@ -255,11 +255,11 @@ pub struct Cast {
     pub location: Location,
 }
 '''
-def cast_to_coq(node) -> str:
+def cast_to_rocq(node) -> str:
     return alloc(
         "M.cast (|\n" +
         indent(
-            read(expression_to_coq(node["lhs"])) + ",\n" +
+            read(expression_to_rocq(node["lhs"])) + ",\n" +
             type_to_integer_kind(node["type"])
         ) + "\n" +
         "|)"
@@ -280,14 +280,14 @@ pub struct For {
     pub end_range_location: Location,
 }
 '''
-def for_to_coq(node) -> str:
+def for_to_rocq(node) -> str:
     return \
         "M.for_ (|\n" + \
         indent(
-            read(expression_to_coq(node["start_range"])) + ",\n" +
-            read(expression_to_coq(node["end_range"])) + ",\n" +
+            read(expression_to_rocq(node["start_range"])) + ",\n" +
+            read(expression_to_rocq(node["end_range"])) + ",\n" +
             "fun (" + node["index_name"] + " : Value.t) =>\n" +
-            expression_to_coq(node["block"])
+            expression_to_rocq(node["block"])
         ) + "\n" + \
         "|)"
 
@@ -300,14 +300,14 @@ pub struct If {
     pub typ: Type,
 }
 '''
-def if_to_coq(node) -> str:
+def if_to_rocq(node) -> str:
     return \
         "M.if_ (|\n" + \
         indent(
-            read(expression_to_coq(node["condition"])) + ",\n" +
-            expression_to_coq(node["consequence"]) + ",\n" +
+            read(expression_to_rocq(node["condition"])) + ",\n" +
+            expression_to_rocq(node["consequence"]) + ",\n" +
             (
-                "(Some (" + expression_to_coq(node["alternative"]) + "))"
+                "(Some (" + expression_to_rocq(node["alternative"]) + "))"
                 if node["alternative"] is not None
                 else "None"
             )
@@ -323,17 +323,17 @@ pub struct Call {
     pub location: Location,
 }
 '''
-def call_to_coq(node) -> str:
+def call_to_rocq(node) -> str:
     return alloc(
         "M.call_closure (|\n" +
         indent(
-            read(expression_to_coq(node["func"])) + ",\n" +
+            read(expression_to_rocq(node["func"])) + ",\n" +
             (
                 (
                     "[\n" +
                     indent(
                         ";\n".join(
-                            read(expression_to_coq(expression))
+                            read(expression_to_rocq(expression))
                             for expression in node["arguments"]
                         )
                     ) + "\n" +
@@ -354,13 +354,13 @@ pub struct Let {
     pub expression: Box<Expression>,
 }
 '''
-def let_to_coq(node) -> str:
+def let_to_rocq(node) -> str:
     copy_function = "copy_mutable" if node["mutable"] else "copy"
 
     return \
         "let~ " + \
         node["name"] + " := [[ M." + copy_function + " (|\n" + \
-        indent(expression_to_coq(node["expression"])) + "\n" + \
+        indent(expression_to_rocq(node["expression"])) + "\n" + \
         "|) ]] in"
 
 
@@ -372,20 +372,20 @@ pub enum LValue {
     Dereference { reference: Box<LValue>, element_type: Type },
 }
 '''
-def lvalue_to_coq(node) -> str:
+def lvalue_to_rocq(node) -> str:
     node_type: str = list(node.keys())[0]
 
     if node_type == "Ident":
         node = node["Ident"]
-        return alloc(ident_to_coq(node))
+        return alloc(ident_to_rocq(node))
 
     if node_type == "Index":
         node = node["Index"]
         return alloc(
             "M.index (|\n" +
             indent(
-                read(lvalue_to_coq(node["array"])) + ",\n" +
-                read(expression_to_coq(node["index"]))
+                read(lvalue_to_rocq(node["array"])) + ",\n" +
+                read(expression_to_rocq(node["index"]))
             ) + "\n" +
             "|)"
         )
@@ -395,7 +395,7 @@ def lvalue_to_coq(node) -> str:
         return alloc(
             "M.member_access (|\n" +
             indent(
-                read(lvalue_to_coq(node["object"])) + ",\n" +
+                read(lvalue_to_rocq(node["object"])) + ",\n" +
                 str(node["field_index"])
             ) + "\n" +
             "|)"
@@ -403,7 +403,7 @@ def lvalue_to_coq(node) -> str:
 
     if node_type == "Dereference":
         node = node["Dereference"]
-        return read(lvalue_to_coq(node["reference"]))
+        return read(lvalue_to_rocq(node["reference"]))
 
     raise Exception(f"Unknown node type: {node_type}")
 
@@ -414,33 +414,33 @@ pub struct Assign {
     pub expression: Box<Expression>,
 }
 '''
-def assign_to_coq(node) -> str:
+def assign_to_rocq(node) -> str:
     return alloc(
         "M.write (|\n" +
         indent(
-            read(lvalue_to_coq(node["lvalue"])) + ",\n" +
-            read(expression_to_coq(node["expression"]))
+            read(lvalue_to_rocq(node["lvalue"])) + ",\n" +
+            read(expression_to_rocq(node["expression"]))
         ) + "\n" + \
         "|)"
     )
 
 
-def expression_inside_block_to_coq(node, is_last: bool) -> str:
+def expression_inside_block_to_rocq(node, is_last: bool) -> str:
     node_type: str = list(node.keys())[0]
 
     if node_type == "Let":
         node = node["Let"]
-        return let_to_coq(node)
+        return let_to_rocq(node)
 
     if is_last:
         return \
             "[[\n" + \
-            indent(expression_to_coq(node)) + "\n" + \
+            indent(expression_to_rocq(node)) + "\n" + \
             "]]"
 
     return \
         "do~ [[\n" + \
-        indent(expression_to_coq(node)) + "\n" + \
+        indent(expression_to_rocq(node)) + "\n" + \
         "]] in"
 
 
@@ -489,54 +489,54 @@ pub enum Expression {
     Continue,
 }
 '''
-def expression_to_coq(node) -> str:
+def expression_to_rocq(node) -> str:
     node_type: str = list(node.keys())[0]
 
     if node_type == "Ident":
         node = node["Ident"]
-        return ident_to_coq(node)
+        return ident_to_rocq(node)
 
     if node_type == "Literal":
         node = node["Literal"]
-        return alloc(literal_to_coq(node))
+        return alloc(literal_to_rocq(node))
 
     if node_type == "Block":
         node = node["Block"]
         return \
             "\n".join(
-                expression_inside_block_to_coq(expression, index == len(node) - 1)
+                expression_inside_block_to_rocq(expression, index == len(node) - 1)
                 for index, expression in enumerate(node)
             )
 
     if node_type == "Unary":
         node = node["Unary"]
-        return unary_to_coq(node)
+        return unary_to_rocq(node)
 
     if node_type == "Binary":
         node = node["Binary"]
-        return binary_to_coq(node)
+        return binary_to_rocq(node)
 
     if node_type == "Index":
         node = node["Index"]
-        return index_to_coq(node)
+        return index_to_rocq(node)
 
     if node_type == "Cast":
         node = node["Cast"]
-        return cast_to_coq(node)
+        return cast_to_rocq(node)
 
     if node_type == "For":
         node = node["For"]
-        return for_to_coq(node)
+        return for_to_rocq(node)
 
     if node_type == "If":
         node = node["If"]
-        return if_to_coq(node)
+        return if_to_rocq(node)
 
     if node_type == "Tuple":
         node = node["Tuple"]
         return alloc(
             "Value.Tuple [" +
-            "; ".join(read(expression_to_coq(expression)) for expression in node) +
+            "; ".join(read(expression_to_rocq(expression)) for expression in node) +
             "]"
         )
 
@@ -545,27 +545,27 @@ def expression_to_coq(node) -> str:
         return \
             "M.extract_tuple_field (|\n" + \
             indent(
-                indent(expression_to_coq(node[0])) + ",\n" + \
+                indent(expression_to_rocq(node[0])) + ",\n" + \
                 str(node[1])
             ) + "\n" + \
             "|)"
 
     if node_type == "Call":
         node = node["Call"]
-        return call_to_coq(node)
+        return call_to_rocq(node)
 
     if node_type == "Let":
         node = node["Let"]
-        return let_to_coq(node)
+        return let_to_rocq(node)
 
     if node_type == "Constrain":
         node = node["Constrain"]
         return alloc(
             "M.assert (|\n" + \
             indent(
-                read(expression_to_coq(node[0])) + ",\n" + \
+                read(expression_to_rocq(node[0])) + ",\n" + \
                 (
-                    "Some (" + read(expression_to_coq(node[2][0])) + ")"
+                    "Some (" + read(expression_to_rocq(node[2][0])) + ")"
                     if node[2] is not None
                     else "None"
                 )
@@ -575,12 +575,12 @@ def expression_to_coq(node) -> str:
 
     if node_type == "Assign":
         node = node["Assign"]
-        return assign_to_coq(node)
+        return assign_to_rocq(node)
 
     if node_type == "Semi":
         node = node["Semi"]
         # We have no additional printing for this case!
-        return expression_to_coq(node)
+        return expression_to_rocq(node)
 
     if node_type == "Break":
         return "Break"
@@ -605,13 +605,13 @@ pub struct Function {
     pub func_sig: FunctionSignature,
 }
 '''
-def function_to_coq(node) -> str:
-    parameters = parameters_to_coq(node["parameters"])
+def function_to_rocq(node) -> str:
+    parameters = parameters_to_rocq(node["parameters"])
     return \
         "(*\n" + \
         indent(node['source_code'].replace("(*", "( *").strip()) + "\n" + \
         "*)\n" + \
-        f"Definition {name_id_to_coq(node['name'], node['id'])} (α : list Value.t) " + \
+        f"Definition {name_id_to_rocq(node['name'], node['id'])} (α : list Value.t) " + \
         ": M.t :=\n" + \
         indent(
             "match α with\n" +
@@ -622,24 +622,24 @@ def function_to_coq(node) -> str:
                     for parameter in parameters
                 ) +
                 "let* result :=\n" +
-                indent(expression_to_coq(node["body"])) + " in\n" +
+                indent(expression_to_rocq(node["body"])) + " in\n" +
                 "M.read result"
             ) + "\n" +
             "| _ => M.impossible \"wrong number of arguments\"\n" +
             "end."
         ) + "\n" + \
         "\n" + \
-        "Axiom get_function_" + name_id_to_coq(node['name'], node['id']) + " :\n" + \
+        "Axiom get_function_" + name_id_to_rocq(node['name'], node['id']) + " :\n" + \
         indent (
             "get_function \"" + node['name'] + "\" " + str(node['id']) + " =\n" + \
-            "closure " + name_id_to_coq(node['name'], node['id']) + "."
+            "closure " + name_id_to_rocq(node['name'], node['id']) + "."
         ) + "\n" + \
         "Global Hint Rewrite get_function_" + \
-        name_id_to_coq(node['name'], node['id']) + " : get_function."
+        name_id_to_rocq(node['name'], node['id']) + " : get_function."
 
 
-def program_to_coq(node) -> str:
-    return "\n\n".join(function_to_coq(function) for function in node["functions"])
+def program_to_rocq(node) -> str:
+    return "\n\n".join(function_to_rocq(function) for function in node["functions"])
 
 
 def main():
@@ -649,9 +649,9 @@ def main():
         noir = json.load(f)
 
     # Print the Coq code
-    print("Require Import CoqOfNoir.CoqOfNoir.")
+    print("Require Import RocqOfNoir.RocqOfNoir.")
     print()
-    print(program_to_coq(noir))
+    print(program_to_rocq(noir))
 
 
 if __name__ == "__main__":
