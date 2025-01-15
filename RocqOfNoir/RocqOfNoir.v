@@ -508,11 +508,17 @@ Export M.Notations.
 
 Parameter get_function : forall (name : string) (id : Z), Value.t.
 
+Parameter get_global : forall (name : string) (id : Z), Value.t.
+
+Parameter get_low_level : forall (name : string), Value.t.
+
 Definition closure (definition : list Value.t -> M.t) : Value.t :=
   Value.Closure (existS (Value.t, M.t) definition).
 
 Module Builtin.
   Parameter __to_be_radix : Value.t.
+
+  Parameter __to_le_radix : Value.t.
 
   Parameter as_bytes : Value.t.
 

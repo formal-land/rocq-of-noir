@@ -26,20 +26,33 @@ jobs:
         custom_image: coqorg/coq:8.17-ocaml-4.14-flambda
         custom_script: |
           startGroup "Install dependencies"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source "$HOME/.cargo/env"
+            cargo --version
             sudo ln -s `which python3` /usr/bin/python
             opam install -y --deps-only RocqOfNoir/rocq-of-noir.opam
           endGroup
           startGroup "Change permissions"
             sudo chown -R $(whoami) .
           endGroup
-          startGroup "Convert to Rocq"
-            python scripts/rocq_of_noir.py RocqOfNoir/base64/monomorphized_program.json >RocqOfNoir/base64/monomorphic.v
+          startGroup "Generate JSON representation"
+            cargo install --path tooling/nargo_cli
+            cd noir_stdlib
+            nargo test hash::keccak::tests::smoke_test --show-monomorphized
+            cd ..
           endGroup
-          startGroup "Check that the diff is empty (excluding submodules)"
-            git -c color.ui=always diff --exit-code --ignore-submodules=dirty
+          startGroup "Convert to Rocq"
+            python scripts/rocq_of_noir.py noir_stdlib/monomorphized_program.json >RocqOfNoir/keccak_monomorphic.v
+            python scripts/rocq_of_noir.py RocqOfNoir/base64/monomorphized_program.json >RocqOfNoir/base64/monomorphic.v
           endGroup
           startGroup "Compile Rocq translations"
             cd RocqOfNoir
             make
             cd ..
+          endGroup
+          startGroup "Check that the diff is empty (excluding submodules)"
+            # We remove these files as the generation is not yet deterministic
+            rm noir_stdlib/monomorphized_program.json
+            rm RocqOfNoir/keccak_monomorphic.v
+            git -c color.ui=always diff --exit-code --ignore-submodules=dirty
           endGroup

@@ -1,12 +1,41 @@
 # ◼️🐓 rocq-of-noir
 
-With `rocq-of-noir`, we provide an **open-source and extensive way to formally verify smart contracts written in ⬛&nbsp;Noir**. Formal verification is about checking for any possible input that your code has no security issues, what is essential for code deployed on the blockchain! 🛡️
+The tool `rocq-of-noir` provides an **open-source and extensive way to formally verify smart contracts written in ⬛&nbsp;Noir**. Formal verification is about checking for any possible input that your code has no security issues, what is essential for code deployed on the blockchain! 🛡️
 
 To keep things simple, we rely on the well-known proof assistant [Rocq](https://rocq-prover.org/) for all the verification work: if you are already knowledgeable into this system, you can readily use `rocq-of-noir` to verify your smart contracts!
 
 ## 🏎️ Getting Started
 
-Follow what we do in our CI file [rocq.yml](.github/workflows/rocq.yml). Sorry for not having the time to provide more explanations!
+1. Install the `rocq-of-noir` fork of the Noir compiler:
+  ```sh
+  cargo install --path tooling/nargo_cli
+  ```
+
+2. Translate an example to JSON representation. Here, we translate the test for the Keccak hash function, which includes the code of the hash function itself:
+  ```sh
+  cd noir_stdlib
+  nargo test hash::keccak::tests::smoke_test --show-monomorphized
+  cd ..
+  ```
+  Note that the translation to JSON is what our fork of the Noir compiler provides. This is the AST of the code after the monomorphization phase.
+
+3. Translate the JSON representation to Rocq:
+  ```sh
+  python scripts/rocq_of_noir.py noir_stdlib/monomorphized_program.json >RocqOfNoir/keccak_monomorphic.v
+  ```
+  The file `RocqOfNoir/keccak_monomorphic.v` is the Rocq representation of the Noir code!
+
+4. Compile the Rocq code:
+  ```sh
+  cd RocqOfNoir
+  make
+  ```
+
+To see an example of verification work, you can look at the `base64` example in the folder [RocqOfNoir/base64](RocqOfNoir/base64). We follow these steps:
+
+- Show that the monomorphized code is correct is equivalent to a polymorphic form where we keep the generic types. This removes the duplication of some functions, and makes sure that names are more stable (no more generated indexes to distinguish between the various function instanciations).
+- Show that the polymorphic code is equivalent to a purely functional definition applying the semantic rules defined in [RocqOfNoir/proof/RocqOfNoir.v](RocqOfNoir/proof/RocqOfNoir.v).
+- Express and prove properties using the usual techniques on functional and monadic Rocq code!
 
 ## ✅ What Works
 

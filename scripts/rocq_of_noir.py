@@ -25,6 +25,7 @@ def parameters_to_rocq(parameters: list) -> list[str]:
 '''
 pub enum Definition {
     Local(LocalId),
+    Global(GlobalId),
     Function(FuncId),
     Builtin(String),
     LowLevel(String),
@@ -48,6 +49,10 @@ def ident_to_rocq(node) -> str:
         definition_node = definition_node["Local"]
         return node["name"]
 
+    if definition_node_type == "Global":
+        definition_node = definition_node["Global"]
+        return alloc("get_global \"" + node["name"] + "\" " + str(definition_node))
+
     if definition_node_type == "Function":
         definition_node = definition_node["Function"]
         return alloc("get_function \"" + node["name"] + "\" " + str(definition_node))
@@ -58,7 +63,7 @@ def ident_to_rocq(node) -> str:
 
     if definition_node_type == "LowLevel":
         definition_node = definition_node["LowLevel"]
-        return "LowLevel." + node["name"]
+        return alloc("get_low_level \"" + node["name"] + "\"")
 
     if definition_node_type == "Oracle":
         definition_node = definition_node["Oracle"]
@@ -219,7 +224,9 @@ pub struct Binary {
 '''
 def binary_to_rocq(node) -> str:
     operator = camel_case_to_snake_case(node["operator"])
-    operator = operator.replace("and", "and_").replace("or", "or_")
+    reserved_operators = ["and", "or"]
+    if operator in reserved_operators:
+        operator += "_"
     return alloc(
         "Binary." + operator + " (|\n" +
         indent(
