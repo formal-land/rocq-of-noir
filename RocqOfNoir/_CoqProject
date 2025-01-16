@@ -1,2 +1,2 @@
--R . CoqOfNoir
+-R . RocqOfNoir
 -arg -impredicative-set

@@ -12,8 +12,8 @@ use crate::{
     token::{Attributes, FunctionAttribute},
 };
 use crate::{hir_def::function::FunctionSignature, token::FmtStrFragment};
-use serde::{Deserialize, Serialize, Serializer};
 use serde::ser::SerializeStruct;
+use serde::{Deserialize, Serialize, Serializer};
 
 use super::HirType;
 

@@ -1,5 +1,5 @@
-Require Import CoqOfNoir.CoqOfNoir.
-Require Import CoqOfNoir.simulation.CoqOfNoir.
+Require Import RocqOfNoir.RocqOfNoir.
+Require Import RocqOfNoir.simulation.RocqOfNoir.
 
 
 Module State.

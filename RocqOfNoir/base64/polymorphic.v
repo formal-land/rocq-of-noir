@@ -1,5 +1,5 @@
-Require Import CoqOfNoir.CoqOfNoir.
-Require Import simulation.CoqOfNoir.
+Require Import RocqOfNoir.RocqOfNoir.
+Require Import simulation.RocqOfNoir.
 Require Import base64.monomorphic.
 
 (** This module provides helpers to show the equality to debug [reflexivity] when it is too long or

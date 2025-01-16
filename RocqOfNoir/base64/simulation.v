@@ -1,7 +1,7 @@
-Require Import CoqOfNoir.CoqOfNoir.
-Require Import CoqOfNoir.proof.CoqOfNoir.
-Require Import CoqOfNoir.simulation.CoqOfNoir.
-Require CoqOfNoir.base64.polymorphic.
+Require Import RocqOfNoir.RocqOfNoir.
+Require Import RocqOfNoir.proof.RocqOfNoir.
+Require Import RocqOfNoir.simulation.RocqOfNoir.
+Require RocqOfNoir.base64.polymorphic.
 
 Import Run.
 
