@@ -28,6 +28,7 @@ jobs:
           startGroup "Install dependencies"
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             source "$HOME/.cargo/env"
+            rustup toolchain install 1.84.1-x86_64-unknown-linux-gnu
             cargo --version
             sudo ln -s `which python3` /usr/bin/python
             opam install -y --deps-only RocqOfNoir/rocq-of-noir.opam
@@ -53,6 +54,5 @@ jobs:
           startGroup "Check that the diff is empty (excluding submodules)"
             # We remove these files as the generation is not yet deterministic
             rm noir_stdlib/monomorphized_program.json
-            rm RocqOfNoir/keccak_monomorphic.v
             git -c color.ui=always diff --exit-code --ignore-submodules=dirty
           endGroup

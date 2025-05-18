@@ -92,11 +92,11 @@ Module Field.
     | _ => M.impossible "wrong number of arguments"
     end.
 
-  Lemma eq_to_be_radix₅ : get_function "to_be_radix" 5 = closure (to_be_radix (U32.Build_t 40)).
+  Lemma eq_to_be_radix₁ : get_function "to_be_radix" 1 = closure (to_be_radix (U32.Build_t 40)).
   Proof.
     autorewrite with get_function; f_equal.
   Qed.
-  Global Hint Rewrite eq_to_be_radix₅ : get_function_eq.
+  Global Hint Rewrite eq_to_be_radix₁ : get_function_eq.
 End Field.
 
 Module Base64EncodeBE.
@@ -185,11 +185,11 @@ Module Base64EncodeBE.
     | _ => M.impossible "wrong number of arguments"
     end.
 
-  Lemma eq_new₁₀ : get_function "new" 10 = closure new.
+  Lemma eq_new₁ : get_function "new" 1 = closure new.
   Proof.
     autorewrite with get_function; f_equal.
   Qed.
-  Global Hint Rewrite eq_new₁₀ : get_function_eq.
+  Global Hint Rewrite eq_new₁ : get_function_eq.
 
   Definition get (α : list Value.t) : M.t :=
     match α with
@@ -210,12 +210,12 @@ Module Base64EncodeBE.
   | _ => M.impossible "wrong number of arguments"
   end.
 
-  Lemma eq_get₁₁ : get_function "get" 11 = closure get.
+  Lemma eq_get₁ : get_function "get" 1 = closure get.
   Proof.
     autorewrite with get_function; apply f_equal.
     reflexivity.
   Qed.
-  Global Hint Rewrite eq_get₁₁ : get_function_eq.
+  Global Hint Rewrite eq_get₁ : get_function_eq.
 End Base64EncodeBE.
 
 Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : M.t :=
@@ -269,16 +269,16 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
   | _ => M.impossible "wrong number of arguments"
   end.
 
-Lemma eq_base64_encode_elements₆ :
-  get_function "base64_encode_elements" 6 = closure (base64_encode_elements (U32.Build_t 118)).
+Lemma eq_base64_encode_elements₀ :
+  get_function "base64_encode_elements" 0 = closure (base64_encode_elements (U32.Build_t 118)).
 Proof.
   autorewrite with get_function; apply f_equal.
   apply functional_extensionality; intro α.
-  unfold base64_encode_elements₆.
+  unfold base64_encode_elements₀.
   autorewrite with get_function_eq.
   reflexivity.
 Qed.
-Global Hint Rewrite eq_base64_encode_elements₆ : get_function_eq.
+Global Hint Rewrite eq_base64_encode_elements₀ : get_function_eq.
 
 Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t) : M.t :=
   match α with
@@ -546,12 +546,12 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
   | _ => M.impossible "wrong number of arguments"
   end.
 
-Lemma base64_encode₁ :
-  get_function "base64_encode" 1 = closure (base64_encode (U32.Build_t 88) (U32.Build_t 118)).
+Lemma eq_base64_encode₀ :
+  get_function "base64_encode" 0 = closure (base64_encode (U32.Build_t 88) (U32.Build_t 118)).
 Proof.
   autorewrite with get_function; apply f_equal.
   apply functional_extensionality; intro α.
-  unfold base64_encode₁.
+  unfold base64_encode₀.
   autorewrite with get_function_eq.
   destruct α as [|input α]; [reflexivity|].
   destruct α; [|reflexivity].
