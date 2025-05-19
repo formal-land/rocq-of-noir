@@ -237,6 +237,7 @@ Module Run.
     hauto q: on use: For_aux.
   Qed.
 End Run.
+Export Run.
 
 Module Singleton.
   Module State.
@@ -261,20 +262,22 @@ End Singleton.
 Module Field.
   Module Valid.
     Definition t (p : Z) (x : Field.t) : Prop :=
-      0 <= x.(Field.value) < p.
+      0 <= x.(Integer.value) < p.
   End Valid.
 End Field.
 
 Module Integer.
   Module Valid.
-    Definition t {A : Set} `{Integer.Trait A} (x : A) : Prop :=
-      Integer.min (Self := A) <= Integer.to_Z x <= Integer.max (Self := A).
+    Definition t {A : Set} `{BinaryInteger.C A} (x : A) : Prop :=
+      BinaryInteger.min (Self := A) <= BinaryInteger.to_Z x <= BinaryInteger.max (Self := A).
   End Valid.
 End Integer.
 
 Module Array.
   Module Valid.
-    Definition t {A : Set} {size : U32.t} (array : Array.t A size) : Prop :=
-      List.length array.(Array.value) = Z.to_nat (Integer.to_Z size).
+    Record t {A : Set} {size : U32.t} (P_A : A -> Prop) (array : Array.t A size) : Prop := {
+      length : List.length array.(Array.value) = Z.to_nat size.(Integer.value);
+      elements : List.Forall P_A array.(Array.value);
+    }.
   End Valid.
 End Array.

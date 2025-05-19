@@ -5,63 +5,64 @@ Require Import base64.monomorphic.
 (** This module provides helpers to show the equality to debug [reflexivity] when it is too long or
     failing *)
 Module Eq.
-  Lemma LowLet {A : Set} (e e' : LowM.t A) k k'
+      Lemma LowLet {A : Set} (e e' : LowM.t A) k k'
       (H_e : e = e')
       (H_k : forall x, k x = k' x) :
-    LowM.Let e k = LowM.Let e' k'.
+      LowM.Let e k = LowM.Let e' k'.
   Proof.
     rewrite H_e.
     replace k with k' by now apply functional_extensionality.
     reflexivity.
   Qed.
 
-  Fixpoint LetMinus {A : Set} (e1 e1' : LowM.t A) (e2 e2' : A -> LowM.t A)
+  Lemma LetMinus {A : Set} (e1 e1' : LowM.t A) (e2 e2' : A -> LowM.t A)
       (H_e1 : e1 = e1')
-      (H_e2 : forall x, e2 x = e2' x)
-      {struct e1} :
-    LowM.let_ e1 e2 = LowM.let_ e1' e2'.
+      (H_e2 : forall x, e2 x = e2' x) :
+      LowM.let_ e1 e2 = LowM.let_ e1' e2'.
   Proof.
-    destruct e1; rewrite <- H_e1; simpl.
-    { apply H_e2. }
-    { f_equal.
-      apply functional_extensionality; intro x.
-      now rewrite LetMinus with (e1' := k x) (e2' := e2').
-    }
-    { f_equal.
-      apply functional_extensionality; intro x.
-      now rewrite LetMinus with (e1' := k x) (e2' := e2').
-    }
-    { f_equal.
-      apply functional_extensionality; intro x.
-      now rewrite LetMinus with (e1' := k x) (e2' := e2').
-    }
-    { reflexivity. }
+    rewrite H_e1.
+    replace e2 with e2' by now apply functional_extensionality.
+    reflexivity.
   Qed.
 
   Lemma LetStar e1 e1' e2 e2'
       (H_e1 : e1 = e1')
       (H_e2 : forall x, e2 x = e2' x) :
-    M.let_ e1 e2 = M.let_ e1' e2'.
+      M.let_ e1 e2 = M.let_ e1' e2'.
   Proof.
-    apply LetMinus; hauto lq: on.
+    rewrite H_e1.
+    replace e2 with e2' by now apply functional_extensionality.
+    reflexivity.
   Qed.
 
   Lemma LetTilde e1 e1' e2 e2'
       (H_e1 : e1 = e1')
       (H_e2 : forall x, e2 x = e2' x) :
-    M.let_strong e1 e2 = M.let_strong e1' e2'.
+      M.let_strong e1 e2 = M.let_strong e1' e2'.
   Proof.
-    apply LowLet; hauto lq: on.
+    rewrite H_e1.
+    replace e2 with e2' by now apply functional_extensionality.
+    reflexivity.
   Qed.
 
   Lemma If e e' t t' f f'
       (H_e : e = e')
       (H_t : t = t')
       (H_f : f = f') :
-    M.if_ e t f = M.if_ e' t' f'.
+      M.if_ e t f = M.if_ e' t' f'.
   Proof.
     f_equal; assumption.
   Qed.
+
+  Ltac tactic :=
+    repeat (
+      intro ||
+      apply LowLet ||
+      apply LetMinus ||
+      apply LetStar ||
+      apply LetTilde ||
+      apply If
+    ).
 End Eq.
 
 Module Field.
@@ -92,16 +93,16 @@ Module Field.
     | _ => M.impossible "wrong number of arguments"
     end.
 
-  Lemma eq_to_be_radix₅ : get_function "to_be_radix" 5 = closure (to_be_radix (U32.Build_t 40)).
+  Lemma eq_to_be_radix₁ : get_function "to_be_radix" 1 = closure (to_be_radix {| Integer.value := 40 |}).
   Proof.
     autorewrite with get_function; f_equal.
   Qed.
-  Global Hint Rewrite eq_to_be_radix₅ : get_function_eq.
+  Global Hint Rewrite eq_to_be_radix₁ : get_function_eq.
 End Field.
 
 Module Base64EncodeBE.
   Record t : Set := {
-    table : Array.t U8.t (U32.Build_t 64);
+    table : Array.t U8.t {| Integer.value := 64 |};
   }.
 
   Definition new (α : list Value.t) : M.t :=
@@ -185,11 +186,11 @@ Module Base64EncodeBE.
     | _ => M.impossible "wrong number of arguments"
     end.
 
-  Lemma eq_new₁₀ : get_function "new" 10 = closure new.
+  Lemma eq_new₁ : get_function "new" 1 = closure new.
   Proof.
     autorewrite with get_function; f_equal.
   Qed.
-  Global Hint Rewrite eq_new₁₀ : get_function_eq.
+  Global Hint Rewrite eq_new₁ : get_function_eq.
 
   Definition get (α : list Value.t) : M.t :=
     match α with
@@ -210,12 +211,12 @@ Module Base64EncodeBE.
   | _ => M.impossible "wrong number of arguments"
   end.
 
-  Lemma eq_get₁₁ : get_function "get" 11 = closure get.
+  Lemma eq_get₁ : get_function "get" 1 = closure get.
   Proof.
     autorewrite with get_function; apply f_equal.
     reflexivity.
   Qed.
-  Global Hint Rewrite eq_get₁₁ : get_function_eq.
+  Global Hint Rewrite eq_get₁ : get_function_eq.
 End Base64EncodeBE.
 
 Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : M.t :=
@@ -231,7 +232,7 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
       |) ]] in
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array (
-          List.repeat (Value.Integer IntegerKind.U8 0) (Z.to_nat (Integer.to_Z InputElements))
+          List.repeat (Value.Integer IntegerKind.U8 0) (Z.to_nat InputElements.(Integer.value))
         ))
       |) ]] in
       do~ [[
@@ -269,16 +270,16 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
   | _ => M.impossible "wrong number of arguments"
   end.
 
-Lemma eq_base64_encode_elements₆ :
-  get_function "base64_encode_elements" 6 = closure (base64_encode_elements (U32.Build_t 118)).
+Lemma eq_base64_encode_elements₀ :
+  get_function "base64_encode_elements" 0 = closure (base64_encode_elements {| Integer.value := 118 |}).
 Proof.
   autorewrite with get_function; apply f_equal.
   apply functional_extensionality; intro α.
-  unfold base64_encode_elements₆.
+  unfold base64_encode_elements₀.
   autorewrite with get_function_eq.
   reflexivity.
 Qed.
-Global Hint Rewrite eq_base64_encode_elements₆ : get_function_eq.
+Global Hint Rewrite eq_base64_encode_elements₀ : get_function_eq.
 
 Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t) : M.t :=
   match α with
@@ -288,7 +289,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
       let~ result := [[ M.copy_mutable (|
         M.alloc (Value.Array (List.repeat
           (Value.Integer IntegerKind.U8 0)
-          (Z.to_nat (Integer.to_Z OutputElements))
+          (Z.to_nat OutputElements.(Integer.value))
         ))
       |) ]] in
       let~ BASE64_ELEMENTS_PER_CHUNK := [[ M.copy (|
@@ -371,7 +372,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
               ]] in
               let~ slice_base64_chunks := [[ M.copy (|
                 M.alloc (M.call_closure (|
-                  closure (Field.to_be_radix (U32.Build_t 30)),
+                  closure (Field.to_be_radix {| Integer.value := 30 |}),
                   [
                     M.read (| slice |);
                     Value.Integer IntegerKind.U32 64
@@ -478,7 +479,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
           ]] in
           let~ slice_base64_chunks := [[ M.copy (|
             M.alloc (M.call_closure (|
-              closure (Field.to_be_radix (U32.Build_t 30)),
+              closure (Field.to_be_radix {| Integer.value := 30 |}),
               [
                 M.read (| slice |);
                 Value.Integer IntegerKind.U32 64
@@ -529,7 +530,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
             M.alloc (M.write (|
               result,
               M.call_closure (|
-                closure (base64_encode_elements (U32.Build_t 118)),
+                closure (base64_encode_elements {| Integer.value := 118 |}),
                 [
                   M.read (| result |)
                 ]
@@ -546,45 +547,15 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
   | _ => M.impossible "wrong number of arguments"
   end.
 
-Lemma base64_encode₁ :
-  get_function "base64_encode" 1 = closure (base64_encode (U32.Build_t 88) (U32.Build_t 118)).
+Lemma eq_base64_encode₀ :
+  get_function "base64_encode" 0 = closure (base64_encode {| Integer.value := 88 |} {| Integer.value := 118 |}).
 Proof.
   autorewrite with get_function; apply f_equal.
   apply functional_extensionality; intro α.
-  unfold base64_encode₁.
+  unfold base64_encode₀.
   autorewrite with get_function_eq.
   destruct α as [|input α]; [reflexivity|].
   destruct α; [|reflexivity].
-  apply Eq.LetStar; [|reflexivity].
-  apply Eq.LetTilde; [reflexivity|intro result].
-  apply Eq.LetTilde; [reflexivity|intro BASE64_ELEMENTS_PER_CHUNK].
-  apply Eq.LetTilde; [reflexivity|intro BYTES_PER_CHUNK].
-  apply Eq.LetTilde; [reflexivity|intro num_chunks].
-  apply Eq.LetTilde. {
-    apply Eq.LetStar; [reflexivity|intro v].
-    apply Eq.If; [reflexivity | | reflexivity].
-    apply Eq.LetTilde. {
-      reflexivity.
-    }
-    intro.
-    apply Eq.LetTilde; [reflexivity|intro bytes_in_final_chunk].
-    apply Eq.LetTilde; [reflexivity|intro slice].
-    apply Eq.LetTilde. {
-      reflexivity.
-    }
-    intro.
-    apply Eq.LetTilde. {
-      reflexivity.
-    }
-    intro.
-    apply Eq.LetTilde; [reflexivity|intro slice_base64_chunks].
-    apply Eq.LetTilde; [reflexivity|intro num_elements_in_final_chunk].
-    apply Eq.LetTilde. {
-      reflexivity.
-    }
-    intro.
-    reflexivity.
-  }
-  intro.
+  apply Eq.LetStar; [reflexivity|intro result].
   reflexivity.
 Qed.
