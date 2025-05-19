@@ -3,8 +3,6 @@ Require Import RocqOfNoir.proof.RocqOfNoir.
 Require Import RocqOfNoir.simulation.RocqOfNoir.
 Require RocqOfNoir.base64.polymorphic.
 
-Import Run.
-
 Module Base64EncodeBE.
   (*
   struct Base64EncodeBE {
@@ -12,10 +10,10 @@ Module Base64EncodeBE.
   }
   *)
   Record t : Set := {
-    table : Array.t U8.t (U32.Build_t 64);
+    table : Array.t U8.t {| Integer.value := 64 |};
   }.
 
-  Global Instance Impl_ToValue : ToValue.Trait t := {
+  Global Instance Impl_ToValue : ToValue t := {
     to_value (x : t) :=
       Value.Tuple [to_value x.(table)];
   }.
@@ -25,7 +23,7 @@ Module Base64EncodeBE.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
 
-  Definition ascii_codes : list U8.t := List.map U8.Build_t [
+  Definition ascii_codes : list U8.t := List.map (Integer.Build_t IntegerKind.U8) [
     65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90;
     97; 98; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122;
     48; 49; 50; 51; 52; 53; 54; 55; 56; 57;
@@ -226,12 +224,12 @@ pub fn base64_encode_elements<let InputElements: u32>(input: [u8; InputElements]
 Definition base64_encode_elements_for_init {InputElements : U32.t}
     (input : Array.t U8.t InputElements) :
     Array.t U8.t InputElements :=
-  Array.repeat InputElements (U8.Build_t 0).
+  Array.repeat InputElements {| Integer.value := 0 |}.
 
 Definition base64_encode_elements_for_body (p : Z) {InputElements : U32.t}
     (input : Array.t U8.t InputElements) (i : Z) :
     MS! (Array.t U8.t InputElements) unit :=
-  let i : U32.t := U32.Build_t i in
+  let i : U32.t := {| Integer.value := i |} in
   letS! input_i := return!toS! (Array.read input i) in
   letS! input_i := return!toS! (cast_to_field p input_i) in
   letS! new_result_i :=
@@ -249,7 +247,7 @@ Definition base64_encode_elements (p : Z) {InputElements : U32.t}
     doS! (
       foldS!
         tt
-        (List.map Z.of_nat (List.seq 0 (Z.to_nat (ToZ.to_Z InputElements))))
+        (List.map Z.of_nat (List.seq 0 (Z.to_nat InputElements.(Integer.value))))
         (fun result i => base64_encode_elements_for_body p input i)
     ) in
     letS! result := readS! in
@@ -270,7 +268,7 @@ Lemma map_listUpdate_error_eq {A B : Type} (f : A -> B) (l : list A) (i : nat) (
   List.listUpdate_error (List.map f l) i y = option_map (List.map f) (List.listUpdate_error l i x).
 Proof.
   unfold List.listUpdate_error.
-  rewrite List.map_length.
+  rewrite List.length_map.
   destruct (_ <? _)%nat; cbn; f_equal.
   now erewrite map_listUpdate_eq.
 Qed.
@@ -280,7 +278,7 @@ Lemma run_base64_encode_elements
     {InputElements : U32.t}
     (input : Array.t U8.t InputElements)
     (H_InputElements : Integer.Valid.t InputElements)
-    (H_input : Array.Valid.t input) :
+    (H_input : Array.Valid.t (fun _ => True) input) :
   let output := base64_encode_elements p input in
   let state_end : State.t :=
     State.init <|
@@ -324,7 +322,7 @@ Proof.
           |>
       )
       (accumulator_in := base64_encode_elements_for_init input)
-      (len := Z.to_nat InputElements.(U32.value))
+      (len := Z.to_nat InputElements.(Integer.value))
       (body_expression := base64_encode_elements_for_body p input).
     2: {
       unfold set.
@@ -354,7 +352,7 @@ Proof.
       autorewrite with to_value.
       match goal with
       | |- context[Value.Integer IntegerKind.Field ?i] =>
-        change (Value.Integer IntegerKind.Field i) with (to_value (Field.Build_t i))
+        change (Value.Integer IntegerKind.Field i) with (to_value (Self := Field.t) {| Integer.value := i |})
       end.
       apply Base64EncodeBE.run_get.
     }

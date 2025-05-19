@@ -23,7 +23,7 @@ jobs:
     - name: Run the Rocq tests
       uses: coq-community/docker-coq-action@v1
       with:
-        custom_image: coqorg/coq:8.17-ocaml-4.14-flambda
+        custom_image: coqorg/coq:8.20-ocaml-4.14-flambda
         custom_script: |
           startGroup "Install dependencies"
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -43,7 +43,7 @@ jobs:
             cd ..
           endGroup
           startGroup "Convert to Rocq"
-            python scripts/rocq_of_noir.py noir_stdlib/monomorphized_program.json >RocqOfNoir/keccak_monomorphic.v
+            python scripts/rocq_of_noir.py noir_stdlib/monomorphized_program.json >RocqOfNoir/keccak/monomorphic.v
             python scripts/rocq_of_noir.py RocqOfNoir/base64/monomorphized_program.json >RocqOfNoir/base64/monomorphic.v
           endGroup
           startGroup "Compile Rocq translations"
