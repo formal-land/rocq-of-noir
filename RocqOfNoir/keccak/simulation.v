@@ -128,6 +128,8 @@ Lemma run_for_loop {State Address : Set} `{State.Trait State Address} (p : Z)
 Proof.
 Admitted.
 
+(* Here we define a simulation of the keccak256 function in Noir. *)
+
 (* pub fn keccak256<let N: u32>(input: [u8; N], message_size: u32) -> [u8; 32] *)
 Definition keccak256 (p : Z) {N : U32.t}
     (input : Array.t U8.t N) (message_size : U32.t) :
@@ -285,6 +287,8 @@ Module Option.
     end.
 End Option.
 
+(** Auxiliary lemma that is useful to break down let definitions on the two sides (source code and
+    simulation). *)
 Lemma RunLetPanic {State Address : Set} `{State.Trait State Address} (p : Z)
     {A B : Set}
     (e : M.t) (e' : M! A)
@@ -318,6 +322,10 @@ Proof.
   apply H_k.
 Qed.
 
+(** Here we show, for the beginning of the simulation, that we are equivalent to the translation of
+    the source code. It is unfortunately still extremely verbose and tedious to write. The positive
+    side is that the complexity of the proof follows the size of the code: there are no explosions
+    due to the explosion of possible path combinations for example. *)
 Lemma run_keccak256
     (p : Z)
     {N : U32.t}
