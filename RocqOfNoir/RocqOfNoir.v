@@ -63,7 +63,6 @@ End Pointer.
 
 Module IntegerKind.
   Inductive t : Set :=
-  | Field
   | U1
   | U8
   | U16
@@ -79,6 +78,7 @@ End IntegerKind.
 Module Value.
   Inductive t : Set :=
   | Bool (b : bool)
+  | Field (integer : Z)
   | Integer (kind : IntegerKind.t) (integer : Z)
   | String (s : string)
   | FmtStr : string -> Z -> t -> t
@@ -366,6 +366,17 @@ Module M.
     | _ => LowM.Impossible "assert: expected a boolean"
     end.
 
+  Definition cast_to_field (value : Value.t) : M.t :=
+    match value with
+    | Value.Integer _ i =>
+      LowM.CallPrimitive Primitive.GetFieldPrime (fun p =>
+      if (0 <=? i) && (i <? p) then
+        pure (Value.Field i)
+      else
+        panic ("cast_to_field: out of bounds", value))
+    | _ => impossible "cast_to_field: expected a field"
+    end.
+
   (** We only consider cast between integer values. We consider that the cast succeed if we are
       in the bounds of the target type. For casts to fields we need to retrieve the current
       field prime, which could change depending on the backend. *)
@@ -373,12 +384,6 @@ Module M.
     match value with
     | Value.Integer _ i =>
       match integer_kind with
-      | IntegerKind.Field =>
-        LowM.CallPrimitive Primitive.GetFieldPrime (fun p =>
-        if (0 <=? i) && (i <? p) then
-          pure (Value.Integer integer_kind i)
-        else
-          panic ("cast: out of bounds", value, integer_kind))
       | IntegerKind.U1 =>
         if (0 <=? i) && (i <? 2) then
           pure (Value.Integer integer_kind i)
@@ -589,7 +594,13 @@ Module Binary.
 
   Parameter greater : Value.t -> Value.t -> M.t.
 
-  Parameter greater_equal : Value.t -> Value.t -> M.t.
+  Definition greater_equal (x y : Value.t) : M.t :=
+    match x, y with
+    | Value.Integer _ x, Value.Integer _ y =>
+      M.pure (Value.Bool (x >=? y))
+    | _, _ =>
+      M.impossible "greater_equal: expected non-field integer values"
+    end.
 
   Parameter and_ : Value.t -> Value.t -> M.t.
 

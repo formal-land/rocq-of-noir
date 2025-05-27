@@ -358,10 +358,10 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
             |))
           |) ]] in
           let~ sliced := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 0)
+            M.alloc (Value.Field 0)
           |) ]] in
           let~ v := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 1)
+            M.alloc (Value.Field 1)
           |) ]] in
           do~ [[
             M.for_ (|
@@ -375,15 +375,14 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
                     M.read (| sliced |),
                     Binary.multiply (|
                       M.read (| v |),
-                      M.cast (|
+                      M.cast_to_field (|
                         M.read (| M.index (|
                           block_bytes,
                           Binary.add (|
                             M.read (| limb_start |),
                             M.read (| k |)
                           |)
-                        |) |),
-                        IntegerKind.Field
+                        |) |)
                       |)
                     |)
                   |)
@@ -394,7 +393,7 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
                   v,
                   Binary.multiply (|
                     M.read (| v |),
-                    Value.Integer IntegerKind.Field 256
+                    Value.Field 256
                   |)
                 |))
               ]]
@@ -414,7 +413,11 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
           ]]
         |)
       ]] in
-      let~ state := [[ M.copy_mutable (|
+      [[
+        sliced_buffer
+      ]] in
+    M.read result
+      (* let~ state := [[ M.copy_mutable (|
         M.alloc (Value.Array [
           Value.Integer IntegerKind.U64 0;
           Value.Integer IntegerKind.U64 0;
@@ -657,12 +660,11 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
           Value.Integer IntegerKind.U32 4,
           fun (i : Value.t) =>
           let~ lane := [[ M.copy (|
-            M.alloc (M.cast (|
+            M.alloc (M.cast_to_field (|
               M.read (| M.index (|
                 state,
                 M.read (| i |)
-              |) |),
-              IntegerKind.Field
+              |) |)
             |))
           |) ]] in
           let~ lane_le := [[ M.copy (|
@@ -703,11 +705,11 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
       [[
         result
       ]] in
-    M.read result
+    M.read result *)
   | _ => M.impossible "wrong number of arguments"
   end.
 
-Lemma eq_keccak256₀ :
+(* Lemma eq_keccak256₀ :
   get_function "keccak256" 0 = closure (keccak256 {| Integer.value := 1 |}).
 Proof.
   autorewrite with get_function; apply f_equal.
@@ -715,4 +717,4 @@ Proof.
   unfold keccak256₀.
   reflexivity.
 Qed.
-Global Hint Rewrite eq_keccak256₀ : get_function_eq.
+Global Hint Rewrite eq_keccak256₀ : get_function_eq. *)

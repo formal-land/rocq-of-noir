@@ -44,6 +44,12 @@ Module Panic.
 
   Definition fold_left {A B : Set} (init : A) (l : list B) (f : A -> B -> t A) : t A :=
     List.fold_left (fun acc x => bind acc (fun acc => f acc x)) l (return_ init).
+
+  Definition assert (condition : bool) : t unit :=
+    if condition then
+      return_ tt
+    else
+      panic "assert failure".
 End Panic.
 
 Module PanicNotations.
@@ -161,10 +167,91 @@ Module Integer.
     (fun (i : t kind) => Value.Integer kind i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
+
+  Definition cast {from : IntegerKind.t} (i : t from) (to : IntegerKind.t) : M! (t to) :=
+    let i := i.(value) in
+    match to with
+    | IntegerKind.U1 =>
+      if (0 <=? i) && (i <? 2) then
+        return! ({| value := i |} : t IntegerKind.U1)
+      else
+        panic! ("cast: out of bounds", i, from, to)
+    | IntegerKind.U8 =>
+      if (0 <=? i) && (i <? 2^8) then
+        return! ({| value := i |} : t IntegerKind.U8)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.U16 =>
+      if (0 <=? i) && (i <? 2^16) then
+        return! ({| value := i |} : t IntegerKind.U16)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.U32 =>
+      if (0 <=? i) && (i <? 2^32) then
+        return! ({| value := i |} : t IntegerKind.U32)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.U64 =>
+      if (0 <=? i) && (i <? 2^64) then
+        return! ({| value := i |} : t IntegerKind.U64)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I1 =>
+      if (-(2^0) <=? i) && (i <? 2^0) then
+        return! ({| value := i |} : t IntegerKind.I1)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I8 =>
+      if (-(2^7) <=? i) && (i <? 2^7) then
+        return! ({| value := i |} : t IntegerKind.I8)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I16 =>
+      if (-(2^15) <=? i) && (i <? 2^15) then
+        return! ({| value := i |} : t IntegerKind.I16)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I32 =>
+      if (-(2^31) <=? i) && (i <? 2^31) then
+        return! ({| value := i |} : t IntegerKind.I32)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I64 =>
+      if (-(2^63) <=? i) && (i <? 2^63) then
+        return! ({| value := i |} : t IntegerKind.I64)
+      else
+        panic! ("cast: out of bounds", i, to)
+    end.
 End Integer.
 
 Module Field.
-  Definition t : Set := Integer.t IntegerKind.Field.
+  Record t : Set := {
+    value : Z;
+  }.
+
+  Global Instance IsToValue : ToValue t := {
+    to_value (f : t) :=
+      Value.Field f.(value);
+  }.
+
+  Definition add (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) + y.(Field.value)) mod p |}.
+
+  Definition sub (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) - y.(Field.value)) mod p |}.
+
+  Definition mul (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) * y.(Field.value)) mod p |}.
+
+  Definition div (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) / y.(Field.value)) mod p |}.
+
+  Definition cast {from : IntegerKind.t} (p : Z) (x : Integer.t from) : M! t :=
+    let x := x.(Integer.value) in
+    if (0 <=? x) && (x <? p) then
+      return! {| Field.value := x |}
+    else
+      panic! ("cast: out of bounds", x, from, p).
 End Field.
 
 Module U1.
@@ -349,18 +436,15 @@ Module Array.
       value := List.repeat value (Z.to_nat size.(Integer.value))
     |}.
 
-  Definition read {A : Set} {index_kind : IntegerKind.t} {size : U32.t}
-      (array : t A size) (index : Integer.t index_kind) :
-      M! A :=
-    match List.nth_error array.(value) (Z.to_nat index.(Integer.value)) with
+  Definition read {A : Set} {size : U32.t} (array : t A size) (index : Z) : M! A :=
+    match List.nth_error array.(value) (Z.to_nat index) with
     | Some result => return! result
     | None => panic! ("Array.get: index out of bounds", array, index)
     end.
 
-  Definition write {A : Set} {index_kind : IntegerKind.t} {size : U32.t}
-      (array : t A size) (index : Integer.t index_kind) (update : A) :
+  Definition write {A : Set} {size : U32.t} (array : t A size) (index : Z) (update : A) :
       M! (t A size) :=
-    match List.listUpdate_error array.(value) (Z.to_nat index.(Integer.value)) update with
+    match List.listUpdate_error array.(value) (Z.to_nat index) update with
     | Some array => return! (Build_t array)
     | None => panic! ("Array.write: index out of bounds", array, index)
     end.
@@ -395,6 +479,6 @@ Definition cast_to_integer {kind_source : IntegerKind.t} {Target : Set} `{Binary
 Definition cast_to_field {kind : IntegerKind.t} (p : Z) (value : Integer.t kind) : M! Field.t :=
   let value := value.(Integer.value) in
   if (0 <=? value) && (value <? p) then
-    return! {| Integer.value := value |}
+    return! {| Field.value := value |}
   else
     panic! ("cast: out of bounds", value).
