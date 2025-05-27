@@ -5,41 +5,22 @@ Class ToValue (Self : Set) : Set := {
 }.
 
 Module Panic.
-  Inductive t (A : Set) : Set :=
-  | Success : A -> t A
-  (** We put the payload on the parameter on a smart contructor, that is actually an opaque function
-      that forgets about its parameter. *)
-  | Error : t A.
-  Arguments Success {_}.
-  Arguments Error {_}.
-
-  Definition to_result {A : Set} `{ToValue A} (value : t A) : Result.t :=
-    match value with
-    | Success value => Result.Ok (to_value value)
-    | Error => Result.Panic
-    end.
-
-  (** For some intermediate results, we need to make an allocation to be like in the translated
-      code *)
-  Definition to_result_alloc {A : Set} `{ToValue A} (value : t A) : Result.t :=
-    match value with
-    | Success value => Result.Ok (M.alloc (to_value value))
-    | Error => Result.Panic
-    end.
+  Definition t (A : Set) : Set :=
+    option A.
 
   Definition return_ {A : Set} (value : A) : t A :=
-    Success value.
+    Some value.
   Arguments return_ /.
 
   Definition panic {A E : Set} (error : E) : t A :=
-    Error.
+    None.
   (* So that the error payload appears for debugging *)
   Opaque panic.
 
   Definition bind {A B : Set} (value : t A) (f : A -> t B) : t B :=
     match value with
-    | Success value => f value
-    | Error => Error
+    | Some value => f value
+    | None => None
     end.
 
   Definition fold_left {A B : Set} (init : A) (l : list B) (f : A -> B -> t A) : t A :=
@@ -68,65 +49,7 @@ Module PanicNotations.
 
   Notation "fold!" := Panic.fold_left.
 End PanicNotations.
-
-Module StatePanic.
-  Definition t (State : Set) (A : Set) : Set :=
-    State -> Panic.t A * State.
-
-  Definition return_ {State A : Set} (value : A) : t State A :=
-    fun state => (Panic.return_ value, state).
-
-  Definition bind {State A B : Set} (value : t State A) (f : A -> t State B) : t State B :=
-    fun state =>
-      let '(output, state) := value state in
-      match output with
-      | Panic.Success value => f value state
-      | Panic.Error => (Panic.Error, state)
-      end.
-
-  Fixpoint fold_left {State A B : Set}
-      (init : A) (l : list B) (f : A -> B -> t State A) {struct l} :
-      t State A :=
-    match l with
-    | [] => return_ init
-    | x :: l => bind (f init x) (fun init => fold_left init l f)
-    end.
-
-  Definition lift_from_panic {State A : Set} (value : Panic.t A) : t State A :=
-    fun state => (value, state).
-
-  Definition read {State : Set} : t State State :=
-    fun state => (Panic.return_ state, state).
-
-  Definition write {State : Set} (state : State) : t State unit :=
-    fun _ => (Panic.return_ tt, state).
-End StatePanic.
-
-Module StatePanicNotations.
-  Notation "MS!" := StatePanic.t.
-
-  Notation "returnS!" := StatePanic.return_.
-  Notation "panic!" := Panic.panic.
-
-  Notation "'letS!' x ':=' X 'in' Y" :=
-    (StatePanic.bind X (fun x => Y))
-    (at level 200, x pattern, X at level 100, Y at level 200).
-
-  Notation "'doS!' X 'in' Y" :=
-    (StatePanic.bind X (fun (_ : unit) => Y))
-    (at level 200, X at level 100, Y at level 200).
-
-  Notation "foldS!" := StatePanic.fold_left.
-
-  Notation "return!toS!" := StatePanic.lift_from_panic.
-
-  Notation "readS!" := StatePanic.read.
-
-  Notation "writeS!" := StatePanic.write.
-End StatePanicNotations.
-
 Export PanicNotations.
-Export StatePanicNotations.
 
 Module Unit.
   Global Instance IsToValue : ToValue unit := {

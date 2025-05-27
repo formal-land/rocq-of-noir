@@ -164,22 +164,22 @@ Module Primitive.
   | IsEqual (value1 value2 : Value.t) : t bool.
 End Primitive.
 
-Module LowM.
-  Inductive t (A : Set) : Set :=
-  | Pure (value : A)
-  | CallPrimitive {B : Set} (primitive : Primitive.t B) (k : B -> t A)
-  | CallClosure (closure : Value.t) (args : list Value.t) (k : A -> t A)
-  | Let (e : t A) (k : A -> t A)
+Module M.
+  Inductive t : Set :=
+  | Pure (value : Value.t)
+  | Panic
+  | CallPrimitive {B : Set} (primitive : Primitive.t B) (k : B -> t)
+  | CallClosure (closure : Value.t) (args : list Value.t) (k : Value.t -> t)
+  | Let (e : t) (k : Value.t -> t)
   | Impossible (message : string).
-  Arguments Pure {_}.
-  Arguments CallPrimitive {_ _}.
-  Arguments CallClosure {_}.
-  Arguments Let {_}.
-  Arguments Impossible {_}.
 
-  Fixpoint let_ {A : Set} (e1 : t A) (e2 : A -> t A) : t A :=
+  Definition pure (value : Value.t) : t :=
+    Pure value.
+
+  Fixpoint let_ (e1 : t) (e2 : Value.t -> t) : t :=
     match e1 with
     | Pure v => e2 v
+    | Panic => Panic
     | CallPrimitive primitive k =>
       CallPrimitive primitive (fun v => let_ (k v) e2)
     | CallClosure f args k =>
@@ -188,47 +188,17 @@ Module LowM.
       Let e (fun v => let_ (k v) e2)
     | Impossible message => Impossible message
     end.
-End LowM.
-
-Module Result.
-  Inductive t : Set :=
-  | Ok (value : Value.t)
-  | Break
-  | Continue
-  | Panic.
-End Result.
-
-Module M.
-  Definition t : Set :=
-    LowM.t Result.t.
-
-  Definition pure (value : Value.t) : M.t :=
-    LowM.Pure (Result.Ok value).
-
-  Definition let_ (e1 : M.t) (e2 : Value.t -> M.t) : M.t :=
-    LowM.let_ e1 (fun v1 =>
-    match v1 with
-    | Result.Ok v1 => e2 v1
-    | _ => LowM.Pure v1
-    end).
-
-  Definition let_strong (e1 : M.t) (e2 : Value.t -> M.t) : M.t :=
-    LowM.Let e1 (fun v1 =>
-    match v1 with
-    | Result.Ok v1 => e2 v1
-    | _ => LowM.Pure v1
-    end).
 
   (** This parameter is used as a marker to allow a monadic notation
       without naming all intermediate results. Computation represented using
       this markers can be translated to a regular monadic computation using
       [M.monadic] tactic. *)
-  Parameter run : M.t -> Value.t.
+  Parameter run : t -> Value.t.
 
   Ltac monadic e :=
     lazymatch e with
     | context ctxt [let v := ?x in @?f v] =>
-      refine (let_strong _ _);
+      refine (Let _ _);
         [ monadic x
         | let v' := fresh v in
           intro v';
@@ -265,20 +235,16 @@ Module M.
     end.
 
   Module Notations.
-    Notation "'let-' a := b 'in' c" :=
-      (LowM.let_ b (fun a => c))
-        (at level 200, b at level 100, a name).
-
     Notation "'let*' a ':=' b 'in' c" :=
       (let_ b (fun a => c))
       (at level 200, a pattern, b at level 100, c at level 200).
 
     Notation "'let~' a := b 'in' c" :=
-      (let_strong b (fun a => c))
+      (Let b (fun a => c))
         (at level 200, a pattern, b at level 100).
 
     Notation "'do~' a 'in' b" :=
-      (let_strong a (fun _ => b))
+      (Let a (fun _ => b))
       (at level 200).
 
     Notation "e (| e1 , .. , en |)" :=
@@ -297,14 +263,14 @@ Module M.
   End Notations.
   Import Notations.
 
-  Definition call_closure (closure : Value.t) (args : list Value.t) : M.t :=
-    LowM.CallClosure closure args LowM.Pure.
+  Definition call_closure (closure : Value.t) (args : list Value.t) : t :=
+    CallClosure closure args Pure.
 
-  Definition impossible (message : string) : M.t :=
-    LowM.Impossible message.
+  Definition impossible (message : string) : t :=
+    Impossible message.
 
-  Definition panic {A : Set} (payload : A) : M.t :=
-    LowM.Pure Result.Panic.
+  Definition panic {A : Set} (payload : A) : t :=
+    Panic.
   (* We use the payload of this function for debugging but throw it away for the semantics *)
   Opaque panic.
 
@@ -312,17 +278,17 @@ Module M.
     Value.Pointer (Pointer.Immediate value).
   Arguments alloc /.
 
-  Definition alloc_mutable (value : Value.t) : M.t :=
-    LowM.CallPrimitive (Primitive.StateAlloc value) (fun value => pure value).
+  Definition alloc_mutable (value : Value.t) : t :=
+    CallPrimitive (Primitive.StateAlloc value) (fun value => pure value).
   Arguments alloc_mutable /.
 
-  Definition read (r : Value.t) : M.t :=
+  Definition read (r : Value.t) : t :=
     match r with
     | Value.Pointer pointer =>
       match pointer with
       | Pointer.Immediate value => pure value
       | Pointer.Mutable (Pointer.Mutable.Make address path) =>
-        LowM.CallPrimitive (Primitive.StateRead address) (fun value =>
+        CallPrimitive (Primitive.StateRead address) (fun value =>
         match Value.read_path value path with
         | Some sub_value => pure sub_value
         | None => panic ("read: invalid sub-pointer", r)
@@ -332,13 +298,13 @@ Module M.
     end.
   Arguments read /.
 
-  Definition write (r update : Value.t) : M.t :=
+  Definition write (r update : Value.t) : t :=
     match r with
     | Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make address path)) =>
-      LowM.CallPrimitive (Primitive.StateRead address) (fun value =>
+      CallPrimitive (Primitive.StateRead address) (fun value =>
       match Value.write_path value path update with
       | Some new_value =>
-        LowM.CallPrimitive (Primitive.StateWrite address new_value) (fun _ =>
+        CallPrimitive (Primitive.StateWrite address new_value) (fun _ =>
         pure (Value.Tuple []))
       | None => panic ("write: invalid sub_pointer", r, update)
       end)
@@ -346,30 +312,30 @@ Module M.
     end.
   Arguments write /.
 
-  Definition copy (r : Value.t) : M.t :=
+  Definition copy (r : Value.t) : t :=
     let* v := read r in
     pure (alloc v).
   Arguments copy /.
 
-  Definition copy_mutable (r : Value.t) : M.t :=
+  Definition copy_mutable (r : Value.t) : t :=
     let* v := read r in
     alloc_mutable v.
   Arguments copy /.
 
-  Definition assert (condition : Value.t) (message : option Value.t) : M.t :=
+  Definition assert (condition : Value.t) (message : option Value.t) : t :=
     match condition with
     | Value.Bool b =>
       if b then
         pure (Value.Tuple [])
       else
         panic message
-    | _ => LowM.Impossible "assert: expected a boolean"
+    | _ => impossible "assert: expected a boolean"
     end.
 
-  Definition cast_to_field (value : Value.t) : M.t :=
+  Definition cast_to_field (value : Value.t) : t :=
     match value with
     | Value.Integer _ i =>
-      LowM.CallPrimitive Primitive.GetFieldPrime (fun p =>
+      CallPrimitive Primitive.GetFieldPrime (fun p =>
       if (0 <=? i) && (i <? p) then
         pure (Value.Field i)
       else
@@ -380,7 +346,7 @@ Module M.
   (** We only consider cast between integer values. We consider that the cast succeed if we are
       in the bounds of the target type. For casts to fields we need to retrieve the current
       field prime, which could change depending on the backend. *)
-  Definition cast (value : Value.t) (integer_kind : IntegerKind.t) : M.t :=
+  Definition cast (value : Value.t) (integer_kind : IntegerKind.t) : t :=
     match value with
     | Value.Integer _ i =>
       match integer_kind with
@@ -438,7 +404,7 @@ Module M.
     | _ => impossible "cast: expected an integer"
     end.
 
-  Definition index (table idx : Value.t) : M.t :=
+  Definition index (table idx : Value.t) : t :=
     match table with
     | Value.Pointer table_pointer =>
       match idx with
@@ -460,7 +426,7 @@ Module M.
     | _ => impossible "index: expected a pointer"
     end.
 
-  Definition extract_tuple_field (tuple : Value.t) (field : Z) : M.t :=
+  Definition extract_tuple_field (tuple : Value.t) (field : Z) : t :=
     match tuple with
     | Value.Pointer tuple_pointer =>
       match tuple_pointer with
@@ -478,7 +444,7 @@ Module M.
     | _ => impossible "extract_tuple_field: expected a pointer"
     end.
 
-  Definition if_ (condition : Value.t) (then_ : M.t) (else_ : option M.t) : M.t :=
+  Definition if_ (condition : Value.t) (then_ : t) (else_ : option t) : t :=
     match condition with
     | Value.Bool true => then_
     | Value.Bool false =>
@@ -486,10 +452,10 @@ Module M.
       | Some else_ => else_
       | None => pure (Value.Tuple [])
       end
-    | _ => LowM.Impossible "if: expected a boolean"
+    | _ => impossible "if: expected a boolean"
     end.
 
-  Fixpoint for_nat (end_ : Z) (fuel : nat) (body : Z -> M.t) {struct fuel} : M.t :=
+  Fixpoint for_nat (end_ : Z) (fuel : nat) (body : Z -> t) {struct fuel} : t :=
     match fuel with
     | O => pure (alloc (Value.Tuple []))
     | S fuel' =>
@@ -497,10 +463,10 @@ Module M.
       for_nat end_ fuel' body
     end.
 
-  Definition for_Z (start end_ : Z) (body : Z -> M.t) : M.t :=
+  Definition for_Z (start end_ : Z) (body : Z -> t) : t :=
     for_nat end_ (Z.to_nat (end_ - start)) body.
 
-  Definition for_ (start end_ : Value.t) (body : Value.t -> M.t) : M.t :=
+  Definition for_ (start end_ : Value.t) (body : Value.t -> t) : t :=
     match start, end_ with
     | Value.Integer integer_kind start, Value.Integer _ end_ =>
       (* We assume that the integer kind of the [end_] is the same and checked by the compiler. *)
@@ -577,14 +543,42 @@ pub enum BinaryOpKind {
 Module Binary.
   Parameter add : Value.t -> Value.t -> M.t.
 
+  Definition add_unbounded (value1 value2 : Value.t) : M.t :=
+    match value1, value2 with
+    | Value.Integer kind value1, Value.Integer _ value2 =>
+      M.pure (Value.Integer kind (value1 + value2))
+    | _, _ => M.impossible "add_unbounded: expected integer values"
+    end.
+
   Parameter subtract : Value.t -> Value.t -> M.t.
+
+  Definition subtract_unbounded (value1 value2 : Value.t) : M.t :=
+    match value1, value2 with
+    | Value.Integer kind value1, Value.Integer _ value2 =>
+      M.pure (Value.Integer kind (value1 - value2))
+    | _, _ => M.impossible "sub_unbounded: expected integer values"
+    end.
 
   Parameter multiply : Value.t -> Value.t -> M.t.
 
+  Definition multiply_unbounded (value1 value2 : Value.t) : M.t :=
+    match value1, value2 with
+    | Value.Integer kind value1, Value.Integer _ value2 =>
+      M.pure (Value.Integer kind (value1 * value2))
+    | _, _ => M.impossible "mul_unbounded: expected integer values"
+    end.
+
   Parameter divide : Value.t -> Value.t -> M.t.
 
+  Definition divide_unbounded (value1 value2 : Value.t) : M.t :=
+    match value1, value2 with
+    | Value.Integer kind value1, Value.Integer _ value2 =>
+      M.pure (Value.Integer kind (value1 / value2))
+    | _, _ => M.impossible "div_unbounded: expected integer values"
+    end.
+
   Definition equal (value1 value2 : Value.t) : M.t :=
-    LowM.CallPrimitive (Primitive.IsEqual value1 value2) (fun b => M.pure (Value.Bool b)).
+    M.CallPrimitive (Primitive.IsEqual value1 value2) (fun b => M.pure (Value.Bool b)).
 
   Parameter not_equal : Value.t -> Value.t -> M.t.
 

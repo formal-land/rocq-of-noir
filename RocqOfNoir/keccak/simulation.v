@@ -3,18 +3,6 @@ Require Import RocqOfNoir.proof.RocqOfNoir.
 Require Import RocqOfNoir.simulation.RocqOfNoir.
 Require Import RocqOfNoir.keccak.polymorphic.
 
-(* global BLOCK_SIZE_IN_BYTES: u32 = 136; *)
-Definition BLOCK_SIZE_IN_BYTES: Z := 136.
-
-(* global WORD_SIZE: u32 = 8; *)
-Definition WORD_SIZE: Z := 8.
-
-(* global LIMBS_PER_BLOCK: u32 = BLOCK_SIZE_IN_BYTES / WORD_SIZE; *)
-Definition LIMBS_PER_BLOCK: Z := BLOCK_SIZE_IN_BYTES / WORD_SIZE.
-
-(* global NUM_KECCAK_LANES: u32 = 25; *)
-Definition NUM_KECCAK_LANES: Z := 25.
-
 (*
 pub fn keccak256<let N: u32>(input: [u8; N], message_size: u32) -> [u8; 32] {
     assert(N >= message_size);
@@ -114,33 +102,29 @@ Lemma run_for_loop {State Address : Set} `{State.Trait State Address} (p : Z)
     (acc_in : A) (state_in : State)
     (start end_ : Z)
     (body : A -> Z -> M! A) (source_body : Z -> M.t)
-    (P_A : A -> State -> Prop)
-    (H_state_in : P_A acc_in state_in) :
+    (inject_A : A -> State -> State)
+    (H_state_in : inject_A acc_in state_in = state_in) :
   (forall acc state i,
-    P_A acc state ->
-    let output := body acc i in
-    let P_state_out state_out :=
-      match output with
-      | Panic.Error => True
-      | Panic.Success acc_out =>
-        P_A acc_out state_out
+    let state_in := inject_A acc state in
+    let output :=
+      match body acc i with
+      | Some acc_out => Some (M.alloc (to_value tt), inject_A acc_out state_in)
+      | None => None
       end in
-    {{ p, state ⏩
+    {{ p, state_in ⏩
       source_body i 🔽
-      Panic.to_result (body acc i)
-    ⏩ P_state_out }}
+      output
+    }}
   ) ->
-  let output := for_loop acc_in start end_ body in
-  let P_state_out state_out :=
-    match output with
-    | Panic.Error => True
-    | Panic.Success acc_out =>
-      P_A acc_out state_out
+  let output :=
+    match for_loop acc_in start end_ body with
+    | Some acc_out => Some (M.alloc (to_value tt), inject_A acc_out state_in)
+    | None => None
     end in
   {{ p, state_in ⏩
     M.for_Z start end_ source_body 🔽
-    Panic.to_result output
-  ⏩ P_state_out }}.
+    output
+  }}.
 Proof.
 Admitted.
 
@@ -165,10 +149,11 @@ Definition keccak256 (p : Z) {N : U32.t}
       }
   }
   *)
-  let block_bytes : Array.t U8.t _ :=
+  let! block_bytes : Array.t U8.t _ := return! (
     Array.repeat
       {| Integer.value := (N.(Integer.value) / BLOCK_SIZE_IN_BYTES + 1) * BLOCK_SIZE_IN_BYTES |}
-      {| Integer.value := 0 |} in
+      {| Integer.value := 0 |}
+   ) in
   let! block_bytes :=
     for_loop
       block_bytes
@@ -286,40 +271,52 @@ Instance Impl_State_for_State : State.Trait State.t Address.t := {
     end;
 }.
 
+Definition apply_φ {State A : Set} (φ : A -> Value.t * (State -> State))
+    (state_in : State) (value : A) :
+    Value.t * State :=
+  let '(value, inject_state) := φ value in
+  (value, inject_state state_in).
+
+Module Option.
+  Definition map {A B : Set} (f : A -> B) (x : option A) : option B :=
+    match x with
+    | Some value => Some (f value)
+    | None => None
+    end.
+End Option.
+
 Lemma RunLetPanic {State Address : Set} `{State.Trait State Address} (p : Z)
-    {A B : Set} `{ToValue A} `{ToValue B}
+    {A B : Set}
     (e : M.t) (e' : M! A)
-    (k : Result.t -> M.t) (k' : A -> M! B)
-    (state_in : State)
-    (P_state_inter P_state_out : State -> Prop) :
+    (φ_A : A -> Value.t * (State -> State))
+    (k : Value.t -> M.t) (k' : A -> M! B)
+    (map_B : B -> Value.t * State)
+    (state_in : State) :
   {{ p, state_in ⏩
-    e 🔽 Panic.to_result e'
-  ⏩ P_state_inter }} ->
-  (forall (state_inter : State) (output_inter : A),
-    P_state_inter state_inter ->
+    e 🔽
+    Option.map (apply_φ φ_A state_in) e'
+  }} ->
+  (forall (value' : A),
+    let '(value, state_inter) := apply_φ φ_A state_in value' in
     {{ p, state_inter ⏩
-      k (Result.Ok (to_value output_inter)) 🔽 Panic.to_result (k' output_inter)
-    ⏩ P_state_out }}
+      k value 🔽
+      Option.map map_B (k' value')
+    }}
   ) ->
-  (k Result.Panic = LowM.Pure Result.Panic) ->
-  P_state_out 
   {{ p, state_in ⏩
-    LowM.Let e k 🔽 Panic.to_result (Panic.bind e' k')
-  ⏩ P_state_out }}.
+    M.Let e k 🔽
+    Option.map map_B (Panic.bind e' k')
+  }}.
 Proof.
-  intros H_e H_k H_k_panic.
+  intros H_e H_k.
   eapply Run.Let; cbn. {
     apply H_e.
   }
-  intros state_inter H_state_inter.
-  destruct e'; cbn in *.
-  { now apply H_k. }
-  { rewrite H_k_panic.
-    apply Run.Pure.
-  }
-  eapply H_k.
-  - exact state_in.
-  - exact (to_value e').
+  destruct e' as [value' |]; cbn in *; [|reflexivity].
+  specialize (H_k value').
+  destruct (φ_A value') as [value_inter inject_state].
+  apply H_k.
+Qed.
 
 Lemma run_keccak256
     (p : Z)
@@ -333,33 +330,100 @@ Lemma run_keccak256
       M.pure (Value.Bool true)
     )
     (H_message_size : message_size.(Integer.value) <= N.(Integer.value)) :
-  let output := keccak256 p input message_size in
-  let P_state_out state_out :=
-    match output with
-    | Panic.Error => True
-    | Panic.Success sliced_buffer =>
-      state_out.(State.sliced_buffer) = Some (to_value sliced_buffer)
+  let output :=
+    match keccak256 p input message_size with
+    | None => None
+    | Some output => Some (to_value output, State.empty)
     end in
   {{ p, State.empty ⏩
     polymorphic.keccak256 N [to_value input; to_value message_size] 🔽
-    Panic.to_result output
-  ⏩ P_state_out }}.
+    output
+  }}.
 Proof.
   unfold polymorphic.keccak256, keccak256.
   progress repeat rewrite H_unconstrained.
-  eapply Run.Let; cbn. {
+  eapply RunLetPanic with (φ_A := fun _ => (
+    M.alloc (to_value tt),
+    fun state => state
+  )). {
+    cbn.
     destruct (_ >=? _) eqn:?; [|lia]; cbn.
-    apply Run.PureExact.
+    now apply Run.Pure.
   }
-  intros ? ->; cbn.
-  eapply Run.Let; cbn. {
+  intros [].
+  eapply RunLetPanic with (φ_A := fun block_bytes => (
+    Value.Pointer (Pointer.Mutable (Pointer.Mutable.Make Address.BlockBytes [])),
+    fun state => state <| State.block_bytes := Some (to_value block_bytes) |>
+  )). {
+    cbn.
     eapply Run.CallPrimitiveStateAlloc with (address := Address.BlockBytes); try reflexivity.
-    unfold set.
-    apply Run.PureExact.
+    unfold set; cbn.
+    apply Run.Pure.
+    repeat f_equal.
+    now rewrite List.map_repeat.
   }
-  intros ? ->; cbn.
-  eapply Run.Let; cbn. {
-    apply run_for_loop. with (acc_in :=).
-  cbn in H_unconstrained.
-  rewrite H_unconstrained; cbn.
-  cbn.
+  intros block_bytes.
+  eapply RunLetPanic with (φ_A := fun block_bytes => (
+    M.alloc (to_value tt),
+    fun state => state <| State.block_bytes := Some (to_value block_bytes) |>
+  )). {
+    cbn.
+    apply run_for_loop.
+    { typeclasses eauto. }
+    { reflexivity. }
+    { intros acc state i.
+      cbn.
+      unfold Array.read.
+      rewrite List.nth_error_map; cbn.
+      destruct List.nth_error as [element |]; cbn; [|now apply Run.Panic].
+      eapply Run.CallPrimitiveStateRead; [reflexivity |]; cbn.
+      unfold Array.write.
+      rewrite List.nth_error_map; cbn.
+      match goal with
+      | |- context[List.listUpdate_error ?l ?i ?v] =>
+        pose proof (Array.list_nth_error_listUpdate_error l i v)
+      end.
+      destruct List.nth_error; cbn.
+      { erewrite Array.listUpdate_error_map; [|reflexivity].
+        destruct List.listUpdate_error; cbn; [|now apply Run.Panic].
+        eapply Run.CallPrimitiveStateWrite; [reflexivity |]; cbn.
+        now apply Run.Pure.
+      }
+      { destruct List.listUpdate_error; cbn; [easy |].
+        now apply Run.Panic.
+      }
+    }
+  }
+  intros ?block_bytes.
+  progress repeat (
+    (replace Binary.add with Binary.add_unbounded by admit) ||
+    (replace Binary.multiply with Binary.multiply_unbounded by admit) ||
+    (replace Binary.divide with Binary.divide_unbounded by admit) ||
+    (replace (get_global "BLOCK_SIZE_IN_BYTES" 0) with (Value.Integer IntegerKind.U32 BLOCK_SIZE_IN_BYTES) by admit) ||
+    (replace (get_global "WORD_SIZE" 1) with (Value.Integer IntegerKind.U32 WORD_SIZE) by admit)
+  ).
+  do 3 apply LetUnfold.
+  eapply RunLetPanic with (φ_A := fun block_bytes => (
+    M.alloc (to_value tt),
+    fun state => state <| State.block_bytes := Some (to_value block_bytes) |>
+  )). {
+    cbn.
+    eapply Run.CallPrimitiveStateRead; [reflexivity |]; cbn.
+    unfold Array.write.
+    rewrite List.nth_error_map; cbn.
+    match goal with
+    | |- context[List.listUpdate_error ?l ?i ?v] =>
+      pose proof (Array.list_nth_error_listUpdate_error l i v)
+    end.
+    destruct List.nth_error; cbn.
+    { erewrite Array.listUpdate_error_map; [|instantiate (1 := Integer.Build_t _ _); reflexivity].
+      destruct List.listUpdate_error; cbn; [|now apply Run.Panic].
+      eapply Run.CallPrimitiveStateWrite; [reflexivity |]; cbn.
+      now apply Run.Pure.
+    }
+    { destruct List.listUpdate_error; cbn; [easy |].
+      now apply Run.Panic.
+    }
+  }
+  intros ?block_bytes.
+Admitted.

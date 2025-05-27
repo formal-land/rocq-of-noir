@@ -5,40 +5,20 @@ Require Import base64.monomorphic.
 (** This module provides helpers to show the equality to debug [reflexivity] when it is too long or
     failing *)
 Module Eq.
-      Lemma LowLet {A : Set} (e e' : LowM.t A) k k'
+  Lemma Let (e e' : M.t) k k'
       (H_e : e = e')
       (H_k : forall x, k x = k' x) :
-      LowM.Let e k = LowM.Let e' k'.
+    M.Let e k = M.Let e' k'.
   Proof.
     rewrite H_e.
     replace k with k' by now apply functional_extensionality.
     reflexivity.
   Qed.
 
-  Lemma LetMinus {A : Set} (e1 e1' : LowM.t A) (e2 e2' : A -> LowM.t A)
+  Lemma LetMinus (e1 e1' : M.t) (e2 e2' : Value.t -> M.t)
       (H_e1 : e1 = e1')
       (H_e2 : forall x, e2 x = e2' x) :
-      LowM.let_ e1 e2 = LowM.let_ e1' e2'.
-  Proof.
-    rewrite H_e1.
-    replace e2 with e2' by now apply functional_extensionality.
-    reflexivity.
-  Qed.
-
-  Lemma LetStar e1 e1' e2 e2'
-      (H_e1 : e1 = e1')
-      (H_e2 : forall x, e2 x = e2' x) :
-      M.let_ e1 e2 = M.let_ e1' e2'.
-  Proof.
-    rewrite H_e1.
-    replace e2 with e2' by now apply functional_extensionality.
-    reflexivity.
-  Qed.
-
-  Lemma LetTilde e1 e1' e2 e2'
-      (H_e1 : e1 = e1')
-      (H_e2 : forall x, e2 x = e2' x) :
-      M.let_strong e1 e2 = M.let_strong e1' e2'.
+    M.let_ e1 e2 = M.let_ e1' e2'.
   Proof.
     rewrite H_e1.
     replace e2 with e2' by now apply functional_extensionality.
@@ -49,7 +29,7 @@ Module Eq.
       (H_e : e = e')
       (H_t : t = t')
       (H_f : f = f') :
-      M.if_ e t f = M.if_ e' t' f'.
+    M.if_ e t f = M.if_ e' t' f'.
   Proof.
     f_equal; assumption.
   Qed.
@@ -57,10 +37,8 @@ Module Eq.
   Ltac tactic :=
     repeat (
       intro ||
-      apply LowLet ||
+      apply Let ||
       apply LetMinus ||
-      apply LetStar ||
-      apply LetTilde ||
       apply If
     ).
 End Eq.
@@ -250,12 +228,11 @@ Definition base64_encode_elements (InputElements : U32.t) (α : list Value.t) : 
                 closure Base64EncodeBE.get,
                 [
                   M.read (| Base64Encoder |);
-                  M.cast (|
+                  M.cast_to_field (|
                     M.read (| M.index (|
                       input,
                       M.read (| i |)
-                    |) |),
-                    IntegerKind.Field
+                    |) |)
                   |)
                 ]
               |)
@@ -331,7 +308,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
               |),
               fun (i : Value.t) =>
               let~ slice := [[ M.copy_mutable (|
-                M.alloc (Value.Integer IntegerKind.Field 0)
+                M.alloc (Value.Field 0)
               |) ]] in
               do~ [[
                 M.for_ (|
@@ -343,7 +320,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                       slice,
                       Binary.multiply (|
                         M.read (| slice |),
-                        Value.Integer IntegerKind.Field 256
+                        Value.Field 256
                       |)
                     |))
                   ]] in
@@ -352,7 +329,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                       slice,
                       Binary.add (|
                         M.read (| slice |),
-                        M.cast (|
+                        M.cast_to_field (|
                           M.read (| M.index (|
                             input,
                             Binary.add (|
@@ -362,8 +339,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                               |),
                               M.read (| j |)
                             |)
-                          |) |),
-                          IntegerKind.Field
+                          |) |)
                         |)
                       |)
                     |))
@@ -419,7 +395,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
             |))
           |) ]] in
           let~ slice := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 0)
+            M.alloc (Value.Field 0)
           |) ]] in
           do~ [[
             M.for_ (|
@@ -431,7 +407,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                   slice,
                   Binary.multiply (|
                     M.read (| slice |),
-                    Value.Integer IntegerKind.Field 256
+                    Value.Field 256
                   |)
                 |))
               ]] in
@@ -440,7 +416,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                   slice,
                   Binary.add (|
                     M.read (| slice |),
-                    M.cast (|
+                    M.cast_to_field (|
                       M.read (| M.index (|
                         input,
                         Binary.add (|
@@ -453,8 +429,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                           |),
                           M.read (| j |)
                         |)
-                      |) |),
-                      IntegerKind.Field
+                      |) |)
                     |)
                   |)
                 |))
@@ -471,7 +446,7 @@ Definition base64_encode (InputBytes OutputElements : U32.t) (α : list Value.t)
                   slice,
                   Binary.multiply (|
                     M.read (| slice |),
-                    Value.Integer IntegerKind.Field 256
+                    Value.Field 256
                   |)
                 |))
               ]]
@@ -556,6 +531,6 @@ Proof.
   autorewrite with get_function_eq.
   destruct α as [|input α]; [reflexivity|].
   destruct α; [|reflexivity].
-  apply Eq.LetStar; [reflexivity|intro result].
+  apply Eq.Let; [reflexivity|intro result].
   reflexivity.
 Qed.

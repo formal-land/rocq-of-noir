@@ -1,3 +1,5 @@
+(* FIXME: this file is based on an previous version of the semantics and should be rewritten. *)
+
 Require Import RocqOfNoir.RocqOfNoir.
 Require Import RocqOfNoir.proof.RocqOfNoir.
 Require Import RocqOfNoir.simulation.RocqOfNoir.
