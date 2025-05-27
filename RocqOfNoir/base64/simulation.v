@@ -1,3 +1,5 @@
+(* FIXME: this file is based on an previous version of the semantics and should be rewritten. *)
+
 Require Import RocqOfNoir.RocqOfNoir.
 Require Import RocqOfNoir.proof.RocqOfNoir.
 Require Import RocqOfNoir.simulation.RocqOfNoir.
@@ -287,10 +289,10 @@ Lemma run_base64_encode_elements
         base64_encode_elements.State.result := Some (to_value (snd output));
       |}
     |> in
-    {{ p, State.init ⏩
-      polymorphic.base64_encode_elements InputElements [to_value input] 🔽
-      Panic.to_result (fst output)
-    ⏩ state_end }}.
+  {{ p, State.init ⏩
+    polymorphic.base64_encode_elements InputElements [to_value input] 🔽
+    Panic.to_result (fst output)
+  ⏩ state_end }}.
 Proof.
   unfold polymorphic.base64_encode_elements, base64_encode_elements.
   eapply Run.Let. {

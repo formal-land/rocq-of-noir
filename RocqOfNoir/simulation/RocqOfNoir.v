@@ -5,45 +5,32 @@ Class ToValue (Self : Set) : Set := {
 }.
 
 Module Panic.
-  Inductive t (A : Set) : Set :=
-  | Success : A -> t A
-  (** We put the payload on the parameter on a smart contructor, that is actually an opaque function
-      that forgets about its parameter. *)
-  | Error : t A.
-  Arguments Success {_}.
-  Arguments Error {_}.
-
-  Definition to_result {A : Set} `{ToValue A} (value : t A) : Result.t :=
-    match value with
-    | Success value => Result.Ok (to_value value)
-    | Error => Result.Panic
-    end.
-
-  (** For some intermediate results, we need to make an allocation to be like in the translated
-      code *)
-  Definition to_result_alloc {A : Set} `{ToValue A} (value : t A) : Result.t :=
-    match value with
-    | Success value => Result.Ok (M.alloc (to_value value))
-    | Error => Result.Panic
-    end.
+  Definition t (A : Set) : Set :=
+    option A.
 
   Definition return_ {A : Set} (value : A) : t A :=
-    Success value.
+    Some value.
   Arguments return_ /.
 
   Definition panic {A E : Set} (error : E) : t A :=
-    Error.
+    None.
   (* So that the error payload appears for debugging *)
   Opaque panic.
 
   Definition bind {A B : Set} (value : t A) (f : A -> t B) : t B :=
     match value with
-    | Success value => f value
-    | Error => Error
+    | Some value => f value
+    | None => None
     end.
 
   Definition fold_left {A B : Set} (init : A) (l : list B) (f : A -> B -> t A) : t A :=
     List.fold_left (fun acc x => bind acc (fun acc => f acc x)) l (return_ init).
+
+  Definition assert (condition : bool) : t unit :=
+    if condition then
+      return_ tt
+    else
+      panic "assert failure".
 End Panic.
 
 Module PanicNotations.
@@ -62,65 +49,7 @@ Module PanicNotations.
 
   Notation "fold!" := Panic.fold_left.
 End PanicNotations.
-
-Module StatePanic.
-  Definition t (State : Set) (A : Set) : Set :=
-    State -> Panic.t A * State.
-
-  Definition return_ {State A : Set} (value : A) : t State A :=
-    fun state => (Panic.return_ value, state).
-
-  Definition bind {State A B : Set} (value : t State A) (f : A -> t State B) : t State B :=
-    fun state =>
-      let '(output, state) := value state in
-      match output with
-      | Panic.Success value => f value state
-      | Panic.Error => (Panic.Error, state)
-      end.
-
-  Fixpoint fold_left {State A B : Set}
-      (init : A) (l : list B) (f : A -> B -> t State A) {struct l} :
-      t State A :=
-    match l with
-    | [] => return_ init
-    | x :: l => bind (f init x) (fun init => fold_left init l f)
-    end.
-
-  Definition lift_from_panic {State A : Set} (value : Panic.t A) : t State A :=
-    fun state => (value, state).
-
-  Definition read {State : Set} : t State State :=
-    fun state => (Panic.return_ state, state).
-
-  Definition write {State : Set} (state : State) : t State unit :=
-    fun _ => (Panic.return_ tt, state).
-End StatePanic.
-
-Module StatePanicNotations.
-  Notation "MS!" := StatePanic.t.
-
-  Notation "returnS!" := StatePanic.return_.
-  Notation "panic!" := Panic.panic.
-
-  Notation "'letS!' x ':=' X 'in' Y" :=
-    (StatePanic.bind X (fun x => Y))
-    (at level 200, x pattern, X at level 100, Y at level 200).
-
-  Notation "'doS!' X 'in' Y" :=
-    (StatePanic.bind X (fun (_ : unit) => Y))
-    (at level 200, X at level 100, Y at level 200).
-
-  Notation "foldS!" := StatePanic.fold_left.
-
-  Notation "return!toS!" := StatePanic.lift_from_panic.
-
-  Notation "readS!" := StatePanic.read.
-
-  Notation "writeS!" := StatePanic.write.
-End StatePanicNotations.
-
 Export PanicNotations.
-Export StatePanicNotations.
 
 Module Unit.
   Global Instance IsToValue : ToValue unit := {
@@ -161,10 +90,91 @@ Module Integer.
     (fun (i : t kind) => Value.Integer kind i.(value)) = to_value.
   Proof. reflexivity. Qed.
   Global Hint Rewrite rewrite_to_value : to_value.
+
+  Definition cast {from : IntegerKind.t} (i : t from) (to : IntegerKind.t) : M! (t to) :=
+    let i := i.(value) in
+    match to with
+    | IntegerKind.U1 =>
+      if (0 <=? i) && (i <? 2) then
+        return! ({| value := i |} : t IntegerKind.U1)
+      else
+        panic! ("cast: out of bounds", i, from, to)
+    | IntegerKind.U8 =>
+      if (0 <=? i) && (i <? 2^8) then
+        return! ({| value := i |} : t IntegerKind.U8)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.U16 =>
+      if (0 <=? i) && (i <? 2^16) then
+        return! ({| value := i |} : t IntegerKind.U16)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.U32 =>
+      if (0 <=? i) && (i <? 2^32) then
+        return! ({| value := i |} : t IntegerKind.U32)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.U64 =>
+      if (0 <=? i) && (i <? 2^64) then
+        return! ({| value := i |} : t IntegerKind.U64)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I1 =>
+      if (-(2^0) <=? i) && (i <? 2^0) then
+        return! ({| value := i |} : t IntegerKind.I1)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I8 =>
+      if (-(2^7) <=? i) && (i <? 2^7) then
+        return! ({| value := i |} : t IntegerKind.I8)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I16 =>
+      if (-(2^15) <=? i) && (i <? 2^15) then
+        return! ({| value := i |} : t IntegerKind.I16)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I32 =>
+      if (-(2^31) <=? i) && (i <? 2^31) then
+        return! ({| value := i |} : t IntegerKind.I32)
+      else
+        panic! ("cast: out of bounds", i, to)
+    | IntegerKind.I64 =>
+      if (-(2^63) <=? i) && (i <? 2^63) then
+        return! ({| value := i |} : t IntegerKind.I64)
+      else
+        panic! ("cast: out of bounds", i, to)
+    end.
 End Integer.
 
 Module Field.
-  Definition t : Set := Integer.t IntegerKind.Field.
+  Record t : Set := {
+    value : Z;
+  }.
+
+  Global Instance IsToValue : ToValue t := {
+    to_value (f : t) :=
+      Value.Field f.(value);
+  }.
+
+  Definition add (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) + y.(Field.value)) mod p |}.
+
+  Definition sub (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) - y.(Field.value)) mod p |}.
+
+  Definition mul (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) * y.(Field.value)) mod p |}.
+
+  Definition div (p : Z) (x y : t) : t :=
+    {| Field.value := (x.(Field.value) / y.(Field.value)) mod p |}.
+
+  Definition cast {from : IntegerKind.t} (p : Z) (x : Integer.t from) : M! t :=
+    let x := x.(Integer.value) in
+    if (0 <=? x) && (x <? p) then
+      return! {| Field.value := x |}
+    else
+      panic! ("cast: out of bounds", x, from, p).
 End Field.
 
 Module U1.
@@ -349,18 +359,15 @@ Module Array.
       value := List.repeat value (Z.to_nat size.(Integer.value))
     |}.
 
-  Definition read {A : Set} {index_kind : IntegerKind.t} {size : U32.t}
-      (array : t A size) (index : Integer.t index_kind) :
-      M! A :=
-    match List.nth_error array.(value) (Z.to_nat index.(Integer.value)) with
+  Definition read {A : Set} {size : U32.t} (array : t A size) (index : Z) : M! A :=
+    match List.nth_error array.(value) (Z.to_nat index) with
     | Some result => return! result
     | None => panic! ("Array.get: index out of bounds", array, index)
     end.
 
-  Definition write {A : Set} {index_kind : IntegerKind.t} {size : U32.t}
-      (array : t A size) (index : Integer.t index_kind) (update : A) :
+  Definition write {A : Set} {size : U32.t} (array : t A size) (index : Z) (update : A) :
       M! (t A size) :=
-    match List.listUpdate_error array.(value) (Z.to_nat index.(Integer.value)) update with
+    match List.listUpdate_error array.(value) (Z.to_nat index) update with
     | Some array => return! (Build_t array)
     | None => panic! ("Array.write: index out of bounds", array, index)
     end.
@@ -395,6 +402,6 @@ Definition cast_to_integer {kind_source : IntegerKind.t} {Target : Set} `{Binary
 Definition cast_to_field {kind : IntegerKind.t} (p : Z) (value : Integer.t kind) : M! Field.t :=
   let value := value.(Integer.value) in
   if (0 <=? value) && (value <? p) then
-    return! {| Integer.value := value |}
+    return! {| Field.value := value |}
   else
     panic! ("cast: out of bounds", value).

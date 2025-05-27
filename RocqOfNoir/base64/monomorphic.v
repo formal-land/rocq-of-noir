@@ -827,9 +827,8 @@ Definition base64_decode_elements₀ (α : list Value.t) : M.t :=
                 get_function "get" 0,
                 [
                   M.read (| Base64Decoder |);
-                  M.cast (|
-                    M.read (| input_byte |),
-                    IntegerKind.Field
+                  M.cast_to_field (|
+                    M.read (| input_byte |)
                   |)
                 ]
               |)
@@ -1045,12 +1044,11 @@ Definition base64_encode_elements₀ (α : list Value.t) : M.t :=
                 get_function "get" 1,
                 [
                   M.read (| Base64Encoder |);
-                  M.cast (|
+                  M.cast_to_field (|
                     M.read (| M.index (|
                       input,
                       M.read (| i |)
-                    |) |),
-                    IntegerKind.Field
+                    |) |)
                   |)
                 ]
               |)
@@ -1352,7 +1350,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
               |),
               fun (i : Value.t) =>
               let~ slice := [[ M.copy_mutable (|
-                M.alloc (Value.Integer IntegerKind.Field 0)
+                M.alloc (Value.Field 0)
               |) ]] in
               do~ [[
                 M.for_ (|
@@ -1364,7 +1362,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                       slice,
                       Binary.multiply (|
                         M.read (| slice |),
-                        Value.Integer IntegerKind.Field 64
+                        Value.Field 64
                       |)
                     |))
                   ]] in
@@ -1373,7 +1371,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                       slice,
                       Binary.add (|
                         M.read (| slice |),
-                        M.cast (|
+                        M.cast_to_field (|
                           M.read (| M.index (|
                             decoded,
                             Binary.add (|
@@ -1383,8 +1381,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                               |),
                               M.read (| j |)
                             |)
-                          |) |),
-                          IntegerKind.Field
+                          |) |)
                         |)
                       |)
                     |))
@@ -1439,7 +1436,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
             |))
           |) ]] in
           let~ slice := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 0)
+            M.alloc (Value.Field 0)
           |) ]] in
           do~ [[
             M.for_ (|
@@ -1451,7 +1448,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                   slice,
                   Binary.multiply (|
                     M.read (| slice |),
-                    Value.Integer IntegerKind.Field 64
+                    Value.Field 64
                   |)
                 |))
               ]] in
@@ -1460,7 +1457,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                   slice,
                   Binary.add (|
                     M.read (| slice |),
-                    M.cast (|
+                    M.cast_to_field (|
                       M.read (| M.index (|
                         decoded,
                         Binary.add (|
@@ -1473,8 +1470,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                           |),
                           M.read (| j |)
                         |)
-                      |) |),
-                      IntegerKind.Field
+                      |) |)
                     |)
                   |)
                 |))
@@ -1491,7 +1487,7 @@ Definition base64_decode₀ (α : list Value.t) : M.t :=
                   slice,
                   Binary.multiply (|
                     M.read (| slice |),
-                    Value.Integer IntegerKind.Field 64
+                    Value.Field 64
                   |)
                 |))
               ]]
@@ -1826,7 +1822,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
               |),
               fun (i : Value.t) =>
               let~ slice := [[ M.copy_mutable (|
-                M.alloc (Value.Integer IntegerKind.Field 0)
+                M.alloc (Value.Field 0)
               |) ]] in
               do~ [[
                 M.for_ (|
@@ -1838,7 +1834,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                       slice,
                       Binary.multiply (|
                         M.read (| slice |),
-                        Value.Integer IntegerKind.Field 256
+                        Value.Field 256
                       |)
                     |))
                   ]] in
@@ -1847,7 +1843,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                       slice,
                       Binary.add (|
                         M.read (| slice |),
-                        M.cast (|
+                        M.cast_to_field (|
                           M.read (| M.index (|
                             input,
                             Binary.add (|
@@ -1857,8 +1853,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                               |),
                               M.read (| j |)
                             |)
-                          |) |),
-                          IntegerKind.Field
+                          |) |)
                         |)
                       |)
                     |))
@@ -1914,7 +1909,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
             |))
           |) ]] in
           let~ slice := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 0)
+            M.alloc (Value.Field 0)
           |) ]] in
           do~ [[
             M.for_ (|
@@ -1926,7 +1921,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                   slice,
                   Binary.multiply (|
                     M.read (| slice |),
-                    Value.Integer IntegerKind.Field 256
+                    Value.Field 256
                   |)
                 |))
               ]] in
@@ -1935,7 +1930,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                   slice,
                   Binary.add (|
                     M.read (| slice |),
-                    M.cast (|
+                    M.cast_to_field (|
                       M.read (| M.index (|
                         input,
                         Binary.add (|
@@ -1948,8 +1943,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                           |),
                           M.read (| j |)
                         |)
-                      |) |),
-                      IntegerKind.Field
+                      |) |)
                     |)
                   |)
                 |))
@@ -1966,7 +1960,7 @@ Definition base64_encode₀ (α : list Value.t) : M.t :=
                   slice,
                   Binary.multiply (|
                     M.read (| slice |),
-                    Value.Integer IntegerKind.Field 256
+                    Value.Field 256
                   |)
                 |))
               ]]

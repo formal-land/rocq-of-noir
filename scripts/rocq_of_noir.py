@@ -117,7 +117,7 @@ pub enum Type {
 '''
 def type_to_integer_kind(node) -> str:
     if node == "Field":
-        return "IntegerKind.Field"
+        raise Exception("Unexpected Field type")
 
     node_type = list(node.keys())[0]
 
@@ -163,6 +163,8 @@ def literal_to_rocq(function_table: dict[str, list[int]], node) -> str:
 
     if node_type == "Integer":
         node = node["Integer"]
+        if node[2] == "Field":
+            return "Value.Field " + str(int(node[0], 16))
         return \
             "Value.Integer " + \
             type_to_integer_kind(node[2]) + " " + \
@@ -264,6 +266,14 @@ pub struct Cast {
 }
 '''
 def cast_to_rocq(function_table: dict[str, list[int]], node) -> str:
+    if node["type"] == "Field":
+        return alloc(
+            "M.cast_to_field (|\n" +
+            indent(
+                read(expression_to_rocq(function_table, node["lhs"]))
+            ) + "\n" +
+            "|)"
+        )
     return alloc(
         "M.cast (|\n" +
         indent(

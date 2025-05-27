@@ -5,40 +5,20 @@ Require Import keccak.monomorphic.
 (** This module provides helpers to show the equality to debug [reflexivity] when it is too long or
     failing *)
 Module Eq.
-  Lemma LowLet {A : Set} (e e' : LowM.t A) k k'
+  Lemma Let (e e' : M.t) k k'
       (H_e : e = e')
       (H_k : forall x, k x = k' x) :
-    LowM.Let e k = LowM.Let e' k'.
+    M.Let e k = M.Let e' k'.
   Proof.
     rewrite H_e.
     replace k with k' by now apply functional_extensionality.
     reflexivity.
   Qed.
 
-  Lemma LetMinus {A : Set} (e1 e1' : LowM.t A) (e2 e2' : A -> LowM.t A)
-      (H_e1 : e1 = e1')
-      (H_e2 : forall x, e2 x = e2' x) :
-    LowM.let_ e1 e2 = LowM.let_ e1' e2'.
-  Proof.
-    rewrite H_e1.
-    replace e2 with e2' by now apply functional_extensionality.
-    reflexivity.
-  Qed.
-
-  Lemma LetStar e1 e1' e2 e2'
+  Lemma LetMinus (e1 e1' : M.t) (e2 e2' : Value.t -> M.t)
       (H_e1 : e1 = e1')
       (H_e2 : forall x, e2 x = e2' x) :
     M.let_ e1 e2 = M.let_ e1' e2'.
-  Proof.
-    rewrite H_e1.
-    replace e2 with e2' by now apply functional_extensionality.
-    reflexivity.
-  Qed.
-
-  Lemma LetTilde e1 e1' e2 e2'
-      (H_e1 : e1 = e1')
-      (H_e2 : forall x, e2 x = e2' x) :
-    M.let_strong e1 e2 = M.let_strong e1' e2'.
   Proof.
     rewrite H_e1.
     replace e2 with e2' by now apply functional_extensionality.
@@ -57,13 +37,23 @@ Module Eq.
   Ltac tactic :=
     repeat (
       intro ||
-      apply LowLet ||
+      apply Let ||
       apply LetMinus ||
-      apply LetStar ||
-      apply LetTilde ||
       apply If
     ).
 End Eq.
+
+(* global BLOCK_SIZE_IN_BYTES: u32 = 136; *)
+Definition BLOCK_SIZE_IN_BYTES: Z := 136.
+
+(* global WORD_SIZE: u32 = 8; *)
+Definition WORD_SIZE: Z := 8.
+
+(* global LIMBS_PER_BLOCK: u32 = BLOCK_SIZE_IN_BYTES / WORD_SIZE; *)
+Definition LIMBS_PER_BLOCK: Z := BLOCK_SIZE_IN_BYTES / WORD_SIZE.
+
+(* global NUM_KECCAK_LANES: u32 = 25; *)
+Definition NUM_KECCAK_LANES: Z := 25.
 
 Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
   match α with
@@ -81,144 +71,9 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
         |))
       ]] in
       let~ block_bytes := [[ M.copy_mutable (|
-        M.alloc (Value.Array [
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0;
-          Value.Integer IntegerKind.U8 0
-        ])
+        M.alloc (Value.Array (List.repeat
+          (Value.Integer IntegerKind.U8 0)
+          (Z.to_nat (((N.(Integer.value) / BLOCK_SIZE_IN_BYTES) + 1) * BLOCK_SIZE_IN_BYTES))))
       |) ]] in
       do~ [[
         M.if_ (|
@@ -358,10 +213,10 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
             |))
           |) ]] in
           let~ sliced := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 0)
+            M.alloc (Value.Field 0)
           |) ]] in
           let~ v := [[ M.copy_mutable (|
-            M.alloc (Value.Integer IntegerKind.Field 1)
+            M.alloc (Value.Field 1)
           |) ]] in
           do~ [[
             M.for_ (|
@@ -375,15 +230,14 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
                     M.read (| sliced |),
                     Binary.multiply (|
                       M.read (| v |),
-                      M.cast (|
+                      M.cast_to_field (|
                         M.read (| M.index (|
                           block_bytes,
                           Binary.add (|
                             M.read (| limb_start |),
                             M.read (| k |)
                           |)
-                        |) |),
-                        IntegerKind.Field
+                        |) |)
                       |)
                     |)
                   |)
@@ -394,7 +248,7 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
                   v,
                   Binary.multiply (|
                     M.read (| v |),
-                    Value.Integer IntegerKind.Field 256
+                    Value.Field 256
                   |)
                 |))
               ]]
@@ -414,7 +268,11 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
           ]]
         |)
       ]] in
-      let~ state := [[ M.copy_mutable (|
+      [[
+        sliced_buffer
+      ]] in
+    M.read result
+      (* let~ state := [[ M.copy_mutable (|
         M.alloc (Value.Array [
           Value.Integer IntegerKind.U64 0;
           Value.Integer IntegerKind.U64 0;
@@ -657,12 +515,11 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
           Value.Integer IntegerKind.U32 4,
           fun (i : Value.t) =>
           let~ lane := [[ M.copy (|
-            M.alloc (M.cast (|
+            M.alloc (M.cast_to_field (|
               M.read (| M.index (|
                 state,
                 M.read (| i |)
-              |) |),
-              IntegerKind.Field
+              |) |)
             |))
           |) ]] in
           let~ lane_le := [[ M.copy (|
@@ -703,11 +560,11 @@ Definition keccak256 (N : U32.t) (α : list Value.t) : M.t :=
       [[
         result
       ]] in
-    M.read result
+    M.read result *)
   | _ => M.impossible "wrong number of arguments"
   end.
 
-Lemma eq_keccak256₀ :
+(* Lemma eq_keccak256₀ :
   get_function "keccak256" 0 = closure (keccak256 {| Integer.value := 1 |}).
 Proof.
   autorewrite with get_function; apply f_equal.
@@ -715,4 +572,4 @@ Proof.
   unfold keccak256₀.
   reflexivity.
 Qed.
-Global Hint Rewrite eq_keccak256₀ : get_function_eq.
+Global Hint Rewrite eq_keccak256₀ : get_function_eq. *)

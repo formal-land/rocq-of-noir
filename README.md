@@ -2,7 +2,9 @@
 
 The tool `rocq-of-noir` provides an **open-source and extensive way to formally verify smart contracts written in ⬛&nbsp;Noir**. Formal verification is about checking for any possible input that your code has no security issues, what is essential for code deployed on the blockchain! 🛡️
 
-To keep things simple, we rely on the well-known proof assistant [Rocq](https://rocq-prover.org/) for all the verification work: if you are already knowledgeable into this system, you can readily use `rocq-of-noir` to verify your smart contracts!
+We rely of the proof assistant [Rocq](https://rocq-prover.org/) to write and verify specifications about your code. We focus in this project in the translation phase from Noir to Rocq and in the definition of a semantics for the language, as well as building blocks to reason about Noir code.
+
+> **If you want to chat about this project or formal verification, you can contact us at [&#099;&#111;&#110;&#116;&#097;&#099;&#116;&#064;formal&#046;&#108;&#097;&#110;&#100;](mailto:&#099;&#111;&#110;&#116;&#097;&#099;&#116;&#064;formal&#046;&#108;&#097;&#110;&#100;) or send a message on our [X account](https://x.com/FormalLand).**
 
 ## 🏎️ Getting Started
 
@@ -31,11 +33,19 @@ To keep things simple, we rely on the well-known proof assistant [Rocq](https://
   make
   ```
 
-To see an example of verification work, you can look at the `base64` example in the folder [RocqOfNoir/base64](RocqOfNoir/base64). We follow these steps:
+## 📝 Example
 
-- Show that the monomorphized code is correct is equivalent to a polymorphic form where we keep the generic types. This removes the duplication of some functions, and makes sure that names are more stable (no more generated indexes to distinguish between the various function instanciations).
-- Show that the polymorphic code is equivalent to a purely functional definition applying the semantic rules defined in [RocqOfNoir/proof/RocqOfNoir.v](RocqOfNoir/proof/RocqOfNoir.v).
-- Express and prove properties using the usual techniques on functional and monadic Rocq code!
+> Note that this project is still in its early stages. For future evolutions, we are also thinking about adding a compilation from Noir to Rust, so that we can reuse the existing Rust ecosystem to verify the code (for example, using [Kani](https://github.com/model-checking/kani) or our tool [coq-of-rust](https://github.com/formal-land/coq-of-rust)!).
+
+To see an example of verification work, you can look at the `keccak` example in the folder [RocqOfNoir/keccak](RocqOfNoir/keccak). We make our proofs for the beginning of the Keccak function, showing the handling of one `for` loop which we represent as a "fold" on the Rocq side.
+
+In general, our proof technique is as follows:
+
+1. Show that the monomorphized code is correct is equivalent to a polymorphic form where we keep the generic types. This removes the duplication of some functions, and makes sure that names are more stable (no more generated indexes to distinguish between the various function instanciations).
+2. Show that the polymorphic code is equivalent to a purely functional definition applying the semantic rules defined in [RocqOfNoir/proof/RocqOfNoir.v](RocqOfNoir/proof/RocqOfNoir.v).
+3. Express and prove properties using the usual techniques on functional and monadic Rocq code!
+
+Depending on the specificities of your code, we can also design techniques which are more specific and more efficient.
 
 ## ✅ What Works
 

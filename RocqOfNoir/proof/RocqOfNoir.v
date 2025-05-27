@@ -34,16 +34,21 @@ Module State.
         }.
   End Valid.
 End State.
-
+ 
 Module Run.
-  Reserved Notation "{{ p , state_in ⏩ e 🔽 output ⏩ state_out }}".
+  Reserved Notation "{{ p , state_in ⏩ e 🔽 output }}".
 
   Inductive t {State Address : Set} `{State.Trait State Address}
-      (p : Z) (output : Result.t) (state_out : State) :
+      (p : Z) (output : option (Value.t * State)) :
       State -> M.t -> Prop :=
-  | Pure :
-    (* This should be the only case where the input and output states are the same. *)
-    {{ p, state_out ⏩ LowM.Pure output 🔽 output ⏩ state_out }}
+  | Pure
+      (value : Value.t)
+      (state_in : State) :
+    output = Some (value, state_in) ->
+    {{ p, state_in ⏩ M.Pure value 🔽 output }}
+  | Panic (state_in : State) :
+    output = None ->
+    {{ p, state_in ⏩ M.Panic 🔽 output }}
   | CallPrimitiveStateAlloc
       (value : Value.t)
       (address : Address)
@@ -52,92 +57,137 @@ Module Run.
     let pointer := Pointer.Mutable (Pointer.Mutable.Make address []) in
     State.read state_in address = None ->
     State.alloc_write state_in address value = Some state_in' ->
-    {{ p, state_in' ⏩ k (Value.Pointer pointer) 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.CallPrimitive (Primitive.StateAlloc value) k 🔽 output ⏩ state_out }}
+    {{ p, state_in' ⏩ k (Value.Pointer pointer) 🔽 output }} ->
+    {{ p, state_in ⏩ M.CallPrimitive (Primitive.StateAlloc value) k 🔽 output }}
   | CallPrimitiveStateRead
       (address : Address)
       (value : Value.t)
       (k : Value.t -> M.t)
       (state_in : State) :
     State.read state_in address = Some value ->
-    {{ p, state_in ⏩ k value 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.CallPrimitive (Primitive.StateRead address) k 🔽 output ⏩ state_out }}
+    {{ p, state_in ⏩ k value 🔽 output }} ->
+    {{ p, state_in ⏩ M.CallPrimitive (Primitive.StateRead address) k 🔽 output }}
   | CallPrimitiveStateWrite
       (value : Value.t)
       (address : Address)
       (k : unit -> M.t)
       (state_in state_in' : State) :
     State.alloc_write state_in address value = Some state_in' ->
-    {{ p, state_in' ⏩ k tt 🔽 output ⏩ state_out }} ->
+    {{ p, state_in' ⏩ k tt 🔽 output }} ->
     {{ p, state_in ⏩
-      LowM.CallPrimitive (Primitive.StateWrite address value) k 🔽 output
-    ⏩ state_out }}
+      M.CallPrimitive (Primitive.StateWrite address value) k 🔽
+      output
+    }}
   | CallPrimitiveGetFieldPrime
       (k : Z -> M.t)
       (state_in : State) :
-    {{ p, state_in ⏩ k p 🔽 output ⏩ state_out }} ->
+    {{ p, state_in ⏩ k p 🔽 output }} ->
     {{ p, state_in ⏩
-      LowM.CallPrimitive Primitive.GetFieldPrime k 🔽 output
-    ⏩ state_out }}
+      M.CallPrimitive Primitive.GetFieldPrime k 🔽
+      output
+    }}
   | CallPrimitiveIsEqualTrue
       (value1 value2 : Value.t)
       (k : bool -> M.t)
       (state_in : State) :
     (* The hypothesis of equality is explicit as this should be more convenient for the proofs *)
     value1 = value2 ->
-    {{ p, state_in ⏩ k true 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.CallPrimitive (Primitive.IsEqual value1 value2) k 🔽 output ⏩ state_out }}
+    {{ p, state_in ⏩ k true 🔽 output }} ->
+    {{ p, state_in ⏩ M.CallPrimitive (Primitive.IsEqual value1 value2) k 🔽 output }}
   | CallPrimitiveIsEqualFalse
       (value1 value2 : Value.t)
       (k : bool -> M.t)
       (state_in : State) :
     value1 <> value2 ->
-    {{ p, state_in ⏩ k false 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.CallPrimitive (Primitive.IsEqual value1 value2) k 🔽 output ⏩ state_out }}
-  | CallClosure
+    {{ p, state_in ⏩ k false 🔽 output }} ->
+    {{ p, state_in ⏩ M.CallPrimitive (Primitive.IsEqual value1 value2) k 🔽 output }}
+  (* | CallClosure
       (f : list Value.t -> M.t) (args : list Value.t)
-      (k : Result.t -> M.t)
-      (output_inter : Result.t)
-      (state_in state_inter : State) :
+      (k : Value.t -> M.t)
+      (output_inter : option (Value.t * State))
+      (state_in : State) :
     let closure := Value.Closure (existS (_, _) f) in
-    {{ p, state_in ⏩ f args 🔽 output_inter ⏩ state_inter }} ->
-    {{ p, state_inter ⏩ k output_inter 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.CallClosure closure args k 🔽 output ⏩ state_out }}
-  | Let
+    {{ p, state_in ⏩ f args 🔽 output_inter }} ->
+    match output_inter with
+    | Some (value_inter, state_inter) =>
+      {{ p, state_inter ⏩ k value_inter 🔽 output }}
+    | None =>
+      output = None
+    end ->
+    {{ p, state_in ⏩ M.CallClosure closure args k 🔽 output }} *)
+  | LetSuccess
       (e : M.t)
-      (k : Result.t -> M.t)
-      (output_inter : Result.t)
-      (state_in state_inter : State) :
-    {{ p, state_in ⏩ e 🔽 output_inter ⏩ state_inter }} ->
-    {{ p, state_inter ⏩ k output_inter 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.Let e k 🔽 output ⏩ state_out }}
+      (k : Value.t -> M.t)
+      (value_inter : Value.t)
+      (state_inter : State)
+      (state_in : State) :
+    {{ p, state_in ⏩ e 🔽 Some (value_inter, state_inter) }} ->
+    {{ p, state_inter ⏩ k value_inter 🔽 output }} ->
+    {{ p, state_in ⏩ M.Let e k 🔽 output }}
+  | LetPanic
+      (e : M.t)
+      (k : Value.t -> M.t)
+      (state_in : State) :
+    output = None ->
+    {{ p, state_in ⏩ e 🔽 None }} ->
+    {{ p, state_in ⏩ M.Let e k 🔽 output }}
   | LetUnfold
       (e : M.t)
-      (k : Result.t -> M.t)
+      (k : Value.t -> M.t)
       (state_in : State) :
-    {{ p, state_in ⏩ LowM.let_ e k 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.Let e k 🔽 output ⏩ state_out }}
+    {{ p, state_in ⏩ M.let_ e k 🔽 output }} ->
+    {{ p, state_in ⏩ M.Let e k 🔽 output }}
   | LetUnUnfold
       (e : M.t)
-      (k : Result.t -> M.t)
+      (k : Value.t -> M.t)
       (state_in : State) :
-    {{ p, state_in ⏩ LowM.Let e k 🔽 output ⏩ state_out }} ->
-    {{ p, state_in ⏩ LowM.let_ e k 🔽 output ⏩ state_out }}
+    {{ p, state_in ⏩ M.Let e k 🔽 output }} ->
+    {{ p, state_in ⏩ M.let_ e k 🔽 output }}
 
-  where "{{ p , state_in ⏩ e 🔽 output ⏩ state_out }}" :=
-    (t p output state_out state_in e).
+  where "{{ p , state_in ⏩ e 🔽 output }}" :=
+    (t p output state_in e).
 
-  Lemma PureEq {State Address : Set} `{State.Trait State Address}
-      (p : Z) (output output' : Result.t) (state state' : State) :
+  Lemma Let {State Address : Set} `{State.Trait State Address} {p : Z}
+      (e : M.t)
+      (k : Value.t -> M.t)
+      (output_inter output : option (Value.t * State))
+      (state_in : State) :
+    {{ p, state_in ⏩ e 🔽 output_inter }} ->
+    match output_inter with
+    | Some (value_inter, state_inter) =>
+      {{ p, state_inter ⏩ k value_inter 🔽 output }}
+    | None =>
+      output = None
+    end ->
+    {{ p, state_in ⏩ M.Let e k 🔽 output }}.
+  Proof.
+    intros H_e H_k.
+    destruct output_inter as [ [] |].
+    { eapply LetSuccess.
+      { apply H_e. }
+      { apply H_k. }
+    }
+    { now eapply LetPanic. }
+  Qed.
+
+  (* Lemma PureExact {State Address : Set} `{State.Trait State Address}
+      (p : Z) (output : Result.t) (state : State) :
+    {{ p, state ⏩ M.Pure output 🔽 output ⏩ fun state' => state' = state }}.
+  Proof.
+    now apply Pure.
+  Qed. *)
+
+  (* Lemma PureImplies {State Address : Set} `{State.Trait State Address}
+      (p : Z) (output output' : Result.t) (P_state P_state' : State -> Prop) :
     output = output' ->
-    state = state' ->
+    (state = state') ->
     {{ p, state ⏩ LowM.Pure output 🔽 output' ⏩ state' }}.
   Proof.
     intros -> ->.
     apply Pure.
-  Qed.
+  Qed. *)
 
-  Lemma For_aux {State Address : Set} `{State.Trait State Address}
+  (* Lemma For_aux {State Address : Set} `{State.Trait State Address}
       (p : Z) (state_in : State)
       (integer_kind : IntegerKind.t) (start : Z) (len : nat) (body : Value.t -> M.t)
       {Accumulator : Set}
@@ -235,7 +285,7 @@ Module Run.
   ⏩ inject state_in (snd output_accumulator_out) }}.
   Proof.
     hauto q: on use: For_aux.
-  Qed.
+  Qed. *)
 End Run.
 Export Run.
 
@@ -262,7 +312,7 @@ End Singleton.
 Module Field.
   Module Valid.
     Definition t (p : Z) (x : Field.t) : Prop :=
-      0 <= x.(Integer.value) < p.
+      0 <= x.(Field.value) < p.
   End Valid.
 End Field.
 
@@ -280,4 +330,48 @@ Module Array.
       elements : List.Forall P_A array.(Array.value);
     }.
   End Valid.
+
+  Lemma listUpdate_error_map {A B : Set} (f : A -> B) (l : list A) (i : nat) (v : A) (v' : B) :
+    v' = f v ->
+    List.listUpdate_error (List.map f l) i v' =
+    match List.listUpdate_error l i v with
+    | Some l' => Some (List.map f l')
+    | None => None
+    end.
+  Admitted.
+
+  Lemma list_nth_error_listUpdate_error {A : Set} (l : list A) (i : nat) (v : A) :
+    match List.nth_error l i, List.listUpdate_error l i v with
+    | None, None | Some _, Some _ => True
+    | _, _ => False
+    end.
+  Admitted.
 End Array.
+
+(** Some rewrites for the basic operations *)
+Module Rewrites.
+  (* Axiom rewrite_add_field : forall (kind : IntegerKind.t) (x y : Z),
+    Binary.add (Value.Integer kind x) (Value.Integer kind y) =
+    match kind with
+    | IntegerKind.Field =>
+      LowM.CallPrimitive Primitive.GetFieldPrime (fun p =>
+        M.pure (Value.Integer IntegerKind.Field ((x + y) mod p))
+      )
+    | IntegerKind.U1 =>
+      M.pure (
+          Value.Integer kind (BinaryInteger.add (Self := Integer.t IntegerKind.U1)
+          {| Integer.value := x |} {| Integer.value := y |}
+        ).(Integer.value)
+      )
+    | _ => M.impossible "add: expected integer values"
+    end.
+
+  Axiom rewrite_subtract : forall (kind : IntegerKind.t) (x y : Z),
+    Binary.subtract (Value.Integer kind x) (Value.Integer kind y) =
+    Value.Integer kind (x - y).
+    
+    
+      M.pure (Value.Integer kind (x + y))
+    | _, _ => impossible "add: expected integer values"
+    end. *)
+End Rewrites.
