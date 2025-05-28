@@ -54,7 +54,7 @@ The following functionalities are currently implemented:
 - **Translation:** Automatic translation of Noir programs to a representation in Rocq.
 - **Semantics:** Formal semantics for reasoning about the translated Noir code.
 - **Proof Strategy:** A proof strategy to formally verify properties of Noir programs.
-- **Small Example:** The functional specification of a small example, that is to say, the beginning of the Keccak algorithm. This includes the first `for` loop, array mutations, and read operations.
+- **Small Example:** The functional specification of a small example in [RocqOfNoir/keccak/simulation.v](https://github.com/formal-land/rocq-of-noir/blob/master/RocqOfNoir/keccak/simulation.v), that is to say, the beginning of the Keccak algorithm. This includes the first `for` loop, array mutations, and read operations.
 
 The proof process is tedious for now, but it still applies to focused examples.
 
